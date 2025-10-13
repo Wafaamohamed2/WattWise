@@ -1,0 +1,538 @@
+2025-10-13 22:27:44.435 +03:00 [INF] Executed DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-10-13 22:27:44.461 +03:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2025-10-13 22:27:44.479 +03:00 [INF] Executed DbCommand (16ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2025-10-13 22:27:44.519 +03:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2025-10-13 22:27:44.525 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-10-13 22:27:44.527 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2025-10-13 22:27:44.538 +03:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2025-10-13 22:27:44.543 +03:00 [INF] Applying migration '20251013191651_InitialCreate'.
+2025-10-13 22:27:44.561 +03:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Buildings] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(200) NOT NULL,
+    [Address] nvarchar(500) NULL,
+    [TotalArea] float NOT NULL,
+    [NumberOfRooms] int NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Buildings] PRIMARY KEY ([Id])
+);
+2025-10-13 22:27:44.566 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Zones] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(200) NOT NULL,
+    [BuildingId] int NOT NULL,
+    [Type] int NOT NULL,
+    [Area] float NOT NULL,
+    CONSTRAINT [PK_Zones] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Zones_Buildings_BuildingId] FOREIGN KEY ([BuildingId]) REFERENCES [Buildings] ([Id]) ON DELETE CASCADE
+);
+2025-10-13 22:27:44.572 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Devices] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(200) NOT NULL,
+    [ZoneId] int NOT NULL,
+    [Type] int NOT NULL,
+    [RatedPowerKW] decimal(18,2) NOT NULL,
+    [IsActive] bit NOT NULL,
+    [InstallationDate] datetime2 NOT NULL,
+    CONSTRAINT [PK_Devices] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Devices_Zones_ZoneId] FOREIGN KEY ([ZoneId]) REFERENCES [Zones] ([Id]) ON DELETE CASCADE
+);
+2025-10-13 22:27:44.579 +03:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Alerts] (
+    [Id] int NOT NULL IDENTITY,
+    [DeviceId] int NOT NULL,
+    [Type] int NOT NULL,
+    [Message] nvarchar(500) NOT NULL,
+    [Severity] int NOT NULL,
+    [IsRead] bit NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Alerts] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Alerts_Devices_DeviceId] FOREIGN KEY ([DeviceId]) REFERENCES [Devices] ([Id]) ON DELETE CASCADE
+);
+2025-10-13 22:27:44.585 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [EnergyReadings] (
+    [Id] int NOT NULL IDENTITY,
+    [DeviceId] int NOT NULL,
+    [Timestamp] datetime2 NOT NULL,
+    [PowerConsumptionKW] decimal(18,4) NOT NULL,
+    [Voltage] decimal(18,2) NOT NULL,
+    [Current] decimal(18,2) NOT NULL,
+    [Temperature] decimal(18,2) NOT NULL,
+    CONSTRAINT [PK_EnergyReadings] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_EnergyReadings_Devices_DeviceId] FOREIGN KEY ([DeviceId]) REFERENCES [Devices] ([Id]) ON DELETE CASCADE
+);
+2025-10-13 22:27:44.594 +03:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Alerts_CreatedAt] ON [Alerts] ([CreatedAt]);
+2025-10-13 22:27:44.596 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Alerts_DeviceId] ON [Alerts] ([DeviceId]);
+2025-10-13 22:27:44.598 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Alerts_IsRead] ON [Alerts] ([IsRead]);
+2025-10-13 22:27:44.600 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Devices_ZoneId] ON [Devices] ([ZoneId]);
+2025-10-13 22:27:44.603 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_EnergyReadings_DeviceId] ON [EnergyReadings] ([DeviceId]);
+2025-10-13 22:27:44.664 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_EnergyReadings_Timestamp] ON [EnergyReadings] ([Timestamp]);
+2025-10-13 22:27:44.669 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Zones_BuildingId] ON [Zones] ([BuildingId]);
+2025-10-13 22:27:44.675 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20251013191651_InitialCreate', N'9.0.9');
+2025-10-13 22:27:44.682 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2025-10-13 23:20:21.742 +03:00 [INF] No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+2025-10-13 23:20:21.779 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-13 23:20:22.073 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-13 23:20:22.075 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-13 23:20:22.077 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-13 23:20:22.078 +03:00 [INF] Hosting environment: Development
+2025-10-13 23:20:22.079 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-13 23:20:23.084 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-13 23:20:23.084 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-13 23:20:23.110 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 28.1443ms
+2025-10-13 23:20:23.191 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 114.4808ms
+2025-10-13 23:20:23.226 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-13 23:20:23.267 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 40.2043ms
+2025-10-13 23:20:27.820 +03:00 [INF] Executed DbCommand (102ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:20:27.833 +03:00 [WRN] No active devices found for generating readings
+2025-10-13 23:23:18.175 +03:00 [INF] No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+2025-10-13 23:23:18.208 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-13 23:23:18.346 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-13 23:23:18.349 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-13 23:23:18.350 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-13 23:23:18.351 +03:00 [INF] Hosting environment: Development
+2025-10-13 23:23:18.351 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-13 23:23:18.709 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-13 23:23:18.709 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-13 23:23:18.738 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 33.8791ms
+2025-10-13 23:23:18.770 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 66.5597ms
+2025-10-13 23:23:18.797 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-13 23:23:18.825 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 28.9948ms
+2025-10-13 23:23:38.764 +03:00 [INF] No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts
+2025-10-13 23:23:38.814 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-13 23:23:39.002 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-13 23:23:39.004 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-13 23:23:39.005 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-13 23:23:39.006 +03:00 [INF] Hosting environment: Development
+2025-10-13 23:23:39.007 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-13 23:23:39.698 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-13 23:23:39.698 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-13 23:23:39.727 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 35.6706ms
+2025-10-13 23:23:39.766 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 75.2961ms
+2025-10-13 23:23:39.791 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-13 23:23:39.819 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 27.1189ms
+2025-10-13 23:23:44.678 +03:00 [INF] Executed DbCommand (50ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:23:44.692 +03:00 [WRN] No active devices found for generating readings
+2025-10-13 23:24:44.731 +03:00 [INF] Executed DbCommand (12ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:24:44.733 +03:00 [WRN] No active devices found for generating readings
+2025-10-13 23:25:44.810 +03:00 [INF] Executed DbCommand (17ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:25:44.813 +03:00 [WRN] No active devices found for generating readings
+2025-10-13 23:27:17.980 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-13 23:27:18.145 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-13 23:27:18.147 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-13 23:27:18.148 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-13 23:27:18.149 +03:00 [INF] Hosting environment: Development
+2025-10-13 23:27:18.149 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-13 23:27:18.482 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-13 23:27:18.482 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-13 23:27:18.505 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 28.5303ms
+2025-10-13 23:27:18.545 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 68.9366ms
+2025-10-13 23:27:18.575 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-13 23:27:18.638 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 64.332ms
+2025-10-13 23:27:22.294 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/Seed/run - null 0
+2025-10-13 23:27:22.309 +03:00 [INF] CORS policy execution successful.
+2025-10-13 23:27:22.312 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.SeedController.SeedData (EnergyOptimizer.API)'
+2025-10-13 23:27:22.328 +03:00 [INF] Route matched with {action = "SeedData", controller = "Seed"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] SeedData() on controller EnergyOptimizer.API.Controllers.SeedController (EnergyOptimizer.API).
+2025-10-13 23:27:23.262 +03:00 [INF] Executed DbCommand (37ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:27:23.276 +03:00 [WRN] No active devices found for generating readings
+2025-10-13 23:27:23.279 +03:00 [INF] Executed DbCommand (69ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [Buildings] AS [b]) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+2025-10-13 23:27:23.284 +03:00 [INF] Starting data seeding...
+2025-10-13 23:27:23.454 +03:00 [INF] Executed DbCommand (74ms) [Parameters=[@p0='?' (Size = 500), @p1='?' (DbType = DateTime2), @p2='?' (Size = 200), @p3='?' (DbType = Int32), @p4='?' (DbType = Double)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Buildings] ([Address], [CreatedAt], [Name], [NumberOfRooms], [TotalArea])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4);
+2025-10-13 23:27:23.559 +03:00 [INF] Executed DbCommand (63ms) [Parameters=[@p0='?' (DbType = Double), @p1='?' (DbType = Int32), @p2='?' (Size = 200), @p3='?' (DbType = Int32), @p4='?' (DbType = Double), @p5='?' (DbType = Int32), @p6='?' (Size = 200), @p7='?' (DbType = Int32), @p8='?' (DbType = Double), @p9='?' (DbType = Int32), @p10='?' (Size = 200), @p11='?' (DbType = Int32), @p12='?' (DbType = Double), @p13='?' (DbType = Int32), @p14='?' (Size = 200), @p15='?' (DbType = Int32), @p16='?' (DbType = Double), @p17='?' (DbType = Int32), @p18='?' (Size = 200), @p19='?' (DbType = Int32), @p20='?' (DbType = Double), @p21='?' (DbType = Int32), @p22='?' (Size = 200), @p23='?' (DbType = Int32), @p24='?' (DbType = Double), @p25='?' (DbType = Int32), @p26='?' (Size = 200), @p27='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [Zones] USING (
+VALUES (@p0, @p1, @p2, @p3, 0),
+(@p4, @p5, @p6, @p7, 1),
+(@p8, @p9, @p10, @p11, 2),
+(@p12, @p13, @p14, @p15, 3),
+(@p16, @p17, @p18, @p19, 4),
+(@p20, @p21, @p22, @p23, 5),
+(@p24, @p25, @p26, @p27, 6)) AS i ([Area], [BuildingId], [Name], [Type], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Area], [BuildingId], [Name], [Type])
+VALUES (i.[Area], i.[BuildingId], i.[Name], i.[Type])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:27:23.624 +03:00 [INF] Executed DbCommand (40ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (DbType = Boolean), @p2='?' (Size = 200), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = DateTime2), @p7='?' (DbType = Boolean), @p8='?' (Size = 200), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = DateTime2), @p13='?' (DbType = Boolean), @p14='?' (Size = 200), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = DateTime2), @p19='?' (DbType = Boolean), @p20='?' (Size = 200), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = DateTime2), @p25='?' (DbType = Boolean), @p26='?' (Size = 200), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = DateTime2), @p31='?' (DbType = Boolean), @p32='?' (Size = 200), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = DateTime2), @p37='?' (DbType = Boolean), @p38='?' (Size = 200), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32), @p42='?' (DbType = DateTime2), @p43='?' (DbType = Boolean), @p44='?' (Size = 200), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = Int32), @p47='?' (DbType = Int32), @p48='?' (DbType = DateTime2), @p49='?' (DbType = Boolean), @p50='?' (Size = 200), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = Int32), @p53='?' (DbType = Int32), @p54='?' (DbType = DateTime2), @p55='?' (DbType = Boolean), @p56='?' (Size = 200), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = Int32), @p59='?' (DbType = Int32), @p60='?' (DbType = DateTime2), @p61='?' (DbType = Boolean), @p62='?' (Size = 200), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = Int32), @p65='?' (DbType = Int32), @p66='?' (DbType = DateTime2), @p67='?' (DbType = Boolean), @p68='?' (Size = 200), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = Int32), @p71='?' (DbType = Int32), @p72='?' (DbType = DateTime2), @p73='?' (DbType = Boolean), @p74='?' (Size = 200), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = Int32), @p77='?' (DbType = Int32), @p78='?' (DbType = DateTime2), @p79='?' (DbType = Boolean), @p80='?' (Size = 200), @p81='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p82='?' (DbType = Int32), @p83='?' (DbType = Int32), @p84='?' (DbType = DateTime2), @p85='?' (DbType = Boolean), @p86='?' (Size = 200), @p87='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p88='?' (DbType = Int32), @p89='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [Devices] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12),
+(@p78, @p79, @p80, @p81, @p82, @p83, 13),
+(@p84, @p85, @p86, @p87, @p88, @p89, 14)) AS i ([InstallationDate], [IsActive], [Name], [RatedPowerKW], [Type], [ZoneId], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([InstallationDate], [IsActive], [Name], [RatedPowerKW], [Type], [ZoneId])
+VALUES (i.[InstallationDate], i.[IsActive], i.[Name], i.[RatedPowerKW], i.[Type], i.[ZoneId])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:27:23.633 +03:00 [INF] Data seeding completed successfully!
+2025-10-13 23:27:23.641 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-13 23:27:23.680 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.SeedController.SeedData (EnergyOptimizer.API) in 1348.1998ms
+2025-10-13 23:27:23.682 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.SeedController.SeedData (EnergyOptimizer.API)'
+2025-10-13 23:27:23.685 +03:00 [INF] HTTP POST /api/Seed/run responded 200 in 1377.2826 ms
+2025-10-13 23:27:23.690 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/Seed/run - 200 null application/json; charset=utf-8 1395.6458ms
+2025-10-13 23:28:27.714 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-13 23:28:27.920 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-13 23:28:27.922 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-13 23:28:27.923 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-13 23:28:27.924 +03:00 [INF] Hosting environment: Development
+2025-10-13 23:28:27.924 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-13 23:28:28.375 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-13 23:28:28.375 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-13 23:28:28.402 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 32.1384ms
+2025-10-13 23:28:28.434 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 65.3503ms
+2025-10-13 23:28:28.466 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-13 23:28:28.517 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 50.987ms
+2025-10-13 23:28:33.575 +03:00 [INF] Executed DbCommand (61ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:28:33.849 +03:00 [INF] Executed DbCommand (149ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:28:33.876 +03:00 [INF] Generated 13 readings at 2025-10-13 23:28:33
+2025-10-13 23:29:41.826 +03:00 [INF] Executed DbCommand (7,850ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:29:42.082 +03:00 [INF] Executed DbCommand (241ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:29:42.105 +03:00 [INF] Generated 13 readings at 2025-10-13 23:29:41
+2025-10-13 23:30:42.203 +03:00 [INF] Executed DbCommand (20ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:30:42.911 +03:00 [INF] Executed DbCommand (684ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:30:42.935 +03:00 [INF] Generated 13 readings at 2025-10-13 23:30:42
+2025-10-13 23:31:42.992 +03:00 [INF] Executed DbCommand (21ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:31:43.174 +03:00 [INF] Executed DbCommand (169ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:31:43.191 +03:00 [INF] Generated 13 readings at 2025-10-13 23:31:43
+2025-10-13 23:32:43.241 +03:00 [INF] Executed DbCommand (37ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:32:43.261 +03:00 [INF] Executed DbCommand (14ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:32:43.268 +03:00 [INF] Generated 13 readings at 2025-10-13 23:32:43
+2025-10-13 23:33:43.293 +03:00 [INF] Executed DbCommand (22ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:33:43.333 +03:00 [INF] Executed DbCommand (35ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:33:43.376 +03:00 [INF] Generated 13 readings at 2025-10-13 23:33:43
+2025-10-13 23:34:43.415 +03:00 [INF] Executed DbCommand (26ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:34:43.448 +03:00 [INF] Executed DbCommand (27ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:34:43.468 +03:00 [INF] Generated 13 readings at 2025-10-13 23:34:43
+2025-10-13 23:35:43.513 +03:00 [INF] Executed DbCommand (36ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:35:43.542 +03:00 [INF] Executed DbCommand (22ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:35:43.568 +03:00 [INF] Generated 13 readings at 2025-10-13 23:35:43
+2025-10-13 23:36:43.626 +03:00 [INF] Executed DbCommand (54ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:36:43.665 +03:00 [INF] Executed DbCommand (36ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:36:43.679 +03:00 [INF] Generated 13 readings at 2025-10-13 23:36:43
+2025-10-13 23:37:43.772 +03:00 [INF] Executed DbCommand (75ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:37:43.829 +03:00 [INF] Executed DbCommand (38ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:37:43.853 +03:00 [INF] Generated 13 readings at 2025-10-13 23:37:43
+2025-10-13 23:38:43.941 +03:00 [INF] Executed DbCommand (72ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-13 23:38:43.999 +03:00 [INF] Executed DbCommand (48ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p60='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p61='?' (DbType = Int32), @p62='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p63='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p64='?' (DbType = DateTime2), @p65='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p66='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p67='?' (DbType = Int32), @p68='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p69='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p70='?' (DbType = DateTime2), @p71='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p72='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p73='?' (DbType = Int32), @p74='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p75='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p76='?' (DbType = DateTime2), @p77='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9),
+(@p60, @p61, @p62, @p63, @p64, @p65, 10),
+(@p66, @p67, @p68, @p69, @p70, @p71, 11),
+(@p72, @p73, @p74, @p75, @p76, @p77, 12)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-13 23:38:44.027 +03:00 [INF] Generated 13 readings at 2025-10-13 23:38:43

@@ -1,0 +1,60 @@
+# Build results
+bin/
+obj/
+out/
+[Bb]uild/
+[Ll]og/
+[Tt]emp/
+[Tt]mp/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Database files
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Backup & temporary files
+*.bak
+*.tmp
+*.temp
+*.log
+
+# Publish output
+publish/
+wwwroot/dist/
+wwwroot/lib/
+
+# JetBrains Rider
+.idea/
+
+# Docker
+**/docker-compose.override.yml
+**/docker-compose*.yml
+
+# Environment files
+.env
+.env.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+
+appsettings.Development.json
