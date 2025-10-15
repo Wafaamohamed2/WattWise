@@ -3,6 +3,34 @@
   "WorkspaceRootPath": "F:\\Energy Optimizer\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\controllers\\readingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\controllers\\readingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\controllers\\devicescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\controllers\\devicescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\dtos\\consumptiontrenddto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\dtos\\consumptiontrenddto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\dtos\\zoneconsumptiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\dtos\\zoneconsumptiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\dtos\\deviceconsumptiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\dtos\\deviceconsumptiondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\dtos\\dashboardoverviewdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\dtos\\dashboardoverviewdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|f:\\energy optimizer\\energyoptimizer.api\\controllers\\seedcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{02E4A1F7-B370-4ED1-B94D-F420BB47694A}|EnergyOptimizer.API\\EnergyOptimizer.API.csproj|solutionrelative:energyoptimizer.api\\controllers\\seedcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -55,19 +83,105 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "SeedController.cs",
-              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\SeedController.cs",
-              "RelativeDocumentMoniker": "EnergyOptimizer.API\\Controllers\\SeedController.cs",
-              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\SeedController.cs",
-              "RelativeToolTip": "EnergyOptimizer.API\\Controllers\\SeedController.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAACEAAAABAAAA",
+              "Title": "ReadingsController.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\ReadingsController.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\Controllers\\ReadingsController.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\ReadingsController.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\Controllers\\ReadingsController.cs",
+              "ViewState": "AQIAAJwAAAAAAAAAAAAswKYBAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-13T20:26:56.293Z",
+              "WhenOpened": "2025-10-15T18:59:00.481Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DevicesController.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\DevicesController.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\Controllers\\DevicesController.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\DevicesController.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\Controllers\\DevicesController.cs",
+              "ViewState": "AQIAABgAAAAAAAAAAIAxwCcBAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-15T18:35:24.733Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DashboardController.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\DashboardController.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\Controllers\\DashboardController.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\DashboardController.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\Controllers\\DashboardController.cs",
+              "ViewState": "AQIAAFMAAAAAAAAAAAAcwM4BAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-14T15:17:07.049Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "ConsumptionTrendDto.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\ConsumptionTrendDto.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\DTOs\\ConsumptionTrendDto.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\ConsumptionTrendDto.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\DTOs\\ConsumptionTrendDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-14T15:16:26.299Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DeviceConsumptionDto.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\DeviceConsumptionDto.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\DTOs\\DeviceConsumptionDto.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\DeviceConsumptionDto.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\DTOs\\DeviceConsumptionDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-14T15:08:26.449Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ZoneConsumptionDto.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\ZoneConsumptionDto.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\DTOs\\ZoneConsumptionDto.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\ZoneConsumptionDto.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\DTOs\\ZoneConsumptionDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-14T15:07:55.001Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "DashboardOverviewDto.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\DashboardOverviewDto.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\DTOs\\DashboardOverviewDto.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\DTOs\\DashboardOverviewDto.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\DTOs\\DashboardOverviewDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-14T15:07:28.204Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "SeedController.cs",
+              "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\SeedController.cs",
+              "RelativeDocumentMoniker": "EnergyOptimizer.API\\Controllers\\SeedController.cs",
+              "ToolTip": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Controllers\\SeedController.cs",
+              "RelativeToolTip": "EnergyOptimizer.API\\Controllers\\SeedController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAqwBIAAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T20:26:56.293Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "EnergyReadingSimulatorService.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Services\\EnergyReadingSimulatorService.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\Services\\EnergyReadingSimulatorService.cs",
@@ -75,12 +189,11 @@
               "RelativeToolTip": "EnergyOptimizer.API\\Services\\EnergyReadingSimulatorService.cs",
               "ViewState": "AQIAAAkAAAAAAAAAAAAAwKsAAAApAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-13T19:55:56.811Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-13T19:55:56.811Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 8,
               "Title": "Program.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Program.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\Program.cs",
@@ -88,12 +201,11 @@
               "RelativeToolTip": "EnergyOptimizer.API\\Program.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABsAAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-13T19:09:06.694Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-13T19:09:06.694Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 9,
               "Title": "DataSeedingService.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\Services\\DataSeedingService.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\Services\\DataSeedingService.cs",
@@ -101,12 +213,11 @@
               "RelativeToolTip": "EnergyOptimizer.API\\Services\\DataSeedingService.cs",
               "ViewState": "AQIAAEAAAAAAAAAAAAAUwFUAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-13T20:23:02.167Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-13T20:23:02.167Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 11,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\appsettings.Development.json",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\appsettings.Development.json",
@@ -118,7 +229,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
               "Title": "EnergyOptimizer.API.http",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\EnergyOptimizer.API.http",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\EnergyOptimizer.API.http",
@@ -130,7 +241,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 13,
               "Title": "20251013191651_InitialCreate.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.Infrastructure\\Migrations\\20251013191651_InitialCreate.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.Infrastructure\\Migrations\\20251013191651_InitialCreate.cs",
@@ -142,7 +253,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 14,
               "Title": "EnergyDbContext.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.Infrastructure\\Data\\EnergyDbContext.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.Infrastructure\\Data\\EnergyDbContext.cs",
@@ -154,7 +265,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 15,
               "Title": "Alert.cs",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.Core\\Entities\\Alert.cs",
               "RelativeDocumentMoniker": "EnergyOptimizer.Core\\Entities\\Alert.cs",
@@ -166,7 +277,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 16,
               "Title": "EnergyOptimizer.API.csproj",
               "DocumentMoniker": "F:\\Energy Optimizer\\EnergyOptimizer.API\\EnergyOptimizer.API.csproj",
               "RelativeDocumentMoniker": "EnergyOptimizer.API\\EnergyOptimizer.API.csproj",
