@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Optimizer - Live Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .status.connected {
+                border-left: 5px solid #10b981;
+            }
+
+            .status.disconnected {
+                border-left: 5px solid #ef4444;
+            }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status.connected .status-dot {
+            background: #10b981;
+        }
+
+        .status.disconnected .status-dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+            .card h2 {
+                color: #667eea;
+                margin-bottom: 15px;
+                font-size: 1.3em;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .reading {
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.2s;
+        }
+
+            .reading:hover {
+                transform: translateX(5px);
+            }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .reading-header {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-type {
+            font-size: 0.75em;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .reading-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .metric-label {
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .dashboard-update {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+            .dashboard-update h2 {
+                color: white;
+                margin-bottom: 20px;
+            }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .timestamp {
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 40px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Energy Optimizer - Live Monitor</h1>
+
+        <div id="connectionStatus" class="status disconnected">
+            <div class="status-dot"></div>
+            <strong>Status:</strong> <span id="statusText">Connecting...</span>
+        </div>
+
+        <div id="dashboardUpdate" class="dashboard-update" style="display: none;">
+            <h2>📊 Live Dashboard</h2>
+            <div class="dashboard-stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalConsumption">0</div>
+                    <div class="stat-label">Total kW</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="activeDevices">0</div>
+                    <div class="stat-label">Active Devices</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalReadings">0</div>
+                    <div class="stat-label">Readings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="updateTime">--:--</div>
+                    <div class="stat-label">Last Update</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📈 Latest Readings</h2>
+                <div id="readings">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Waiting for data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🔥 Top Consumers</h2>
+                <div id="topConsumers">
+                    <div class="empty-state">
+                        No data yet...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Event Log</h2>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Get base URL dynamically
+        const baseUrl = window.location.origin;
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(`${baseUrl}/energyhub`)
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // Connection status handlers
+        connection.onreconnecting(() => {
+            updateStatus("Reconnecting...", false);
+            log("🔄 Reconnecting...");
+        });
+
+        connection.onreconnected(() => {
+            updateStatus("Connected", true);
+            log("✅ Reconnected successfully");
+        });
+
+        connection.onclose(() => {
+            updateStatus("Disconnected", false);
+            log("❌ Connection closed");
+        });
+
+        // Handle Connected event
+        connection.on("Connected", (data) => {
+            log(`✅ ${data.message}`);
+            updateStatus("Connected", true);
+        });
+
+        // Handle ReceiveReadings
+        connection.on("ReceiveReadings", (readings) => {
+            log(`📊 Received ${readings.length} readings`);
+            displayReadings(readings);
+        });
+
+        // Handle DashboardUpdate
+        connection.on("DashboardUpdate", (update) => {
+            log("📈 Dashboard update received");
+            displayDashboardUpdate(update);
+        });
+
+        // Start connection
+        async function start() {
+            try {
+                await connection.start();
+                log("🚀 SignalR connection started");
+                updateStatus("Connected", true);
+            } catch (err) {
+                log(`❌ Error: ${err.toString()}`);
+                updateStatus("Connection Failed", false);
+                setTimeout(start, 5000);
+            }
+        }
+
+        function updateStatus(text, connected) {
+            document.getElementById("statusText").textContent = text;
+            const statusDiv = document.getElementById("connectionStatus");
+            statusDiv.className = connected ? "status connected" : "status disconnected";
+        }
+
+        function displayReadings(readings) {
+            const container = document.getElementById("readings");
+            container.innerHTML = "";
+
+            if (readings.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active devices</div>';
+                return;
+            }
+
+            readings.slice(0, 5).forEach(reading => {
+                const div = document.createElement("div");
+                div.className = "reading";
+                div.innerHTML = `
+                    <div class="reading-header">
+                        <span>${reading.deviceName}</span>
+                        <span class="device-type">${reading.deviceType}</span>
+                    </div>
+                    <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
+                        📍 ${reading.zoneName}
+                    </div>
+                    <div class="reading-data">
+                        <div class="metric">
+                            <span class="metric-label">⚡ Power:</span>
+                            <span class="metric-value">${reading.powerConsumptionKW.toFixed(3)} kW</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">🔌 Voltage:</span>
+                            <span class="metric-value">${reading.voltage.toFixed(1)} V</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">⚡ Current:</span>
+                            <span class="metric-value">${reading.current.toFixed(2)} A</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">🌡️ Temp:</span>
+                            <span class="metric-value">${reading.temperature.toFixed(1)} °C</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function displayDashboardUpdate(update) {
+            document.getElementById("dashboardUpdate").style.display = "block";
+            document.getElementById("totalConsumption").textContent = update.totalConsumption.toFixed(2);
+            document.getElementById("activeDevices").textContent = update.activeDevices;
+            document.getElementById("totalReadings").textContent = update.totalReadings;
+
+            const time = new Date(update.timestamp).toLocaleTimeString();
+            document.getElementById("updateTime").textContent = time;
+
+            const topConsumersDiv = document.getElementById("topConsumers");
+            topConsumersDiv.innerHTML = "";
+
+            if (update.topConsumers.length === 0) {
+                topConsumersDiv.innerHTML = '<div class="empty-state">No data</div>';
+                return;
+            }
+
+            update.topConsumers.forEach((device, index) => {
+                const div = document.createElement("div");
+                div.className = "reading";
+                div.innerHTML = `
+                    <div class="reading-header">
+                        <span>#${index + 1} ${device.deviceName}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">⚡ Consumption:</span>
+                        <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
+                    </div>
+                `;
+                topConsumersDiv.appendChild(div);
+            });
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById("log");
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement("div");
+            entry.className = "log-entry";
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+
+            // Keep only last 50 entries
+            while (logDiv.children.length > 50) {
+                logDiv.removeChild(logDiv.lastChild);
+            }
+        }
+
+        // Start the connection
+        start();
+    </script>
+</body>
+</html>

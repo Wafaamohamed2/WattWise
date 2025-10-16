@@ -16,7 +16,7 @@ out/
 # Visual Studio Code
 .vscode/
 .history/
-
+.vs/
 # NuGet packages
 *.nupkg
 *.snupkg
