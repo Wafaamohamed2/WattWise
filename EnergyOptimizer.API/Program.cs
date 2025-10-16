@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EnergyOptimizer.Infrastructure.Data;
+using EnergyOptimizer.API.Hubs;
 using Serilog;
 using EnergyOptimizer.API.Services;
 
@@ -22,6 +23,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<EnergyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; 
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 
@@ -35,7 +44,8 @@ builder.Services.AddCors(options =>
     {
         builder.AllowAnyOrigin()
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials() ;  // Needed for SignalR
     });
 });
 
@@ -59,5 +69,6 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<EnergyHub>("/energyHub");
 
 app.Run();
