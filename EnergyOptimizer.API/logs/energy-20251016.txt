@@ -1,0 +1,34 @@
+2025-10-16 23:21:17.383 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-16 23:24:17.121 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-16 23:24:17.297 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-16 23:24:17.299 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-16 23:24:17.300 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-16 23:24:17.300 +03:00 [INF] Hosting environment: Development
+2025-10-16 23:24:17.301 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-16 23:24:17.571 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-16 23:24:17.571 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-16 23:24:17.605 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 40.4184ms
+2025-10-16 23:24:17.630 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 65.5157ms
+2025-10-16 23:24:17.656 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-16 23:24:17.724 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 68.2532ms
+2025-10-16 23:24:23.128 +03:00 [INF] Executed DbCommand (37ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-16 23:28:40.354 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-16 23:28:40.496 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-16 23:28:40.498 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-16 23:28:40.499 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-16 23:28:40.500 +03:00 [INF] Hosting environment: Development
+2025-10-16 23:28:40.501 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-16 23:28:41.635 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-16 23:28:41.635 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-16 23:28:41.660 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 29.5099ms
+2025-10-16 23:28:42.359 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 730.3979ms
+2025-10-16 23:28:42.390 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-16 23:28:42.443 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 54.4215ms
+2025-10-16 23:28:46.199 +03:00 [INF] Executed DbCommand (32ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId]
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-16 23:29:24.352 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/index.html - null null

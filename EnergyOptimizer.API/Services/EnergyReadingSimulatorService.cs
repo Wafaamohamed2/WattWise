@@ -94,7 +94,7 @@ namespace EnergyOptimizer.API.Services
                         ZoneName = device.Zone.Name,                
                         Timestamp =DateTime.Now,
                         PowerConsumptionKW = Math.Round(consumption, 4),                 
-                        Temperature = Math.Round(temperature, 2),
+                        Temperature = Math.Round(reading.Temperature, 2),
                         IsActive = device.IsActive
                     });
                 }
