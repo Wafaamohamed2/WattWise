@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
+using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<EnergyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; 
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 
@@ -33,9 +41,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        builder.WithOrigins("http://localhost:3000", "http://localhost:5173") // React/Vite ports
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
     });
 });
 
@@ -52,10 +61,14 @@ app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<EnergyHub>("/energyhub");
 
 app.Run();
