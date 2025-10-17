@@ -274,32 +274,46 @@
             const container = document.getElementById("readings");
             container.innerHTML = "";
 
-            readings.slice(0, 5).forEach(reading => {
+            if (!readings || readings.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active devices</div>';
+                return;
+            }
+
+            // Sort by consumption (highest first)
+            const sortedReadings = [...readings].sort((a, b) =>
+                b.powerConsumptionKW - a.powerConsumptionKW
+            );
+
+            sortedReadings.slice(0, 5).forEach(reading => {
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-                    <div class="reading-header">
-                        ${reading.deviceName}
-                    </div>
-                    <div class="reading-data">
-                        <div class="metric">
-                            <span class="metric-label">Power:</span>
-                            <span class="metric-value">${reading.powerConsumptionKW.toFixed(3)} kW</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Voltage:</span>
-                            <span class="metric-value">${reading.voltage.toFixed(1)} V</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Current:</span>
-                            <span class="metric-value">${reading.current.toFixed(2)} A</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Temp:</span>
-                            <span class="metric-value">${reading.temperature.toFixed(1)} °C</span>
-                        </div>
-                    </div>
-                `;
+            <div class="reading-header">
+                <span>${reading.deviceName || 'Unknown Device'}</span>
+                <span class="device-type">${reading.deviceType || 'N/A'}</span>
+            </div>
+            <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
+                📍 ${reading.zoneName || 'Unknown Zone'}
+            </div>
+            <div class="reading-data">
+                <div class="metric">
+                    <span class="metric-label">⚡ Power:</span>
+                    <span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">🔌 Voltage:</span>
+                    <span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">⚡ Current:</span>
+                    <span class="metric-value">${(reading.current || 0).toFixed(2)} A</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">🌡️ Temp:</span>
+                    <span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span>
+                </div>
+            </div>
+        `;
                 container.appendChild(div);
             });
         }
