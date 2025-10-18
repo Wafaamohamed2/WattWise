@@ -32,6 +32,7 @@ builder.Services.AddSignalR(options =>
 
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
+builder.Services.AddHostedService<AlertDetectionService>();
 
 // Add Data Seeding Service
 builder.Services.AddTransient<DataSeedingService>();

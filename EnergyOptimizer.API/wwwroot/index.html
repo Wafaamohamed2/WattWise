@@ -165,11 +165,277 @@
         .timestamp {
             color: #6b7280;
         }
+
+        .alerts-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            z-index: 1000;
+            display: none;
+        }
+
+            .alerts-panel.show {
+                display: block;
+                animation: slideIn 0.3s ease-out;
+            }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alerts-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .alerts-header h3 {
+                margin: 0;
+                font-size: 1.2em;
+            }
+
+        .close-alerts {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .close-alerts:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+        .alerts-body {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .alert-item {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+            animation: alertPop 0.3s ease-out;
+        }
+
+        @keyframes alertPop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .alert-item:hover {
+            background: #f3f4f6;
+            transform: translateX(-5px);
+        }
+
+        .alert-item.unread {
+            background: #eff6ff;
+            font-weight: 500;
+        }
+
+        .alert-item.critical {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .alert-item.info {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .alert-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .alert-device {
+            font-weight: bold;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .alert-time {
+            font-size: 0.75em;
+            color: #6b7280;
+        }
+
+        .alert-message {
+            color: #4b5563;
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .alert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .alert-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+            .alert-badge.critical {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .alert-badge.warning {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .alert-badge.info {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+        .alerts-bell {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1.5em;
+            z-index: 999;
+            transition: all 0.3s;
+        }
+
+       .alerts-bell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+       }
+
+       .alerts-bell.has-alerts {
+            animation: bellRing 1s ease-in-out infinite;
+       }
+
+        @keyframes bellRing {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+
+            10%, 30% {
+                transform: rotate(-10deg);
+            }
+
+            20%, 40% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .alert-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        .empty-alerts {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-alerts-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⚡ Energy Optimizer - Live Monitor</h1>
+
+        <div class="alerts-bell" onclick="toggleAlerts()" id="alertsBell">
+            🔔
+            <span class="alert-count" id="alertCount" style="display: none;">0</span>
+        </div>
+
+        <div class="alerts-panel" id="alertsPanel">
+            <div class="alerts-header">
+                <h3>🚨 Alerts</h3>
+                <button class="close-alerts" onclick="toggleAlerts()">×</button>
+            </div>
+            <div class="alerts-body" id="alertsBody">
+                <div class="empty-alerts">
+                    <div class="empty-alerts-icon">✅</div>
+                    <div>No alerts yet</div>
+                    <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                </div>
+            </div>
+        </div>
 
         <div id="connectionStatus" class="status disconnected">
             <strong>Status:</strong> <span id="statusText">Connecting...</span>
@@ -212,13 +478,14 @@
     </div>
 
     <script>
+        // ========== SignalR Connection Setup ==========
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("https://localhost:7083/energyhub")
             .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        // Connection status
+        // Connection events
         connection.onreconnecting(() => {
             updateStatus("Reconnecting...", false);
             log("🔄 Reconnecting...");
@@ -234,42 +501,157 @@
             log("❌ Connection closed");
         });
 
-        // Handle Connected event
+        // SignalR custom events
         connection.on("Connected", (data) => {
             log(`✅ Connected: ${data.message}`);
             updateStatus("Connected", true);
+            loadInitialAlerts();
         });
 
-        // Handle ReceiveReadings
         connection.on("ReceiveReadings", (readings) => {
             log(`📊 Received ${readings.length} readings`);
             displayReadings(readings);
         });
 
-        // Handle DashboardUpdate
         connection.on("DashboardUpdate", (update) => {
             log("📈 Dashboard update received");
             displayDashboardUpdate(update);
         });
 
-        // Start connection
-        async function start() {
-            try {
-                await connection.start();
-                log("🚀 SignalR connection started");
-                updateStatus("Connected", true);
-            } catch (err) {
-                log(`❌ Error: ${err}`);
-                setTimeout(start, 5000);
+        // ========== Alerts Section ==========
+        let alerts = [];
+        let unreadCount = 0;
+
+        connection.on("ReceiveAlert", (alert) => {
+            log(`🚨 Alert: ${alert.message}`);
+            addAlert(alert);
+            playAlertSound(alert.severity);
+        });
+
+        function addAlert(alert) {
+            alerts.unshift(alert);
+            if (alerts.length > 50) alerts = alerts.slice(0, 50);
+            updateUnreadCount();
+            displayAlerts();
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Energy Optimizer Alert', {
+                    body: alert.message,
+                    icon: alert.icon
+                });
             }
         }
 
-        function updateStatus(text, connected) {
-            document.getElementById("statusText").textContent = text;
-            const statusDiv = document.getElementById("connectionStatus");
-            statusDiv.className = connected ? "status connected" : "status disconnected";
+        function displayAlerts() {
+            const container = document.getElementById("alertsBody");
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-alerts">
+                        <div class="empty-alerts-icon">✅</div>
+                        <div>No alerts yet</div>
+                        <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = "";
+            alerts.forEach(alert => {
+                const severityClass = alert.severityLabel.toLowerCase();
+                const timeAgo = getTimeAgo(new Date(alert.createdAt));
+
+                const div = document.createElement("div");
+                div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
+                div.onclick = () => markAlertAsRead(alert.id);
+                div.innerHTML = `
+                    <div class="alert-header-row">
+                        <div class="alert-device">${alert.icon} ${alert.deviceName}</div>
+                        <div class="alert-time">${timeAgo}</div>
+                    </div>
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-footer">
+                        <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
+                        <span>📍 ${alert.zoneName}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
+        function updateUnreadCount() {
+            unreadCount = alerts.filter(a => !a.isRead).length;
+            const countElement = document.getElementById("alertCount");
+            const bellElement = document.getElementById("alertsBell");
+
+            if (unreadCount > 0) {
+                countElement.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                countElement.style.display = "flex";
+                bellElement.classList.add("has-alerts");
+            } else {
+                countElement.style.display = "none";
+                bellElement.classList.remove("has-alerts");
+            }
+        }
+
+        async function markAlertAsRead(alertId) {
+            try {
+                const response = await fetch(`/api/alerts/${alertId}/read`, { method: 'PATCH' });
+                if (response.ok) {
+                    const alert = alerts.find(a => a.id === alertId);
+                    if (alert) {
+                        alert.isRead = true;
+                        updateUnreadCount();
+                        displayAlerts();
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking alert as read:', error);
+            }
+        }
+
+        async function loadInitialAlerts() {
+            try {
+                const response = await fetch('/api/alerts?isRead=false&pageSize=20');
+                const data = await response.json();
+                if (data.data && data.data.length > 0) {
+                    alerts = data.data;
+                    updateUnreadCount();
+                    displayAlerts();
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+
+        function toggleAlerts() {
+            document.getElementById("alertsPanel").classList.toggle("show");
+        }
+
+        function playAlertSound(severity) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = severity === 3 ? 800 : severity === 2 ? 600 : 400;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch {
+                console.log('Audio not supported');
+            }
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        // ========== Dashboard and Readings ==========
         function displayReadings(readings) {
             const container = document.getElementById("readings");
             container.innerHTML = "";
@@ -279,41 +661,25 @@
                 return;
             }
 
-            // Sort by consumption (highest first)
-            const sortedReadings = [...readings].sort((a, b) =>
-                b.powerConsumptionKW - a.powerConsumptionKW
-            );
-
+            const sortedReadings = [...readings].sort((a, b) => b.powerConsumptionKW - a.powerConsumptionKW);
             sortedReadings.slice(0, 5).forEach(reading => {
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-            <div class="reading-header">
-                <span>${reading.deviceName || 'Unknown Device'}</span>
-                <span class="device-type">${reading.deviceType || 'N/A'}</span>
-            </div>
-            <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
-                📍 ${reading.zoneName || 'Unknown Zone'}
-            </div>
-            <div class="reading-data">
-                <div class="metric">
-                    <span class="metric-label">⚡ Power:</span>
-                    <span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">🔌 Voltage:</span>
-                    <span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">⚡ Current:</span>
-                    <span class="metric-value">${(reading.current || 0).toFixed(2)} A</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">🌡️ Temp:</span>
-                    <span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span>
-                </div>
-            </div>
-        `;
+                    <div class="reading-header">
+                        <span>${reading.deviceName || 'Unknown Device'}</span>
+                        <span class="device-type">${reading.deviceType || 'N/A'}</span>
+                    </div>
+                    <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
+                        📍 ${reading.zoneName || 'Unknown Zone'}
+                    </div>
+                    <div class="reading-data">
+                        <div class="metric"><span class="metric-label">⚡ Power:</span><span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span></div>
+                        <div class="metric"><span class="metric-label">🔌 Voltage:</span><span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span></div>
+                        <div class="metric"><span class="metric-label">⚡ Current:</span><span class="metric-value">${(reading.current || 0).toFixed(2)} A</span></div>
+                        <div class="metric"><span class="metric-label">🌡️ Temp:</span><span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span></div>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
@@ -331,16 +697,18 @@
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-                    <div class="reading-header">
-                        #${index + 1} ${device.deviceName}
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Consumption:</span>
-                        <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
-                    </div>
+                    <div class="reading-header">#${index + 1} ${device.deviceName}</div>
+                    <div class="metric"><span class="metric-label">Consumption:</span><span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span></div>
                 `;
                 topConsumersDiv.appendChild(div);
             });
+        }
+
+        // ========== Utilities ==========
+        function updateStatus(text, connected) {
+            document.getElementById("statusText").textContent = text;
+            const statusDiv = document.getElementById("connectionStatus");
+            statusDiv.className = connected ? "status connected" : "status disconnected";
         }
 
         function log(message) {
@@ -350,15 +718,27 @@
             entry.className = "log-entry";
             entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
             logDiv.insertBefore(entry, logDiv.firstChild);
+            while (logDiv.children.length > 50) logDiv.removeChild(logDiv.lastChild);
+        }
 
-            // Keep only last 50 entries
-            while (logDiv.children.length > 50) {
-                logDiv.removeChild(logDiv.lastChild);
+        // ========== Start Connection ==========
+        async function start() {
+            try {
+                await connection.start();
+                log("🚀 SignalR connection started");
+                updateStatus("Connected", true);
+            } catch (err) {
+                log(`❌ Error: ${err}`);
+                setTimeout(start, 5000);
             }
         }
 
-        // Start the connection
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
         start();
     </script>
+
 </body>
 </html>
