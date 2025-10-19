@@ -204,7 +204,7 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         // Mark alert as read
-        [HttpPost("{id}/read")]
+        [HttpPatch("{id}/read")]
         public async Task<ActionResult> MarkAsRead(int id)
         {
             try

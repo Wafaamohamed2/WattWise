@@ -1,9 +1,11 @@
 ﻿using EnergyOptimizer.API.DTOs;
+using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
@@ -14,11 +16,13 @@ namespace EnergyOptimizer.API.Controllers
     {
         private readonly EnergyDbContext _context;
         private readonly ILogger<DevicesController> _logger;
+        private readonly IHubContext<EnergyHub> _hubContext;
 
-        public DevicesController(EnergyDbContext context, ILogger<DevicesController> logger)
+        public DevicesController(EnergyDbContext context, ILogger<DevicesController> logger, IHubContext<EnergyHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -49,6 +53,7 @@ namespace EnergyOptimizer.API.Controllers
                     d.Id,
                     d.Name,
                     Type = d.Type.ToString(),
+                    d.RatedPowerKW,
                     d.IsActive,
                     Zone = new
                     {
@@ -289,6 +294,53 @@ namespace EnergyOptimizer.API.Controllers
             {
                 _logger.LogError(ex, $"Error deleting device with ID {id}");
                 return StatusCode(500, new { error = "Failed to delete device" });
+            }
+        }
+
+        // Toggle device status (Active/Inactive)
+        [HttpPatch("{id}/toggle")]
+        public async Task<ActionResult> ToggleDevice(int id)
+        {
+            try
+            {
+                var device = await _context.Devices
+                    .Include(d => d.Zone)
+                    .FirstOrDefaultAsync(d => d.Id == id);
+
+                if (device == null)
+                {
+                    return NotFound(new { error = "Device not found" });
+                }
+
+                device.IsActive = !device.IsActive;
+                await _context.SaveChangesAsync();
+
+                await _hubContext.Clients.All.SendAsync("DeviceStatusUpdated", new
+                {
+                    DeviceId = device.Id,
+                    IsActive = device.IsActive,
+                });
+
+
+
+                _logger.LogInformation(
+                    "Device {DeviceName} (ID: {DeviceId}) status toggled to {Status}",
+                    device.Name,
+                    device.Id,
+                    device.IsActive ? "Active" : "Inactive");
+
+                return Ok(new
+                    {                
+                    device.Name,
+                    isActive = device.IsActive,
+                    message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling device {DeviceId}", id);
+                return StatusCode(500, new { error = "Failed to toggle device" });
             }
         }
     }
