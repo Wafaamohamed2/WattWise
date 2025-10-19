@@ -53,6 +53,18 @@ namespace EnergyOptimizer.API.Hubs
             });
         }
 
+        public async Task BroadcastDeviceStatus(int deviceId, bool isActive)
+        {
+            await Clients.All.SendAsync("DeviceStatusUpdated", new
+            {
+                DeviceId = deviceId,
+                IsActive = isActive,
+            });
+
+            _logger.LogInformation("Broadcasted status for device {DeviceId}: {Status}", deviceId, isActive ? "Active" : "Inactive");
+        }
+
+
         public async Task Ping()
         {
             await Clients.Caller.SendAsync("Pong", DateTime.UtcNow);

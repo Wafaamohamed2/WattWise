@@ -239,6 +239,10 @@ namespace EnergyOptimizer.API.Services
         // 4. Device Offline Detection
         private async Task<Alert?> CheckDeviceOffline(EnergyDbContext context, Device device, DateTime now)
         {
+            // Skip check if device is intentionally turned off
+            if (!device.IsActive)
+                return null;
+
             // Check if there's already an offline alert for this device
             var existingAlert = await context.Alerts
                 .Where(a => a.DeviceId == device.Id &&
@@ -259,7 +263,6 @@ namespace EnergyOptimizer.API.Services
                 IsRead = false
             };
         }
-
 
         // Broadcast Alert via SignalR
         private async Task BroadcastAlert(EnergyDbContext context, Alert alert)
