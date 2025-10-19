@@ -291,5 +291,44 @@ namespace EnergyOptimizer.API.Controllers
                 return StatusCode(500, new { error = "Failed to delete device" });
             }
         }
+
+        // Toggle device status (Active/Inactive)
+        [HttpPatch("{id}/toggle")]
+        public async Task<ActionResult> ToggleDevice(int id)
+        {
+            try
+            {
+                var device = await _context.Devices
+                    .Include(d => d.Zone)
+                    .FirstOrDefaultAsync(d => d.Id == id);
+
+                if (device == null)
+                {
+                    return NotFound(new { error = "Device not found" });
+                }
+
+                device.IsActive = !device.IsActive;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "Device {DeviceName} (ID: {DeviceId}) status toggled to {Status}",
+                    device.Name,
+                    device.Id,
+                    device.IsActive ? "Active" : "Inactive");
+
+                return Ok(new
+                    {                
+                    device.Name,
+                    isActive = device.IsActive,
+                    message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling device {DeviceId}", id);
+                return StatusCode(500, new { error = "Failed to toggle device" });
+            }
+        }
     }
 }

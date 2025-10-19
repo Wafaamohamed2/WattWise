@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Optimizer - Live Test</title>
+    <title>Energy Optimizer - Live Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr/dist/browser/signalr.min.js"></script>
     <style>
         * {
@@ -38,6 +38,9 @@
             border-radius: 10px;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
             .status.connected {
@@ -47,6 +50,31 @@
             .status.disconnected {
                 border-left: 5px solid #ef4444;
             }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status.connected .status-dot {
+            background: #10b981;
+        }
+
+        .status.disconnected .status-dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
 
         .grid {
             display: grid;
@@ -66,6 +94,9 @@
                 color: #667eea;
                 margin-bottom: 15px;
                 font-size: 1.3em;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
 
         .reading {
@@ -75,7 +106,12 @@
             margin-bottom: 10px;
             border-left: 4px solid #667eea;
             animation: slideIn 0.3s ease-out;
+            transition: transform 0.2s;
         }
+
+            .reading:hover {
+                transform: translateX(5px);
+            }
 
         @keyframes slideIn {
             from {
@@ -92,7 +128,18 @@
         .reading-header {
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-type {
+            font-size: 0.75em;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
         }
 
         .reading-data {
@@ -121,25 +168,36 @@
         .dashboard-update {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
+
+            .dashboard-update h2 {
+                color: white;
+                margin-bottom: 20px;
+            }
 
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            gap: 20px;
         }
 
         .stat {
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
         }
 
         .stat-value {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
+            line-height: 1;
+            margin-bottom: 5px;
         }
 
         .stat-label {
@@ -160,12 +218,105 @@
 
         .log-entry {
             margin-bottom: 5px;
+            padding: 2px 0;
         }
 
         .timestamp {
             color: #6b7280;
         }
 
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 40px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Alerts Bell */
+        .alerts-bell {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1.5em;
+            z-index: 999;
+            transition: all 0.3s;
+        }
+
+            .alerts-bell:hover {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            }
+
+            .alerts-bell.has-alerts {
+                animation: bellRing 1s ease-in-out infinite;
+            }
+
+        @keyframes bellRing {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+
+            10%, 30% {
+                transform: rotate(-10deg);
+            }
+
+            20%, 40% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .alert-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        /* Alerts Panel */
         .alerts-panel {
             position: fixed;
             top: 20px;
@@ -182,10 +333,10 @@
 
             .alerts-panel.show {
                 display: block;
-                animation: slideIn 0.3s ease-out;
+                animation: slideInRight 0.3s ease-out;
             }
 
-        @keyframes slideIn {
+        @keyframes slideInRight {
             from {
                 transform: translateX(450px);
                 opacity: 0;
@@ -344,64 +495,6 @@
                 color: #1e40af;
             }
 
-        .alerts-bell {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-size: 1.5em;
-            z-index: 999;
-            transition: all 0.3s;
-        }
-
-       .alerts-bell:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-       }
-
-       .alerts-bell.has-alerts {
-            animation: bellRing 1s ease-in-out infinite;
-       }
-
-        @keyframes bellRing {
-            0%, 100% {
-                transform: rotate(0deg);
-            }
-
-            10%, 30% {
-                transform: rotate(-10deg);
-            }
-
-            20%, 40% {
-                transform: rotate(10deg);
-            }
-        }
-
-        .alert-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7em;
-            font-weight: bold;
-            border: 2px solid white;
-        }
-
         .empty-alerts {
             text-align: center;
             padding: 40px 20px;
@@ -412,17 +505,167 @@
             font-size: 3em;
             margin-bottom: 10px;
         }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-out;
+            min-width: 250px;
+            border-left: 4px solid #3b82f6;
+        }
+
+            .toast.show {
+                transform: translateX(0);
+            }
+
+            .toast.toast-success {
+                border-left-color: #10b981;
+            }
+
+                .toast.toast-success::before {
+                    content: "✅";
+                    font-size: 1.2em;
+                }
+
+            .toast.toast-info {
+                border-left-color: #3b82f6;
+            }
+
+                .toast.toast-info::before {
+                    content: "ℹ️";
+                    font-size: 1.2em;
+                }
+
+            .toast.toast-warning {
+                border-left-color: #f59e0b;
+            }
+
+                .toast.toast-warning::before {
+                    content: "⚠️";
+                    font-size: 1.2em;
+                }
+
+            .toast.toast-error {
+                border-left-color: #ef4444;
+            }
+
+                .toast.toast-error::before {
+                    content: "❌";
+                    font-size: 1.2em;
+                }
+
+        /* Device Controls */
+        .device-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .device-control-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+            .device-control-card:hover {
+                border-color: #667eea;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+
+            .device-control-card.active {
+                border-color: #10b981;
+                background: #f0fdf4;
+            }
+
+            .device-control-card.inactive {
+                border-color: #ef4444;
+                background: #fef2f2;
+            }
+
+        .device-control-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .device-status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+            .device-status-indicator.active {
+                background: #10b981;
+                box-shadow: 0 0 8px #10b981;
+            }
+
+            .device-status-indicator.inactive {
+                background: #ef4444;
+            }
+
+        .device-control-info {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .device-toggle-btn {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .device-toggle-btn.active {
+                background: #ef4444;
+                color: white;
+            }
+
+                .device-toggle-btn.active:hover {
+                    background: #dc2626;
+                }
+
+            .device-toggle-btn.inactive {
+                background: #10b981;
+                color: white;
+            }
+
+                .device-toggle-btn.inactive:hover {
+                    background: #059669;
+                }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⚡ Energy Optimizer - Live Monitor</h1>
 
+        <!-- Alerts Bell -->
         <div class="alerts-bell" onclick="toggleAlerts()" id="alertsBell">
             🔔
             <span class="alert-count" id="alertCount" style="display: none;">0</span>
         </div>
 
+        <!-- Alerts Panel -->
         <div class="alerts-panel" id="alertsPanel">
             <div class="alerts-header">
                 <h3>🚨 Alerts</h3>
@@ -438,6 +681,7 @@
         </div>
 
         <div id="connectionStatus" class="status disconnected">
+            <div class="status-dot"></div>
             <strong>Status:</strong> <span id="statusText">Connecting...</span>
         </div>
 
@@ -456,18 +700,42 @@
                     <div class="stat-value" id="totalReadings">0</div>
                     <div class="stat-label">Readings</div>
                 </div>
+                <div class="stat">
+                    <div class="stat-value" id="updateTime">--:--</div>
+                    <div class="stat-label">Last Update</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Control Panel -->
+        <div class="card" style="margin-bottom: 20px;">
+            <h2> Device Controls</h2>
+            <div id="deviceControls" class="device-controls-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading devices...</div>
+                </div>
             </div>
         </div>
 
         <div class="grid">
             <div class="card">
                 <h2>📈 Latest Readings</h2>
-                <div id="readings"></div>
+                <div id="readings">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Waiting for data...</div>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
                 <h2>🔥 Top Consumers</h2>
-                <div id="topConsumers"></div>
+                <div id="topConsumers">
+                    <div class="empty-state">
+                        No data yet...
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -478,102 +746,137 @@
     </div>
 
     <script>
-        // ========== SignalR Connection Setup ==========
+        const baseUrl = window.location.origin;
+
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7083/energyhub")
+            .withUrl(`${baseUrl}/energyhub`)
             .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        // Connection events
-        connection.onreconnecting(() => {
-            updateStatus("Reconnecting...", false);
-            log("🔄 Reconnecting...");
-        });
-
-        connection.onreconnected(() => {
-            updateStatus("Connected", true);
-            log("✅ Reconnected successfully");
-        });
-
-        connection.onclose(() => {
-            updateStatus("Disconnected", false);
-            log("❌ Connection closed");
-        });
-
-        // SignalR custom events
-        connection.on("Connected", (data) => {
-            log(`✅ Connected: ${data.message}`);
-            updateStatus("Connected", true);
-            loadInitialAlerts();
-        });
-
-        connection.on("ReceiveReadings", (readings) => {
-            log(`📊 Received ${readings.length} readings`);
-            displayReadings(readings);
-        });
-
-        connection.on("DashboardUpdate", (update) => {
-            log("📈 Dashboard update received");
-            displayDashboardUpdate(update);
-        });
-
-        // ========== Alerts Section ==========
+        // ==================== STATE ====================
         let alerts = [];
         let unreadCount = 0;
 
-        connection.on("ReceiveAlert", (alert) => {
-            log(`🚨 Alert: ${alert.message}`);
-            addAlert(alert);
-            playAlertSound(alert.severity);
-        });
+        // ========== UTILITIES ==========
+        function log(message) {
+            const logDiv = document.getElementById("log");
+            if (!logDiv) return;
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement("div");
+            entry.className = "log-entry";
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            while (logDiv.children.length > 50) logDiv.removeChild(logDiv.lastChild);
+        }
+
+        function updateStatus(text, connected) {
+            const statusText = document.getElementById("statusText");
+            const statusDiv = document.getElementById("connectionStatus");
+            if (statusText) statusText.textContent = text;
+            if (statusDiv) statusDiv.className = connected ? "status connected" : "status disconnected";
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        function toggleAlerts() {
+            const panel = document.getElementById("alertsPanel");
+            if (panel) panel.classList.toggle("show");
+        }
+
+        function playAlertSound(severity) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = severity === 3 ? 800 : severity === 2 ? 600 : 400;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch {
+                console.log('Audio not supported');
+            }
+        }
+
+        // ==================== ALERTS ====================
+        async function loadInitialAlerts() {
+            try {
+                const response = await fetch('/api/alerts?isRead=false&pageSize=20');
+                const data = await response.json();
+                if (data.data && data.data.length > 0) {
+                    alerts = data.data;
+                    updateUnreadCount();
+                    displayAlerts();
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
 
         function addAlert(alert) {
             alerts.unshift(alert);
             if (alerts.length > 50) alerts = alerts.slice(0, 50);
             updateUnreadCount();
             displayAlerts();
-
             if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('Energy Optimizer Alert', {
                     body: alert.message,
-                    icon: alert.icon
+                    icon: alert.icon,
+                    badge: alert.icon
                 });
             }
         }
 
         function displayAlerts() {
             const container = document.getElementById("alertsBody");
+            if (!container) return;
             if (alerts.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-alerts">
-                        <div class="empty-alerts-icon">✅</div>
-                        <div>No alerts yet</div>
-                        <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
-                    </div>
-                `;
+                <div class="empty-alerts">
+                    <div class="empty-alerts-icon">✅</div>
+                    <div>No alerts yet</div>
+                    <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                </div>`;
                 return;
             }
-
             container.innerHTML = "";
             alerts.forEach(alert => {
-                const severityClass = alert.severityLabel.toLowerCase();
+                const severityClass = (alert.severityLabel || '').toLowerCase();
                 const timeAgo = getTimeAgo(new Date(alert.createdAt));
-
                 const div = document.createElement("div");
                 div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
                 div.onclick = () => markAlertAsRead(alert.id);
                 div.innerHTML = `
-                    <div class="alert-header-row">
-                        <div class="alert-device">${alert.icon} ${alert.deviceName}</div>
-                        <div class="alert-time">${timeAgo}</div>
-                    </div>
-                    <div class="alert-message">${alert.message}</div>
-                    <div class="alert-footer">
-                        <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
-                        <span>📍 ${alert.zoneName}</span>
-                    </div>
-                `;
+                <div class="alert-header-row">
+                    <div class="alert-device">${alert.icon} ${alert.deviceName}</div>
+                    <div class="alert-time">${timeAgo}</div>
+                </div>
+                <div class="alert-message">${alert.message}</div>
+                <div class="alert-footer">
+                    <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
+                    <span>📍 ${alert.zoneName}</span>
+                </div>
+            `;
                 container.appendChild(div);
             });
         }
@@ -582,7 +885,7 @@
             unreadCount = alerts.filter(a => !a.isRead).length;
             const countElement = document.getElementById("alertCount");
             const bellElement = document.getElementById("alertsBell");
-
+            if (!countElement || !bellElement) return;
             if (unreadCount > 0) {
                 countElement.textContent = unreadCount > 9 ? '9+' : unreadCount;
                 countElement.style.display = "flex";
@@ -609,119 +912,200 @@
             }
         }
 
-        async function loadInitialAlerts() {
-            try {
-                const response = await fetch('/api/alerts?isRead=false&pageSize=20');
-                const data = await response.json();
-                if (data.data && data.data.length > 0) {
-                    alerts = data.data;
-                    updateUnreadCount();
-                    displayAlerts();
-                }
-            } catch (error) {
-                console.error('Error loading alerts:', error);
-            }
-        }
-
-        function toggleAlerts() {
-            document.getElementById("alertsPanel").classList.toggle("show");
-        }
-
-        function playAlertSound(severity) {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                oscillator.frequency.value = severity === 3 ? 800 : severity === 2 ? 600 : 400;
-                gainNode.gain.value = 0.3;
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.2);
-            } catch {
-                console.log('Audio not supported');
-            }
-        }
-
-        function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return 'Just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-            return `${Math.floor(seconds / 86400)}d ago`;
-        }
-
-        // ========== Dashboard and Readings ==========
+        // ==================== DASHBOARD & READINGS ====================
         function displayReadings(readings) {
             const container = document.getElementById("readings");
+            if (!container) return;
             container.innerHTML = "";
-
             if (!readings || readings.length === 0) {
                 container.innerHTML = '<div class="empty-state">No active devices</div>';
                 return;
             }
-
             const sortedReadings = [...readings].sort((a, b) => b.powerConsumptionKW - a.powerConsumptionKW);
             sortedReadings.slice(0, 5).forEach(reading => {
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-                    <div class="reading-header">
-                        <span>${reading.deviceName || 'Unknown Device'}</span>
-                        <span class="device-type">${reading.deviceType || 'N/A'}</span>
-                    </div>
-                    <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
-                        📍 ${reading.zoneName || 'Unknown Zone'}
-                    </div>
-                    <div class="reading-data">
-                        <div class="metric"><span class="metric-label">⚡ Power:</span><span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span></div>
-                        <div class="metric"><span class="metric-label">🔌 Voltage:</span><span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span></div>
-                        <div class="metric"><span class="metric-label">⚡ Current:</span><span class="metric-value">${(reading.current || 0).toFixed(2)} A</span></div>
-                        <div class="metric"><span class="metric-label">🌡️ Temp:</span><span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span></div>
-                    </div>
-                `;
+                <div class="reading-header">
+                    <span>${reading.deviceName || 'Unknown Device'}</span>
+                    <span class="device-type">${reading.deviceType || 'N/A'}</span>
+                </div>
+                <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
+                    📍 ${reading.zoneName || 'Unknown Zone'}
+                </div>
+                <div class="reading-data">
+                    <div class="metric"><span class="metric-label">⚡ Power:</span><span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span></div>
+                    <div class="metric"><span class="metric-label">🔌 Voltage:</span><span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span></div>
+                    <div class="metric"><span class="metric-label">⚡ Current:</span><span class="metric-value">${(reading.current || 0).toFixed(2)} A</span></div>
+                    <div class="metric"><span class="metric-label">🌡️ Temp:</span><span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span></div>
+                </div>`;
                 container.appendChild(div);
             });
         }
 
         function displayDashboardUpdate(update) {
-            document.getElementById("dashboardUpdate").style.display = "block";
-            document.getElementById("totalConsumption").textContent = update.totalConsumption.toFixed(2);
-            document.getElementById("activeDevices").textContent = update.activeDevices;
-            document.getElementById("totalReadings").textContent = update.totalReadings;
-
+            const dashboard = document.getElementById("dashboardUpdate");
+            if (!dashboard) return;
+            dashboard.style.display = "block";
+            const totalConsumption = document.getElementById("totalConsumption");
+            const activeDevices = document.getElementById("activeDevices");
+            const totalReadings = document.getElementById("totalReadings");
+            if (totalConsumption) totalConsumption.textContent = update.totalConsumption.toFixed(2);
+            if (activeDevices) activeDevices.textContent = update.activeDevices;
+            if (totalReadings) totalReadings.textContent = update.totalReadings;
             const topConsumersDiv = document.getElementById("topConsumers");
+            if (!topConsumersDiv) return;
             topConsumersDiv.innerHTML = "";
-
             update.topConsumers.forEach((device, index) => {
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-                    <div class="reading-header">#${index + 1} ${device.deviceName}</div>
-                    <div class="metric"><span class="metric-label">Consumption:</span><span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span></div>
-                `;
+                <div class="reading-header">#${index + 1} ${device.deviceName}</div>
+                <div class="metric"><span class="metric-label">Consumption:</span><span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span></div>
+            `;
                 topConsumersDiv.appendChild(div);
             });
         }
 
-        // ========== Utilities ==========
-        function updateStatus(text, connected) {
-            document.getElementById("statusText").textContent = text;
-            const statusDiv = document.getElementById("connectionStatus");
-            statusDiv.className = connected ? "status connected" : "status disconnected";
+        // ==================== DEVICE CONTROLS ====================
+        async function loadDeviceControls() {
+            try {
+                const response = await fetch(`${baseUrl}/api/devices`);
+                const data = await response.json();
+                const container = document.getElementById("deviceControls");
+                if (!container) return;
+                container.innerHTML = "";
+                if (!data.data || data.data.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No devices found</div>';
+                    return;
+                }
+                data.data.forEach(device => {
+                    const card = createDeviceControlCard(device);
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading device controls:', error);
+            }
         }
 
-        function log(message) {
-            const logDiv = document.getElementById("log");
-            const timestamp = new Date().toLocaleTimeString();
-            const entry = document.createElement("div");
-            entry.className = "log-entry";
-            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
-            logDiv.insertBefore(entry, logDiv.firstChild);
-            while (logDiv.children.length > 50) logDiv.removeChild(logDiv.lastChild);
+        function createDeviceControlCard(device) {
+            const div = document.createElement('div');
+            div.className = `device-control-card ${device.isActive ? 'active' : 'inactive'}`;
+            div.id = `device-${device.id}`;
+            div.innerHTML = `
+            <div class="device-control-header">
+                <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
+                ${device.name}
+            </div>
+            <div class="device-control-info">
+                📍 ${device.zone.name}<br>
+                ⚡ ${device.ratedPowerKW} kW
+            </div>
+            <button
+                class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
+                onclick="toggleDeviceControl(${device.id})"
+            >
+                ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
+            </button>`;
+            return div;
         }
 
-        // ========== Start Connection ==========
+        async function toggleDeviceControl(deviceId) {
+            try {
+                const response = await fetch(`${baseUrl}/api/devices/${deviceId}/toggle`, {
+                    method: 'PATCH'
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`🔄 ${result.message}`);
+                    // UI will be updated via SignalR DeviceStatusChanged event
+                } else {
+                    showToast('Failed to toggle device', 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling device:', error);
+                showToast('Error toggling device', 'error');
+            }
+        }
+
+        function updateDeviceInList(deviceData) {
+            const card = document.getElementById(`device-${deviceData.deviceId}`);
+            if (!card) return;
+            card.className = `device-control-card ${deviceData.isActive ? 'active' : 'inactive'}`;
+            const indicator = card.querySelector('.device-status-indicator');
+            if (indicator) indicator.className = `device-status-indicator ${deviceData.isActive ? 'active' : 'inactive'}`;
+            const button = card.querySelector('.device-toggle-btn');
+            if (button) {
+                button.className = `device-toggle-btn ${deviceData.isActive ? 'active' : 'inactive'}`;
+                button.textContent = deviceData.isActive ? '🔴 Turn OFF' : '🟢 Turn ON';
+            }
+        }
+
+        // ==================== SIGNALR HANDLERS ====================
+        connection.onreconnecting(() => {
+            updateStatus("Reconnecting...", false);
+            log("🔄 Reconnecting...");
+        });
+
+        connection.onreconnected(() => {
+            updateStatus("Connected", true);
+            log("✅ Reconnected successfully");
+        });
+
+        connection.onclose(() => {
+            updateStatus("Disconnected", false);
+            log("❌ Connection closed");
+        });
+
+        connection.on("Connected", async (data) => {
+            log(`✅ ${data.message}`);
+            updateStatus("Connected", true);
+            await loadInitialAlerts();
+            await loadDeviceControls();
+        });
+
+        connection.on("ReceiveReadings", (readings) => {
+            log(`📊 Received ${readings.length} readings`);
+            displayReadings(readings);
+        });
+
+        connection.on("DashboardUpdate", (update) => {
+            log("📈 Dashboard update received");
+            displayDashboardUpdate(update);
+        });
+
+        connection.on("ReceiveAlert", (alert) => {
+            log(`🚨 Alert: ${alert.message}`);
+            addAlert(alert);
+            playAlertSound(alert.severity);
+        });
+
+        connection.on("DeviceStatusChanged", (data) => {
+            log(`🔄 ${data.deviceName} is now ${data.isActive ? 'ON 🟢' : 'OFF 🔴'}`);
+            showToast(`${data.deviceName} ${data.isActive ? 'activated' : 'deactivated'}`, data.isActive ? 'success' : 'info');
+            updateDeviceInList(data);
+        });
+
+        connection.on("DeviceAdded", (data) => {
+            log(`➕ New device added: ${data.deviceName}`);
+            showToast(`New device added: ${data.deviceName}`, 'success');
+            loadDeviceControls();
+        });
+
+        connection.on("DeviceUpdated", (data) => {
+            log(`✏️ Device updated: ${data.deviceName}`);
+            showToast(`Device updated: ${data.deviceName}`, 'info');
+            updateDeviceInList(data);
+        });
+
+        connection.on("DeviceDeleted", (data) => {
+            log(`🗑️ Device deleted: ${data.deviceName}`);
+            showToast(`Device deleted: ${data.deviceName}`, 'warning');
+            const card = document.getElementById(`device-${data.deviceId}`);
+            if (card) card.remove();
+        });
+
+        // ========== START ==========
         async function start() {
             try {
                 await connection.start();
@@ -739,6 +1123,7 @@
 
         start();
     </script>
+
 
 </body>
 </html>
