@@ -2,6 +2,7 @@
 {
     public class LiveReadingDto
     {
+        public int DeviceId { get; set; }
         public string DeviceName { get; set; } = string.Empty;
         public string DeviceType { get; set; } = string.Empty;
         public string ZoneName { get; set; } = string.Empty;

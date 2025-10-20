@@ -92,6 +92,7 @@ namespace EnergyOptimizer.API.Services
 
                     liveReadings.Add(new LiveReadingDto
                     {
+                        DeviceId = device.Id,
                         DeviceName = device.Name ?? "Unknown Device",
                         ZoneName = device.Zone?.Name ?? "Unknown Zone",
                         Timestamp = DateTime.UtcNow,
