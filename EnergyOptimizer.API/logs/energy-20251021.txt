@@ -1082,3 +1082,1799 @@ LEFT JOIN (
 ) AS [e0] ON [d].[Id] = [e0].[DeviceId]
 WHERE [d].[IsActive] = CAST(1 AS bit)
 ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-21 14:04:49.284 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-21 14:04:49.323 +03:00 [INF] Alert Detection Service started
+2025-10-21 14:04:49.493 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-21 14:04:49.495 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-21 14:04:49.498 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-21 14:04:49.500 +03:00 [INF] Hosting environment: Development
+2025-10-21 14:04:49.502 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-21 14:04:50.260 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-21 14:04:50.260 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-21 14:04:50.300 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 46.0954ms
+2025-10-21 14:04:50.339 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 85.2997ms
+2025-10-21 14:04:50.366 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-21 14:04:50.504 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 138.0338ms
+2025-10-21 14:04:55.380 +03:00 [INF] Executed DbCommand (30ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-21 14:04:55.582 +03:00 [INF] Executed DbCommand (38ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-21 14:04:55.632 +03:00 [INF] Generated 10 readings at 2025-10-21 14:04:55
+2025-10-21 14:04:59.441 +03:00 [INF] Executed DbCommand (19ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-21 14:04:59.868 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/index.html - null null
+2025-10-21 14:04:59.995 +03:00 [INF] Sending file. Request path: '/index.html'. Physical path: 'F:\Energy Optimizer\EnergyOptimizer.API\wwwroot\index.html'
+2025-10-21 14:05:00.000 +03:00 [INF] HTTP GET /index.html responded 200 in 45.0705 ms
+2025-10-21 14:05:00.003 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/index.html - 200 null text/html 134.9102ms
+2025-10-21 14:05:00.004 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/energyhub/negotiate?negotiateVersion=1 - null 0
+2025-10-21 14:05:00.005 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-21 14:05:00.005 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-21 14:05:00.016 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 11.1872ms
+2025-10-21 14:05:00.018 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:05:00.031 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:05:00.040 +03:00 [INF] Executing endpoint '/energyhub/negotiate'
+2025-10-21 14:05:00.043 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 38.5007ms
+2025-10-21 14:05:00.065 +03:00 [INF] Executed endpoint '/energyhub/negotiate'
+2025-10-21 14:05:00.067 +03:00 [INF] HTTP POST /energyhub/negotiate responded 200 in 53.6443 ms
+2025-10-21 14:05:00.070 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/energyhub/negotiate?negotiateVersion=1 - 200 316 application/json 65.9204ms
+2025-10-21 14:05:00.073 +03:00 [INF] Request starting HTTP/2 CONNECT https://localhost:7083/energyhub?id=2QDu57rxGeUK956YO-p-rA - null null
+2025-10-21 14:05:00.081 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:05:00.082 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:05:00.083 +03:00 [INF] Executing endpoint '/energyhub'
+2025-10-21 14:05:00.114 +03:00 [INF] Client connected: HI8uEZ6Hnhds44F_5mNFMw
+2025-10-21 14:05:00.150 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/api/alerts?isRead=false&pageSize=20 - null null
+2025-10-21 14:05:00.154 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API)'
+2025-10-21 14:05:00.179 +03:00 [INF] Route matched with {action = "GetAlerts", controller = "Alerts"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] GetAlerts(System.Nullable`1[System.Boolean], System.Nullable`1[System.Int32], System.Nullable`1[System.Int32], System.String, System.String, Int32, Int32) on controller EnergyOptimizer.API.Controllers.AlertsController (EnergyOptimizer.API).
+2025-10-21 14:05:00.276 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2), @__isRead_Value_2='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Alerts] AS [a]
+WHERE [a].[CreatedAt] >= @__start_0 AND [a].[CreatedAt] <= @__end_1 AND [a].[IsRead] = @__isRead_Value_2
+2025-10-21 14:05:00.336 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2), @__isRead_Value_2='?' (DbType = Boolean), @__p_3='?' (DbType = Int32), @__p_4='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [a0].[Id], [d].[Name] AS [DeviceName], [z].[Name] AS [ZoneName], CASE [a0].[Type]
+    WHEN 1 THEN N'HighConsumption'
+    WHEN 2 THEN N'Anomaly'
+    WHEN 3 THEN N'Wastage'
+    WHEN 4 THEN N'DeviceOffline'
+    ELSE CAST([a0].[Type] AS nvarchar(max))
+END AS [AlertType], [a0].[Message], [a0].[Severity], CASE
+    WHEN [a0].[Severity] = 1 THEN N'Info'
+    WHEN [a0].[Severity] = 2 THEN N'Warning'
+    ELSE N'Critical'
+END AS [SeverityLabel], CASE
+    WHEN [a0].[Severity] = 1 THEN N'🔵'
+    WHEN [a0].[Severity] = 2 THEN N'🟡'
+    ELSE N'🔴'
+END AS [Icon], [a0].[CreatedAt], [a0].[IsRead]
+FROM (
+    SELECT [a].[Id], [a].[CreatedAt], [a].[DeviceId], [a].[IsRead], [a].[Message], [a].[Severity], [a].[Type]
+    FROM [Alerts] AS [a]
+    WHERE [a].[CreatedAt] >= @__start_0 AND [a].[CreatedAt] <= @__end_1 AND [a].[IsRead] = @__isRead_Value_2
+    ORDER BY [a].[CreatedAt] DESC
+    OFFSET @__p_3 ROWS FETCH NEXT @__p_4 ROWS ONLY
+) AS [a0]
+INNER JOIN [Devices] AS [d] ON [a0].[DeviceId] = [d].[Id]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+ORDER BY [a0].[CreatedAt] DESC
+2025-10-21 14:05:00.351 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`3[[<>f__AnonymousType1`5[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[<>f__AnonymousType2`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.Collections.Generic.List`1[[EnergyOptimizer.API.DTOs.AlertDto, EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:05:00.409 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API) in 223.2994ms
+2025-10-21 14:05:00.413 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API)'
+2025-10-21 14:05:00.415 +03:00 [INF] HTTP GET /api/alerts responded 200 in 261.3081 ms
+2025-10-21 14:05:00.422 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/api/devices - null null
+2025-10-21 14:05:00.422 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/api/alerts?isRead=false&pageSize=20 - 200 null application/json; charset=utf-8 272.8376ms
+2025-10-21 14:05:00.429 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API)'
+2025-10-21 14:05:00.446 +03:00 [INF] Route matched with {action = "GetAllDevices", controller = "Devices"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Collections.Generic.IEnumerable`1[System.Object]]] GetAllDevices(System.Nullable`1[System.Boolean], System.Nullable`1[System.Int32], System.Nullable`1[EnergyOptimizer.Core.Enums.DeviceType]) on controller EnergyOptimizer.API.Controllers.DevicesController (EnergyOptimizer.API).
+2025-10-21 14:05:09.440 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/alerts/all-read - null 0
+2025-10-21 14:05:09.448 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:05:09.452 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:05:09.454 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AlertsController.MarkAllAsRead (EnergyOptimizer.API)'
+2025-10-21 14:05:09.463 +03:00 [INF] Route matched with {action = "MarkAllAsRead", controller = "Alerts"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult] MarkAllAsRead() on controller EnergyOptimizer.API.Controllers.AlertsController (EnergyOptimizer.API).
+2025-10-21 14:05:09.579 +03:00 [INF] Executed DbCommand (28ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [a].[Id], [a].[CreatedAt], [a].[DeviceId], [a].[IsRead], [a].[Message], [a].[Severity], [a].[Type]
+FROM [Alerts] AS [a]
+WHERE [a].[IsRead] = CAST(0 AS bit)
+2025-10-21 14:05:09.737 +03:00 [INF] Executed DbCommand (93ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Boolean), @p3='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p5='?' (DbType = Int32), @p4='?' (DbType = Boolean), @p7='?' (DbType = Int32), @p6='?' (DbType = Boolean), @p9='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p11='?' (DbType = Int32), @p10='?' (DbType = Boolean), @p13='?' (DbType = Int32), @p12='?' (DbType = Boolean), @p15='?' (DbType = Int32), @p14='?' (DbType = Boolean), @p17='?' (DbType = Int32), @p16='?' (DbType = Boolean), @p19='?' (DbType = Int32), @p18='?' (DbType = Boolean), @p21='?' (DbType = Int32), @p20='?' (DbType = Boolean), @p23='?' (DbType = Int32), @p22='?' (DbType = Boolean), @p25='?' (DbType = Int32), @p24='?' (DbType = Boolean), @p27='?' (DbType = Int32), @p26='?' (DbType = Boolean), @p29='?' (DbType = Int32), @p28='?' (DbType = Boolean), @p31='?' (DbType = Int32), @p30='?' (DbType = Boolean), @p33='?' (DbType = Int32), @p32='?' (DbType = Boolean), @p35='?' (DbType = Int32), @p34='?' (DbType = Boolean), @p37='?' (DbType = Int32), @p36='?' (DbType = Boolean), @p39='?' (DbType = Int32), @p38='?' (DbType = Boolean), @p41='?' (DbType = Int32), @p40='?' (DbType = Boolean), @p43='?' (DbType = Int32), @p42='?' (DbType = Boolean), @p45='?' (DbType = Int32), @p44='?' (DbType = Boolean), @p47='?' (DbType = Int32), @p46='?' (DbType = Boolean), @p49='?' (DbType = Int32), @p48='?' (DbType = Boolean), @p51='?' (DbType = Int32), @p50='?' (DbType = Boolean), @p53='?' (DbType = Int32), @p52='?' (DbType = Boolean), @p55='?' (DbType = Int32), @p54='?' (DbType = Boolean), @p57='?' (DbType = Int32), @p56='?' (DbType = Boolean), @p59='?' (DbType = Int32), @p58='?' (DbType = Boolean), @p61='?' (DbType = Int32), @p60='?' (DbType = Boolean), @p63='?' (DbType = Int32), @p62='?' (DbType = Boolean), @p65='?' (DbType = Int32), @p64='?' (DbType = Boolean), @p67='?' (DbType = Int32), @p66='?' (DbType = Boolean), @p69='?' (DbType = Int32), @p68='?' (DbType = Boolean), @p71='?' (DbType = Int32), @p70='?' (DbType = Boolean), @p73='?' (DbType = Int32), @p72='?' (DbType = Boolean), @p75='?' (DbType = Int32), @p74='?' (DbType = Boolean), @p77='?' (DbType = Int32), @p76='?' (DbType = Boolean), @p79='?' (DbType = Int32), @p78='?' (DbType = Boolean), @p81='?' (DbType = Int32), @p80='?' (DbType = Boolean), @p83='?' (DbType = Int32), @p82='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+UPDATE [Alerts] SET [IsRead] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+UPDATE [Alerts] SET [IsRead] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+UPDATE [Alerts] SET [IsRead] = @p4
+OUTPUT 1
+WHERE [Id] = @p5;
+UPDATE [Alerts] SET [IsRead] = @p6
+OUTPUT 1
+WHERE [Id] = @p7;
+UPDATE [Alerts] SET [IsRead] = @p8
+OUTPUT 1
+WHERE [Id] = @p9;
+UPDATE [Alerts] SET [IsRead] = @p10
+OUTPUT 1
+WHERE [Id] = @p11;
+UPDATE [Alerts] SET [IsRead] = @p12
+OUTPUT 1
+WHERE [Id] = @p13;
+UPDATE [Alerts] SET [IsRead] = @p14
+OUTPUT 1
+WHERE [Id] = @p15;
+UPDATE [Alerts] SET [IsRead] = @p16
+OUTPUT 1
+WHERE [Id] = @p17;
+UPDATE [Alerts] SET [IsRead] = @p18
+OUTPUT 1
+WHERE [Id] = @p19;
+UPDATE [Alerts] SET [IsRead] = @p20
+OUTPUT 1
+WHERE [Id] = @p21;
+UPDATE [Alerts] SET [IsRead] = @p22
+OUTPUT 1
+WHERE [Id] = @p23;
+UPDATE [Alerts] SET [IsRead] = @p24
+OUTPUT 1
+WHERE [Id] = @p25;
+UPDATE [Alerts] SET [IsRead] = @p26
+OUTPUT 1
+WHERE [Id] = @p27;
+UPDATE [Alerts] SET [IsRead] = @p28
+OUTPUT 1
+WHERE [Id] = @p29;
+UPDATE [Alerts] SET [IsRead] = @p30
+OUTPUT 1
+WHERE [Id] = @p31;
+UPDATE [Alerts] SET [IsRead] = @p32
+OUTPUT 1
+WHERE [Id] = @p33;
+UPDATE [Alerts] SET [IsRead] = @p34
+OUTPUT 1
+WHERE [Id] = @p35;
+UPDATE [Alerts] SET [IsRead] = @p36
+OUTPUT 1
+WHERE [Id] = @p37;
+UPDATE [Alerts] SET [IsRead] = @p38
+OUTPUT 1
+WHERE [Id] = @p39;
+UPDATE [Alerts] SET [IsRead] = @p40
+OUTPUT 1
+WHERE [Id] = @p41;
+UPDATE [Alerts] SET [IsRead] = @p42
+OUTPUT 1
+WHERE [Id] = @p43;
+UPDATE [Alerts] SET [IsRead] = @p44
+OUTPUT 1
+WHERE [Id] = @p45;
+UPDATE [Alerts] SET [IsRead] = @p46
+OUTPUT 1
+WHERE [Id] = @p47;
+UPDATE [Alerts] SET [IsRead] = @p48
+OUTPUT 1
+WHERE [Id] = @p49;
+UPDATE [Alerts] SET [IsRead] = @p50
+OUTPUT 1
+WHERE [Id] = @p51;
+UPDATE [Alerts] SET [IsRead] = @p52
+OUTPUT 1
+WHERE [Id] = @p53;
+UPDATE [Alerts] SET [IsRead] = @p54
+OUTPUT 1
+WHERE [Id] = @p55;
+UPDATE [Alerts] SET [IsRead] = @p56
+OUTPUT 1
+WHERE [Id] = @p57;
+UPDATE [Alerts] SET [IsRead] = @p58
+OUTPUT 1
+WHERE [Id] = @p59;
+UPDATE [Alerts] SET [IsRead] = @p60
+OUTPUT 1
+WHERE [Id] = @p61;
+UPDATE [Alerts] SET [IsRead] = @p62
+OUTPUT 1
+WHERE [Id] = @p63;
+UPDATE [Alerts] SET [IsRead] = @p64
+OUTPUT 1
+WHERE [Id] = @p65;
+UPDATE [Alerts] SET [IsRead] = @p66
+OUTPUT 1
+WHERE [Id] = @p67;
+UPDATE [Alerts] SET [IsRead] = @p68
+OUTPUT 1
+WHERE [Id] = @p69;
+UPDATE [Alerts] SET [IsRead] = @p70
+OUTPUT 1
+WHERE [Id] = @p71;
+UPDATE [Alerts] SET [IsRead] = @p72
+OUTPUT 1
+WHERE [Id] = @p73;
+UPDATE [Alerts] SET [IsRead] = @p74
+OUTPUT 1
+WHERE [Id] = @p75;
+UPDATE [Alerts] SET [IsRead] = @p76
+OUTPUT 1
+WHERE [Id] = @p77;
+UPDATE [Alerts] SET [IsRead] = @p78
+OUTPUT 1
+WHERE [Id] = @p79;
+UPDATE [Alerts] SET [IsRead] = @p80
+OUTPUT 1
+WHERE [Id] = @p81;
+UPDATE [Alerts] SET [IsRead] = @p82
+OUTPUT 1
+WHERE [Id] = @p83;
+2025-10-21 14:05:09.777 +03:00 [INF] Executed DbCommand (13ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Boolean), @p3='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p5='?' (DbType = Int32), @p4='?' (DbType = Boolean), @p7='?' (DbType = Int32), @p6='?' (DbType = Boolean), @p9='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p11='?' (DbType = Int32), @p10='?' (DbType = Boolean), @p13='?' (DbType = Int32), @p12='?' (DbType = Boolean), @p15='?' (DbType = Int32), @p14='?' (DbType = Boolean), @p17='?' (DbType = Int32), @p16='?' (DbType = Boolean), @p19='?' (DbType = Int32), @p18='?' (DbType = Boolean), @p21='?' (DbType = Int32), @p20='?' (DbType = Boolean), @p23='?' (DbType = Int32), @p22='?' (DbType = Boolean), @p25='?' (DbType = Int32), @p24='?' (DbType = Boolean), @p27='?' (DbType = Int32), @p26='?' (DbType = Boolean), @p29='?' (DbType = Int32), @p28='?' (DbType = Boolean), @p31='?' (DbType = Int32), @p30='?' (DbType = Boolean), @p33='?' (DbType = Int32), @p32='?' (DbType = Boolean), @p35='?' (DbType = Int32), @p34='?' (DbType = Boolean), @p37='?' (DbType = Int32), @p36='?' (DbType = Boolean), @p39='?' (DbType = Int32), @p38='?' (DbType = Boolean), @p41='?' (DbType = Int32), @p40='?' (DbType = Boolean), @p43='?' (DbType = Int32), @p42='?' (DbType = Boolean), @p45='?' (DbType = Int32), @p44='?' (DbType = Boolean), @p47='?' (DbType = Int32), @p46='?' (DbType = Boolean), @p49='?' (DbType = Int32), @p48='?' (DbType = Boolean), @p51='?' (DbType = Int32), @p50='?' (DbType = Boolean), @p53='?' (DbType = Int32), @p52='?' (DbType = Boolean), @p55='?' (DbType = Int32), @p54='?' (DbType = Boolean), @p57='?' (DbType = Int32), @p56='?' (DbType = Boolean), @p59='?' (DbType = Int32), @p58='?' (DbType = Boolean), @p61='?' (DbType = Int32), @p60='?' (DbType = Boolean), @p63='?' (DbType = Int32), @p62='?' (DbType = Boolean), @p65='?' (DbType = Int32), @p64='?' (DbType = Boolean), @p67='?' (DbType = Int32), @p66='?' (DbType = Boolean), @p69='?' (DbType = Int32), @p68='?' (DbType = Boolean), @p71='?' (DbType = Int32), @p70='?' (DbType = Boolean), @p73='?' (DbType = Int32), @p72='?' (DbType = Boolean), @p75='?' (DbType = Int32), @p74='?' (DbType = Boolean), @p77='?' (DbType = Int32), @p76='?' (DbType = Boolean), @p79='?' (DbType = Int32), @p78='?' (DbType = Boolean), @p81='?' (DbType = Int32), @p80='?' (DbType = Boolean), @p83='?' (DbType = Int32), @p82='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+UPDATE [Alerts] SET [IsRead] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+UPDATE [Alerts] SET [IsRead] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+UPDATE [Alerts] SET [IsRead] = @p4
+OUTPUT 1
+WHERE [Id] = @p5;
+UPDATE [Alerts] SET [IsRead] = @p6
+OUTPUT 1
+WHERE [Id] = @p7;
+UPDATE [Alerts] SET [IsRead] = @p8
+OUTPUT 1
+WHERE [Id] = @p9;
+UPDATE [Alerts] SET [IsRead] = @p10
+OUTPUT 1
+WHERE [Id] = @p11;
+UPDATE [Alerts] SET [IsRead] = @p12
+OUTPUT 1
+WHERE [Id] = @p13;
+UPDATE [Alerts] SET [IsRead] = @p14
+OUTPUT 1
+WHERE [Id] = @p15;
+UPDATE [Alerts] SET [IsRead] = @p16
+OUTPUT 1
+WHERE [Id] = @p17;
+UPDATE [Alerts] SET [IsRead] = @p18
+OUTPUT 1
+WHERE [Id] = @p19;
+UPDATE [Alerts] SET [IsRead] = @p20
+OUTPUT 1
+WHERE [Id] = @p21;
+UPDATE [Alerts] SET [IsRead] = @p22
+OUTPUT 1
+WHERE [Id] = @p23;
+UPDATE [Alerts] SET [IsRead] = @p24
+OUTPUT 1
+WHERE [Id] = @p25;
+UPDATE [Alerts] SET [IsRead] = @p26
+OUTPUT 1
+WHERE [Id] = @p27;
+UPDATE [Alerts] SET [IsRead] = @p28
+OUTPUT 1
+WHERE [Id] = @p29;
+UPDATE [Alerts] SET [IsRead] = @p30
+OUTPUT 1
+WHERE [Id] = @p31;
+UPDATE [Alerts] SET [IsRead] = @p32
+OUTPUT 1
+WHERE [Id] = @p33;
+UPDATE [Alerts] SET [IsRead] = @p34
+OUTPUT 1
+WHERE [Id] = @p35;
+UPDATE [Alerts] SET [IsRead] = @p36
+OUTPUT 1
+WHERE [Id] = @p37;
+UPDATE [Alerts] SET [IsRead] = @p38
+OUTPUT 1
+WHERE [Id] = @p39;
+UPDATE [Alerts] SET [IsRead] = @p40
+OUTPUT 1
+WHERE [Id] = @p41;
+UPDATE [Alerts] SET [IsRead] = @p42
+OUTPUT 1
+WHERE [Id] = @p43;
+UPDATE [Alerts] SET [IsRead] = @p44
+OUTPUT 1
+WHERE [Id] = @p45;
+UPDATE [Alerts] SET [IsRead] = @p46
+OUTPUT 1
+WHERE [Id] = @p47;
+UPDATE [Alerts] SET [IsRead] = @p48
+OUTPUT 1
+WHERE [Id] = @p49;
+UPDATE [Alerts] SET [IsRead] = @p50
+OUTPUT 1
+WHERE [Id] = @p51;
+UPDATE [Alerts] SET [IsRead] = @p52
+OUTPUT 1
+WHERE [Id] = @p53;
+UPDATE [Alerts] SET [IsRead] = @p54
+OUTPUT 1
+WHERE [Id] = @p55;
+UPDATE [Alerts] SET [IsRead] = @p56
+OUTPUT 1
+WHERE [Id] = @p57;
+UPDATE [Alerts] SET [IsRead] = @p58
+OUTPUT 1
+WHERE [Id] = @p59;
+UPDATE [Alerts] SET [IsRead] = @p60
+OUTPUT 1
+WHERE [Id] = @p61;
+UPDATE [Alerts] SET [IsRead] = @p62
+OUTPUT 1
+WHERE [Id] = @p63;
+UPDATE [Alerts] SET [IsRead] = @p64
+OUTPUT 1
+WHERE [Id] = @p65;
+UPDATE [Alerts] SET [IsRead] = @p66
+OUTPUT 1
+WHERE [Id] = @p67;
+UPDATE [Alerts] SET [IsRead] = @p68
+OUTPUT 1
+WHERE [Id] = @p69;
+UPDATE [Alerts] SET [IsRead] = @p70
+OUTPUT 1
+WHERE [Id] = @p71;
+UPDATE [Alerts] SET [IsRead] = @p72
+OUTPUT 1
+WHERE [Id] = @p73;
+UPDATE [Alerts] SET [IsRead] = @p74
+OUTPUT 1
+WHERE [Id] = @p75;
+UPDATE [Alerts] SET [IsRead] = @p76
+OUTPUT 1
+WHERE [Id] = @p77;
+UPDATE [Alerts] SET [IsRead] = @p78
+OUTPUT 1
+WHERE [Id] = @p79;
+UPDATE [Alerts] SET [IsRead] = @p80
+OUTPUT 1
+WHERE [Id] = @p81;
+UPDATE [Alerts] SET [IsRead] = @p82
+OUTPUT 1
+WHERE [Id] = @p83;
+2025-10-21 14:05:09.808 +03:00 [INF] Executed DbCommand (10ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Boolean), @p3='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p5='?' (DbType = Int32), @p4='?' (DbType = Boolean), @p7='?' (DbType = Int32), @p6='?' (DbType = Boolean), @p9='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p11='?' (DbType = Int32), @p10='?' (DbType = Boolean), @p13='?' (DbType = Int32), @p12='?' (DbType = Boolean), @p15='?' (DbType = Int32), @p14='?' (DbType = Boolean), @p17='?' (DbType = Int32), @p16='?' (DbType = Boolean), @p19='?' (DbType = Int32), @p18='?' (DbType = Boolean), @p21='?' (DbType = Int32), @p20='?' (DbType = Boolean), @p23='?' (DbType = Int32), @p22='?' (DbType = Boolean), @p25='?' (DbType = Int32), @p24='?' (DbType = Boolean), @p27='?' (DbType = Int32), @p26='?' (DbType = Boolean), @p29='?' (DbType = Int32), @p28='?' (DbType = Boolean), @p31='?' (DbType = Int32), @p30='?' (DbType = Boolean), @p33='?' (DbType = Int32), @p32='?' (DbType = Boolean), @p35='?' (DbType = Int32), @p34='?' (DbType = Boolean), @p37='?' (DbType = Int32), @p36='?' (DbType = Boolean), @p39='?' (DbType = Int32), @p38='?' (DbType = Boolean), @p41='?' (DbType = Int32), @p40='?' (DbType = Boolean), @p43='?' (DbType = Int32), @p42='?' (DbType = Boolean), @p45='?' (DbType = Int32), @p44='?' (DbType = Boolean), @p47='?' (DbType = Int32), @p46='?' (DbType = Boolean), @p49='?' (DbType = Int32), @p48='?' (DbType = Boolean), @p51='?' (DbType = Int32), @p50='?' (DbType = Boolean), @p53='?' (DbType = Int32), @p52='?' (DbType = Boolean), @p55='?' (DbType = Int32), @p54='?' (DbType = Boolean), @p57='?' (DbType = Int32), @p56='?' (DbType = Boolean), @p59='?' (DbType = Int32), @p58='?' (DbType = Boolean), @p61='?' (DbType = Int32), @p60='?' (DbType = Boolean), @p63='?' (DbType = Int32), @p62='?' (DbType = Boolean), @p65='?' (DbType = Int32), @p64='?' (DbType = Boolean), @p67='?' (DbType = Int32), @p66='?' (DbType = Boolean), @p69='?' (DbType = Int32), @p68='?' (DbType = Boolean), @p71='?' (DbType = Int32), @p70='?' (DbType = Boolean), @p73='?' (DbType = Int32), @p72='?' (DbType = Boolean), @p75='?' (DbType = Int32), @p74='?' (DbType = Boolean), @p77='?' (DbType = Int32), @p76='?' (DbType = Boolean), @p79='?' (DbType = Int32), @p78='?' (DbType = Boolean), @p81='?' (DbType = Int32), @p80='?' (DbType = Boolean), @p83='?' (DbType = Int32), @p82='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+UPDATE [Alerts] SET [IsRead] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+UPDATE [Alerts] SET [IsRead] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+UPDATE [Alerts] SET [IsRead] = @p4
+OUTPUT 1
+WHERE [Id] = @p5;
+UPDATE [Alerts] SET [IsRead] = @p6
+OUTPUT 1
+WHERE [Id] = @p7;
+UPDATE [Alerts] SET [IsRead] = @p8
+OUTPUT 1
+WHERE [Id] = @p9;
+UPDATE [Alerts] SET [IsRead] = @p10
+OUTPUT 1
+WHERE [Id] = @p11;
+UPDATE [Alerts] SET [IsRead] = @p12
+OUTPUT 1
+WHERE [Id] = @p13;
+UPDATE [Alerts] SET [IsRead] = @p14
+OUTPUT 1
+WHERE [Id] = @p15;
+UPDATE [Alerts] SET [IsRead] = @p16
+OUTPUT 1
+WHERE [Id] = @p17;
+UPDATE [Alerts] SET [IsRead] = @p18
+OUTPUT 1
+WHERE [Id] = @p19;
+UPDATE [Alerts] SET [IsRead] = @p20
+OUTPUT 1
+WHERE [Id] = @p21;
+UPDATE [Alerts] SET [IsRead] = @p22
+OUTPUT 1
+WHERE [Id] = @p23;
+UPDATE [Alerts] SET [IsRead] = @p24
+OUTPUT 1
+WHERE [Id] = @p25;
+UPDATE [Alerts] SET [IsRead] = @p26
+OUTPUT 1
+WHERE [Id] = @p27;
+UPDATE [Alerts] SET [IsRead] = @p28
+OUTPUT 1
+WHERE [Id] = @p29;
+UPDATE [Alerts] SET [IsRead] = @p30
+OUTPUT 1
+WHERE [Id] = @p31;
+UPDATE [Alerts] SET [IsRead] = @p32
+OUTPUT 1
+WHERE [Id] = @p33;
+UPDATE [Alerts] SET [IsRead] = @p34
+OUTPUT 1
+WHERE [Id] = @p35;
+UPDATE [Alerts] SET [IsRead] = @p36
+OUTPUT 1
+WHERE [Id] = @p37;
+UPDATE [Alerts] SET [IsRead] = @p38
+OUTPUT 1
+WHERE [Id] = @p39;
+UPDATE [Alerts] SET [IsRead] = @p40
+OUTPUT 1
+WHERE [Id] = @p41;
+UPDATE [Alerts] SET [IsRead] = @p42
+OUTPUT 1
+WHERE [Id] = @p43;
+UPDATE [Alerts] SET [IsRead] = @p44
+OUTPUT 1
+WHERE [Id] = @p45;
+UPDATE [Alerts] SET [IsRead] = @p46
+OUTPUT 1
+WHERE [Id] = @p47;
+UPDATE [Alerts] SET [IsRead] = @p48
+OUTPUT 1
+WHERE [Id] = @p49;
+UPDATE [Alerts] SET [IsRead] = @p50
+OUTPUT 1
+WHERE [Id] = @p51;
+UPDATE [Alerts] SET [IsRead] = @p52
+OUTPUT 1
+WHERE [Id] = @p53;
+UPDATE [Alerts] SET [IsRead] = @p54
+OUTPUT 1
+WHERE [Id] = @p55;
+UPDATE [Alerts] SET [IsRead] = @p56
+OUTPUT 1
+WHERE [Id] = @p57;
+UPDATE [Alerts] SET [IsRead] = @p58
+OUTPUT 1
+WHERE [Id] = @p59;
+UPDATE [Alerts] SET [IsRead] = @p60
+OUTPUT 1
+WHERE [Id] = @p61;
+UPDATE [Alerts] SET [IsRead] = @p62
+OUTPUT 1
+WHERE [Id] = @p63;
+UPDATE [Alerts] SET [IsRead] = @p64
+OUTPUT 1
+WHERE [Id] = @p65;
+UPDATE [Alerts] SET [IsRead] = @p66
+OUTPUT 1
+WHERE [Id] = @p67;
+UPDATE [Alerts] SET [IsRead] = @p68
+OUTPUT 1
+WHERE [Id] = @p69;
+UPDATE [Alerts] SET [IsRead] = @p70
+OUTPUT 1
+WHERE [Id] = @p71;
+UPDATE [Alerts] SET [IsRead] = @p72
+OUTPUT 1
+WHERE [Id] = @p73;
+UPDATE [Alerts] SET [IsRead] = @p74
+OUTPUT 1
+WHERE [Id] = @p75;
+UPDATE [Alerts] SET [IsRead] = @p76
+OUTPUT 1
+WHERE [Id] = @p77;
+UPDATE [Alerts] SET [IsRead] = @p78
+OUTPUT 1
+WHERE [Id] = @p79;
+UPDATE [Alerts] SET [IsRead] = @p80
+OUTPUT 1
+WHERE [Id] = @p81;
+UPDATE [Alerts] SET [IsRead] = @p82
+OUTPUT 1
+WHERE [Id] = @p83;
+2025-10-21 14:05:09.856 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Boolean), @p3='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p5='?' (DbType = Int32), @p4='?' (DbType = Boolean), @p7='?' (DbType = Int32), @p6='?' (DbType = Boolean), @p9='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p11='?' (DbType = Int32), @p10='?' (DbType = Boolean), @p13='?' (DbType = Int32), @p12='?' (DbType = Boolean), @p15='?' (DbType = Int32), @p14='?' (DbType = Boolean), @p17='?' (DbType = Int32), @p16='?' (DbType = Boolean), @p19='?' (DbType = Int32), @p18='?' (DbType = Boolean), @p21='?' (DbType = Int32), @p20='?' (DbType = Boolean), @p23='?' (DbType = Int32), @p22='?' (DbType = Boolean), @p25='?' (DbType = Int32), @p24='?' (DbType = Boolean), @p27='?' (DbType = Int32), @p26='?' (DbType = Boolean), @p29='?' (DbType = Int32), @p28='?' (DbType = Boolean), @p31='?' (DbType = Int32), @p30='?' (DbType = Boolean), @p33='?' (DbType = Int32), @p32='?' (DbType = Boolean), @p35='?' (DbType = Int32), @p34='?' (DbType = Boolean), @p37='?' (DbType = Int32), @p36='?' (DbType = Boolean), @p39='?' (DbType = Int32), @p38='?' (DbType = Boolean), @p41='?' (DbType = Int32), @p40='?' (DbType = Boolean), @p43='?' (DbType = Int32), @p42='?' (DbType = Boolean), @p45='?' (DbType = Int32), @p44='?' (DbType = Boolean), @p47='?' (DbType = Int32), @p46='?' (DbType = Boolean), @p49='?' (DbType = Int32), @p48='?' (DbType = Boolean), @p51='?' (DbType = Int32), @p50='?' (DbType = Boolean), @p53='?' (DbType = Int32), @p52='?' (DbType = Boolean), @p55='?' (DbType = Int32), @p54='?' (DbType = Boolean), @p57='?' (DbType = Int32), @p56='?' (DbType = Boolean), @p59='?' (DbType = Int32), @p58='?' (DbType = Boolean), @p61='?' (DbType = Int32), @p60='?' (DbType = Boolean), @p63='?' (DbType = Int32), @p62='?' (DbType = Boolean), @p65='?' (DbType = Int32), @p64='?' (DbType = Boolean), @p67='?' (DbType = Int32), @p66='?' (DbType = Boolean), @p69='?' (DbType = Int32), @p68='?' (DbType = Boolean), @p71='?' (DbType = Int32), @p70='?' (DbType = Boolean), @p73='?' (DbType = Int32), @p72='?' (DbType = Boolean), @p75='?' (DbType = Int32), @p74='?' (DbType = Boolean), @p77='?' (DbType = Int32), @p76='?' (DbType = Boolean), @p79='?' (DbType = Int32), @p78='?' (DbType = Boolean), @p81='?' (DbType = Int32), @p80='?' (DbType = Boolean), @p83='?' (DbType = Int32), @p82='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+UPDATE [Alerts] SET [IsRead] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+UPDATE [Alerts] SET [IsRead] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+UPDATE [Alerts] SET [IsRead] = @p4
+OUTPUT 1
+WHERE [Id] = @p5;
+UPDATE [Alerts] SET [IsRead] = @p6
+OUTPUT 1
+WHERE [Id] = @p7;
+UPDATE [Alerts] SET [IsRead] = @p8
+OUTPUT 1
+WHERE [Id] = @p9;
+UPDATE [Alerts] SET [IsRead] = @p10
+OUTPUT 1
+WHERE [Id] = @p11;
+UPDATE [Alerts] SET [IsRead] = @p12
+OUTPUT 1
+WHERE [Id] = @p13;
+UPDATE [Alerts] SET [IsRead] = @p14
+OUTPUT 1
+WHERE [Id] = @p15;
+UPDATE [Alerts] SET [IsRead] = @p16
+OUTPUT 1
+WHERE [Id] = @p17;
+UPDATE [Alerts] SET [IsRead] = @p18
+OUTPUT 1
+WHERE [Id] = @p19;
+UPDATE [Alerts] SET [IsRead] = @p20
+OUTPUT 1
+WHERE [Id] = @p21;
+UPDATE [Alerts] SET [IsRead] = @p22
+OUTPUT 1
+WHERE [Id] = @p23;
+UPDATE [Alerts] SET [IsRead] = @p24
+OUTPUT 1
+WHERE [Id] = @p25;
+UPDATE [Alerts] SET [IsRead] = @p26
+OUTPUT 1
+WHERE [Id] = @p27;
+UPDATE [Alerts] SET [IsRead] = @p28
+OUTPUT 1
+WHERE [Id] = @p29;
+UPDATE [Alerts] SET [IsRead] = @p30
+OUTPUT 1
+WHERE [Id] = @p31;
+UPDATE [Alerts] SET [IsRead] = @p32
+OUTPUT 1
+WHERE [Id] = @p33;
+UPDATE [Alerts] SET [IsRead] = @p34
+OUTPUT 1
+WHERE [Id] = @p35;
+UPDATE [Alerts] SET [IsRead] = @p36
+OUTPUT 1
+WHERE [Id] = @p37;
+UPDATE [Alerts] SET [IsRead] = @p38
+OUTPUT 1
+WHERE [Id] = @p39;
+UPDATE [Alerts] SET [IsRead] = @p40
+OUTPUT 1
+WHERE [Id] = @p41;
+UPDATE [Alerts] SET [IsRead] = @p42
+OUTPUT 1
+WHERE [Id] = @p43;
+UPDATE [Alerts] SET [IsRead] = @p44
+OUTPUT 1
+WHERE [Id] = @p45;
+UPDATE [Alerts] SET [IsRead] = @p46
+OUTPUT 1
+WHERE [Id] = @p47;
+UPDATE [Alerts] SET [IsRead] = @p48
+OUTPUT 1
+WHERE [Id] = @p49;
+UPDATE [Alerts] SET [IsRead] = @p50
+OUTPUT 1
+WHERE [Id] = @p51;
+UPDATE [Alerts] SET [IsRead] = @p52
+OUTPUT 1
+WHERE [Id] = @p53;
+UPDATE [Alerts] SET [IsRead] = @p54
+OUTPUT 1
+WHERE [Id] = @p55;
+UPDATE [Alerts] SET [IsRead] = @p56
+OUTPUT 1
+WHERE [Id] = @p57;
+UPDATE [Alerts] SET [IsRead] = @p58
+OUTPUT 1
+WHERE [Id] = @p59;
+UPDATE [Alerts] SET [IsRead] = @p60
+OUTPUT 1
+WHERE [Id] = @p61;
+UPDATE [Alerts] SET [IsRead] = @p62
+OUTPUT 1
+WHERE [Id] = @p63;
+UPDATE [Alerts] SET [IsRead] = @p64
+OUTPUT 1
+WHERE [Id] = @p65;
+UPDATE [Alerts] SET [IsRead] = @p66
+OUTPUT 1
+WHERE [Id] = @p67;
+UPDATE [Alerts] SET [IsRead] = @p68
+OUTPUT 1
+WHERE [Id] = @p69;
+UPDATE [Alerts] SET [IsRead] = @p70
+OUTPUT 1
+WHERE [Id] = @p71;
+UPDATE [Alerts] SET [IsRead] = @p72
+OUTPUT 1
+WHERE [Id] = @p73;
+UPDATE [Alerts] SET [IsRead] = @p74
+OUTPUT 1
+WHERE [Id] = @p75;
+UPDATE [Alerts] SET [IsRead] = @p76
+OUTPUT 1
+WHERE [Id] = @p77;
+UPDATE [Alerts] SET [IsRead] = @p78
+OUTPUT 1
+WHERE [Id] = @p79;
+UPDATE [Alerts] SET [IsRead] = @p80
+OUTPUT 1
+WHERE [Id] = @p81;
+UPDATE [Alerts] SET [IsRead] = @p82
+OUTPUT 1
+WHERE [Id] = @p83;
+2025-10-21 14:05:09.949 +03:00 [INF] Executed DbCommand (64ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Boolean), @p3='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p5='?' (DbType = Int32), @p4='?' (DbType = Boolean), @p7='?' (DbType = Int32), @p6='?' (DbType = Boolean), @p9='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p11='?' (DbType = Int32), @p10='?' (DbType = Boolean), @p13='?' (DbType = Int32), @p12='?' (DbType = Boolean), @p15='?' (DbType = Int32), @p14='?' (DbType = Boolean), @p17='?' (DbType = Int32), @p16='?' (DbType = Boolean), @p19='?' (DbType = Int32), @p18='?' (DbType = Boolean), @p21='?' (DbType = Int32), @p20='?' (DbType = Boolean), @p23='?' (DbType = Int32), @p22='?' (DbType = Boolean), @p25='?' (DbType = Int32), @p24='?' (DbType = Boolean), @p27='?' (DbType = Int32), @p26='?' (DbType = Boolean), @p29='?' (DbType = Int32), @p28='?' (DbType = Boolean), @p31='?' (DbType = Int32), @p30='?' (DbType = Boolean), @p33='?' (DbType = Int32), @p32='?' (DbType = Boolean), @p35='?' (DbType = Int32), @p34='?' (DbType = Boolean), @p37='?' (DbType = Int32), @p36='?' (DbType = Boolean), @p39='?' (DbType = Int32), @p38='?' (DbType = Boolean), @p41='?' (DbType = Int32), @p40='?' (DbType = Boolean), @p43='?' (DbType = Int32), @p42='?' (DbType = Boolean), @p45='?' (DbType = Int32), @p44='?' (DbType = Boolean), @p47='?' (DbType = Int32), @p46='?' (DbType = Boolean), @p49='?' (DbType = Int32), @p48='?' (DbType = Boolean), @p51='?' (DbType = Int32), @p50='?' (DbType = Boolean), @p53='?' (DbType = Int32), @p52='?' (DbType = Boolean), @p55='?' (DbType = Int32), @p54='?' (DbType = Boolean), @p57='?' (DbType = Int32), @p56='?' (DbType = Boolean), @p59='?' (DbType = Int32), @p58='?' (DbType = Boolean), @p61='?' (DbType = Int32), @p60='?' (DbType = Boolean), @p63='?' (DbType = Int32), @p62='?' (DbType = Boolean), @p65='?' (DbType = Int32), @p64='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+UPDATE [Alerts] SET [IsRead] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+UPDATE [Alerts] SET [IsRead] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+UPDATE [Alerts] SET [IsRead] = @p4
+OUTPUT 1
+WHERE [Id] = @p5;
+UPDATE [Alerts] SET [IsRead] = @p6
+OUTPUT 1
+WHERE [Id] = @p7;
+UPDATE [Alerts] SET [IsRead] = @p8
+OUTPUT 1
+WHERE [Id] = @p9;
+UPDATE [Alerts] SET [IsRead] = @p10
+OUTPUT 1
+WHERE [Id] = @p11;
+UPDATE [Alerts] SET [IsRead] = @p12
+OUTPUT 1
+WHERE [Id] = @p13;
+UPDATE [Alerts] SET [IsRead] = @p14
+OUTPUT 1
+WHERE [Id] = @p15;
+UPDATE [Alerts] SET [IsRead] = @p16
+OUTPUT 1
+WHERE [Id] = @p17;
+UPDATE [Alerts] SET [IsRead] = @p18
+OUTPUT 1
+WHERE [Id] = @p19;
+UPDATE [Alerts] SET [IsRead] = @p20
+OUTPUT 1
+WHERE [Id] = @p21;
+UPDATE [Alerts] SET [IsRead] = @p22
+OUTPUT 1
+WHERE [Id] = @p23;
+UPDATE [Alerts] SET [IsRead] = @p24
+OUTPUT 1
+WHERE [Id] = @p25;
+UPDATE [Alerts] SET [IsRead] = @p26
+OUTPUT 1
+WHERE [Id] = @p27;
+UPDATE [Alerts] SET [IsRead] = @p28
+OUTPUT 1
+WHERE [Id] = @p29;
+UPDATE [Alerts] SET [IsRead] = @p30
+OUTPUT 1
+WHERE [Id] = @p31;
+UPDATE [Alerts] SET [IsRead] = @p32
+OUTPUT 1
+WHERE [Id] = @p33;
+UPDATE [Alerts] SET [IsRead] = @p34
+OUTPUT 1
+WHERE [Id] = @p35;
+UPDATE [Alerts] SET [IsRead] = @p36
+OUTPUT 1
+WHERE [Id] = @p37;
+UPDATE [Alerts] SET [IsRead] = @p38
+OUTPUT 1
+WHERE [Id] = @p39;
+UPDATE [Alerts] SET [IsRead] = @p40
+OUTPUT 1
+WHERE [Id] = @p41;
+UPDATE [Alerts] SET [IsRead] = @p42
+OUTPUT 1
+WHERE [Id] = @p43;
+UPDATE [Alerts] SET [IsRead] = @p44
+OUTPUT 1
+WHERE [Id] = @p45;
+UPDATE [Alerts] SET [IsRead] = @p46
+OUTPUT 1
+WHERE [Id] = @p47;
+UPDATE [Alerts] SET [IsRead] = @p48
+OUTPUT 1
+WHERE [Id] = @p49;
+UPDATE [Alerts] SET [IsRead] = @p50
+OUTPUT 1
+WHERE [Id] = @p51;
+UPDATE [Alerts] SET [IsRead] = @p52
+OUTPUT 1
+WHERE [Id] = @p53;
+UPDATE [Alerts] SET [IsRead] = @p54
+OUTPUT 1
+WHERE [Id] = @p55;
+UPDATE [Alerts] SET [IsRead] = @p56
+OUTPUT 1
+WHERE [Id] = @p57;
+UPDATE [Alerts] SET [IsRead] = @p58
+OUTPUT 1
+WHERE [Id] = @p59;
+UPDATE [Alerts] SET [IsRead] = @p60
+OUTPUT 1
+WHERE [Id] = @p61;
+UPDATE [Alerts] SET [IsRead] = @p62
+OUTPUT 1
+WHERE [Id] = @p63;
+UPDATE [Alerts] SET [IsRead] = @p64
+OUTPUT 1
+WHERE [Id] = @p65;
+2025-10-21 14:05:09.972 +03:00 [INF] Marked 201 alerts as read
+2025-10-21 14:05:09.974 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType6`2[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:05:09.979 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AlertsController.MarkAllAsRead (EnergyOptimizer.API) in 511.0259ms
+2025-10-21 14:05:09.980 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AlertsController.MarkAllAsRead (EnergyOptimizer.API)'
+2025-10-21 14:05:09.982 +03:00 [INF] HTTP POST /api/alerts/all-read responded 200 in 534.4741 ms
+2025-10-21 14:05:09.983 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/alerts/all-read - 200 null application/json; charset=utf-8 544.0284ms
+2025-10-21 14:05:13.972 +03:00 [INF] Request starting HTTP/2 DELETE https://localhost:7083/api/alerts/clear-read - null null
+2025-10-21 14:05:14.000 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:05:14.001 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:05:14.003 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AlertsController.ClearReadAlerts (EnergyOptimizer.API)'
+2025-10-21 14:05:14.026 +03:00 [INF] Route matched with {action = "ClearReadAlerts", controller = "Alerts"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult] ClearReadAlerts() on controller EnergyOptimizer.API.Controllers.AlertsController (EnergyOptimizer.API).
+2025-10-21 14:05:14.073 +03:00 [INF] Executed DbCommand (12ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [a].[Id], [a].[CreatedAt], [a].[DeviceId], [a].[IsRead], [a].[Message], [a].[Severity], [a].[Type]
+FROM [Alerts] AS [a]
+WHERE [a].[IsRead] = CAST(1 AS bit)
+2025-10-21 14:05:14.182 +03:00 [INF] Executed DbCommand (87ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.206 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.232 +03:00 [INF] Executed DbCommand (11ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.246 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.262 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.273 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Int32), @p16='?' (DbType = Int32), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int32), @p21='?' (DbType = Int32), @p22='?' (DbType = Int32), @p23='?' (DbType = Int32), @p24='?' (DbType = Int32), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int32), @p29='?' (DbType = Int32), @p30='?' (DbType = Int32), @p31='?' (DbType = Int32), @p32='?' (DbType = Int32), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int32), @p37='?' (DbType = Int32), @p38='?' (DbType = Int32), @p39='?' (DbType = Int32), @p40='?' (DbType = Int32), @p41='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p15;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p16;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p17;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p18;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p19;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p20;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p21;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p22;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p23;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p24;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p25;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p26;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p27;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p28;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p29;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p30;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p31;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p32;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p33;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p34;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p35;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p36;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p37;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p38;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p39;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p40;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p41;
+2025-10-21 14:05:14.321 +03:00 [INF] Executed DbCommand (31ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32), @p13='?' (DbType = Int32), @p14='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p0;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p1;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p2;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p3;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p4;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p5;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p6;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p7;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p8;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p9;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p10;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p11;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p12;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p13;
+DELETE FROM [Alerts]
+OUTPUT 1
+WHERE [Id] = @p14;
+2025-10-21 14:05:14.337 +03:00 [INF] Deleted 267 read alerts
+2025-10-21 14:05:14.339 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType6`2[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:05:14.341 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AlertsController.ClearReadAlerts (EnergyOptimizer.API) in 311.3727ms
+2025-10-21 14:05:14.342 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AlertsController.ClearReadAlerts (EnergyOptimizer.API)'
+2025-10-21 14:05:14.343 +03:00 [INF] HTTP DELETE /api/alerts/clear-read responded 200 in 343.1259 ms
+2025-10-21 14:05:14.345 +03:00 [INF] Request finished HTTP/2 DELETE https://localhost:7083/api/alerts/clear-read - 200 null application/json; charset=utf-8 379.3377ms
+2025-10-21 14:05:25.548 +03:00 [INF] Executed DbCommand (25,065ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[Name], CASE [d].[Type]
+    WHEN 1 THEN N'AirConditioner'
+    WHEN 2 THEN N'Refrigerator'
+    WHEN 3 THEN N'WashingMachine'
+    WHEN 4 THEN N'WaterHeater'
+    WHEN 5 THEN N'Lights'
+    WHEN 6 THEN N'TV'
+    WHEN 7 THEN N'Microwave'
+    WHEN 99 THEN N'Other'
+    ELSE CAST([d].[Type] AS nvarchar(max))
+END, [d].[RatedPowerKW], [d].[IsActive], [z].[Id], [z].[Name], CASE [z].[Type]
+    WHEN 1 THEN N'Bedroom'
+    WHEN 2 THEN N'LivingRoom'
+    WHEN 3 THEN N'Kitchen'
+    WHEN 4 THEN N'Bathroom'
+    WHEN 5 THEN N'Balcony'
+    WHEN 6 THEN N'Garage'
+    ELSE CAST([z].[Type] AS nvarchar(max))
+END, [b].[Id], [b].[Name], [e1].[PowerKW], [e1].[Voltage], [e1].[Current], [e1].[Temperature], [e1].[Timestamp], [e1].[c]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+INNER JOIN [Buildings] AS [b] ON [z].[BuildingId] = [b].[Id]
+LEFT JOIN (
+    SELECT [e0].[PowerKW], [e0].[Voltage], [e0].[Current], [e0].[Temperature], [e0].[Timestamp], [e0].[c], [e0].[DeviceId]
+    FROM (
+        SELECT [e].[PowerConsumptionKW] AS [PowerKW], [e].[Voltage], [e].[Current], [e].[Temperature], [e].[Timestamp], 1 AS [c], [e].[DeviceId], ROW_NUMBER() OVER(PARTITION BY [e].[DeviceId] ORDER BY [e].[Timestamp] DESC) AS [row]
+        FROM [EnergyReadings] AS [e]
+    ) AS [e0]
+    WHERE [e0].[row] <= 1
+) AS [e1] ON [d].[Id] = [e1].[DeviceId]
+ORDER BY [z].[Name], [d].[Name]
+2025-10-21 14:05:25.559 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType17`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Collections.Generic.List`1[[<>f__AnonymousType13`8[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType14`5[[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[<>f__AnonymousType15`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType16`2[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:05:25.597 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API) in 25148.1911ms
+2025-10-21 14:05:25.599 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API)'
+2025-10-21 14:05:25.600 +03:00 [INF] HTTP GET /api/devices responded 200 in 25171.3904 ms
+2025-10-21 14:05:25.602 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/api/devices - 200 null application/json; charset=utf-8 25179.8975ms
+2025-10-21 14:05:29.481 +03:00 [INF] Executed DbCommand (14ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-21 14:07:48.362 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-21 14:07:48.390 +03:00 [INF] Alert Detection Service started
+2025-10-21 14:07:48.541 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-21 14:07:48.543 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-21 14:07:48.544 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-21 14:07:48.545 +03:00 [INF] Hosting environment: Development
+2025-10-21 14:07:48.546 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-21 14:07:49.183 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-21 14:07:49.183 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-21 14:07:49.211 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 33.2136ms
+2025-10-21 14:07:49.256 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 79.4889ms
+2025-10-21 14:07:49.283 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-21 14:07:49.430 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 146.8506ms
+2025-10-21 14:07:54.354 +03:00 [INF] Executed DbCommand (28ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-21 14:07:54.576 +03:00 [INF] Executed DbCommand (54ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-21 14:07:54.629 +03:00 [INF] Generated 10 readings at 2025-10-21 14:07:54
+2025-10-21 14:07:55.439 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/index.html - null null
+2025-10-21 14:07:55.563 +03:00 [INF] Sending file. Request path: '/index.html'. Physical path: 'F:\Energy Optimizer\EnergyOptimizer.API\wwwroot\index.html'
+2025-10-21 14:07:55.565 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-21 14:07:55.565 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-21 14:07:55.572 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 7.6344ms
+2025-10-21 14:07:55.575 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/energyhub/negotiate?negotiateVersion=1 - null 0
+2025-10-21 14:07:55.570 +03:00 [INF] HTTP GET /index.html responded 200 in 43.9898 ms
+2025-10-21 14:07:55.595 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/index.html - 200 null text/html 156.7626ms
+2025-10-21 14:07:55.598 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 33.4501ms
+2025-10-21 14:07:55.598 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:07:55.603 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:07:55.608 +03:00 [INF] Executing endpoint '/energyhub/negotiate'
+2025-10-21 14:07:55.627 +03:00 [INF] Executed endpoint '/energyhub/negotiate'
+2025-10-21 14:07:55.628 +03:00 [INF] HTTP POST /energyhub/negotiate responded 200 in 35.9586 ms
+2025-10-21 14:07:55.629 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/energyhub/negotiate?negotiateVersion=1 - 200 316 application/json 54.0593ms
+2025-10-21 14:07:55.632 +03:00 [INF] Request starting HTTP/2 CONNECT https://localhost:7083/energyhub?id=7bCccP162C2pLGtyaNH0bA - null null
+2025-10-21 14:07:55.640 +03:00 [INF] CORS policy execution failed.
+2025-10-21 14:07:55.640 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-21 14:07:55.642 +03:00 [INF] Executing endpoint '/energyhub'
+2025-10-21 14:07:55.674 +03:00 [INF] Client connected: 3Oqwv6IahQK3FuPCdoXD4g
+2025-10-21 14:07:55.709 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/api/alerts?isRead=false&pageSize=20 - null null
+2025-10-21 14:07:55.714 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API)'
+2025-10-21 14:07:55.740 +03:00 [INF] Route matched with {action = "GetAlerts", controller = "Alerts"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] GetAlerts(System.Nullable`1[System.Boolean], System.Nullable`1[System.Int32], System.Nullable`1[System.Int32], System.String, System.String, Int32, Int32) on controller EnergyOptimizer.API.Controllers.AlertsController (EnergyOptimizer.API).
+2025-10-21 14:07:55.814 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2), @__isRead_Value_2='?' (DbType = Boolean)], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Alerts] AS [a]
+WHERE [a].[CreatedAt] >= @__start_0 AND [a].[CreatedAt] <= @__end_1 AND [a].[IsRead] = @__isRead_Value_2
+2025-10-21 14:07:56.185 +03:00 [INF] Executed DbCommand (303ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2), @__isRead_Value_2='?' (DbType = Boolean), @__p_3='?' (DbType = Int32), @__p_4='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [a0].[Id], [d].[Name] AS [DeviceName], [z].[Name] AS [ZoneName], CASE [a0].[Type]
+    WHEN 1 THEN N'HighConsumption'
+    WHEN 2 THEN N'Anomaly'
+    WHEN 3 THEN N'Wastage'
+    WHEN 4 THEN N'DeviceOffline'
+    ELSE CAST([a0].[Type] AS nvarchar(max))
+END AS [AlertType], [a0].[Message], [a0].[Severity], CASE
+    WHEN [a0].[Severity] = 1 THEN N'Info'
+    WHEN [a0].[Severity] = 2 THEN N'Warning'
+    ELSE N'Critical'
+END AS [SeverityLabel], CASE
+    WHEN [a0].[Severity] = 1 THEN N'🔵'
+    WHEN [a0].[Severity] = 2 THEN N'🟡'
+    ELSE N'🔴'
+END AS [Icon], [a0].[CreatedAt], [a0].[IsRead]
+FROM (
+    SELECT [a].[Id], [a].[CreatedAt], [a].[DeviceId], [a].[IsRead], [a].[Message], [a].[Severity], [a].[Type]
+    FROM [Alerts] AS [a]
+    WHERE [a].[CreatedAt] >= @__start_0 AND [a].[CreatedAt] <= @__end_1 AND [a].[IsRead] = @__isRead_Value_2
+    ORDER BY [a].[CreatedAt] DESC
+    OFFSET @__p_3 ROWS FETCH NEXT @__p_4 ROWS ONLY
+) AS [a0]
+INNER JOIN [Devices] AS [d] ON [a0].[DeviceId] = [d].[Id]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+ORDER BY [a0].[CreatedAt] DESC
+2025-10-21 14:07:56.197 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`3[[<>f__AnonymousType1`5[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[<>f__AnonymousType2`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.Collections.Generic.List`1[[EnergyOptimizer.API.DTOs.AlertDto, EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:07:56.235 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API) in 487.7144ms
+2025-10-21 14:07:56.240 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AlertsController.GetAlerts (EnergyOptimizer.API)'
+2025-10-21 14:07:56.242 +03:00 [INF] HTTP GET /api/alerts responded 200 in 527.6241 ms
+2025-10-21 14:07:56.247 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/api/devices - null null
+2025-10-21 14:07:56.248 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/api/alerts?isRead=false&pageSize=20 - 200 null application/json; charset=utf-8 539.3264ms
+2025-10-21 14:07:56.251 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API)'
+2025-10-21 14:07:56.260 +03:00 [INF] Route matched with {action = "GetAllDevices", controller = "Devices"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Collections.Generic.IEnumerable`1[System.Object]]] GetAllDevices(System.Nullable`1[System.Boolean], System.Nullable`1[System.Int32], System.Nullable`1[EnergyOptimizer.Core.Enums.DeviceType]) on controller EnergyOptimizer.API.Controllers.DevicesController (EnergyOptimizer.API).
+2025-10-21 14:08:21.406 +03:00 [INF] Executed DbCommand (25,053ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[Name], CASE [d].[Type]
+    WHEN 1 THEN N'AirConditioner'
+    WHEN 2 THEN N'Refrigerator'
+    WHEN 3 THEN N'WashingMachine'
+    WHEN 4 THEN N'WaterHeater'
+    WHEN 5 THEN N'Lights'
+    WHEN 6 THEN N'TV'
+    WHEN 7 THEN N'Microwave'
+    WHEN 99 THEN N'Other'
+    ELSE CAST([d].[Type] AS nvarchar(max))
+END, [d].[RatedPowerKW], [d].[IsActive], [z].[Id], [z].[Name], CASE [z].[Type]
+    WHEN 1 THEN N'Bedroom'
+    WHEN 2 THEN N'LivingRoom'
+    WHEN 3 THEN N'Kitchen'
+    WHEN 4 THEN N'Bathroom'
+    WHEN 5 THEN N'Balcony'
+    WHEN 6 THEN N'Garage'
+    ELSE CAST([z].[Type] AS nvarchar(max))
+END, [b].[Id], [b].[Name], [e1].[PowerKW], [e1].[Voltage], [e1].[Current], [e1].[Temperature], [e1].[Timestamp], [e1].[c]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+INNER JOIN [Buildings] AS [b] ON [z].[BuildingId] = [b].[Id]
+LEFT JOIN (
+    SELECT [e0].[PowerKW], [e0].[Voltage], [e0].[Current], [e0].[Temperature], [e0].[Timestamp], [e0].[c], [e0].[DeviceId]
+    FROM (
+        SELECT [e].[PowerConsumptionKW] AS [PowerKW], [e].[Voltage], [e].[Current], [e].[Temperature], [e].[Timestamp], 1 AS [c], [e].[DeviceId], ROW_NUMBER() OVER(PARTITION BY [e].[DeviceId] ORDER BY [e].[Timestamp] DESC) AS [row]
+        FROM [EnergyReadings] AS [e]
+    ) AS [e0]
+    WHERE [e0].[row] <= 1
+) AS [e1] ON [d].[Id] = [e1].[DeviceId]
+ORDER BY [z].[Name], [d].[Name]
+2025-10-21 14:08:21.414 +03:00 [INF] Executed DbCommand (22,942ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-21 14:08:21.416 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType17`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Collections.Generic.List`1[[<>f__AnonymousType13`8[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType14`5[[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[<>f__AnonymousType15`4[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType16`2[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], EnergyOptimizer.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-21 14:08:21.479 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API) in 25214.2791ms
+2025-10-21 14:08:21.483 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.DevicesController.GetAllDevices (EnergyOptimizer.API)'
+2025-10-21 14:08:21.490 +03:00 [INF] HTTP GET /api/devices responded 200 in 25239.0196 ms
+2025-10-21 14:08:21.494 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/api/devices - 200 null application/json; charset=utf-8 25246.7431ms
+2025-10-21 14:08:51.503 +03:00 [INF] Executed DbCommand (26ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-21 14:08:54.659 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-21 14:08:54.704 +03:00 [INF] Executed DbCommand (39ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-21 14:08:54.723 +03:00 [INF] Generated 10 readings at 2025-10-21 14:08:54
