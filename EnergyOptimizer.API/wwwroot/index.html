@@ -1113,12 +1113,34 @@
                     container.appendChild(card);
                 });
 
+                // Update initial readings display for active devices with last reading
+                updateInitialDeviceReadings(data.data);
+
                 // Log actual active count
                 const activeCount = data.data.filter(d => d.isActive).length;
                 console.log('Total devices:', data.data.length, 'Active:', activeCount);
             } catch (error) {
                 console.error('Error loading device controls:', error);
             }
+        }
+
+        function updateInitialDeviceReadings(devices) {
+            devices.forEach(device => {
+                if (device.isActive && device.lastReading) {
+                    const currentPowerSpan = document.getElementById(`device-${device.deviceId}-current`);
+                    if (currentPowerSpan) {
+                        const powerKW = device.lastReading.powerKW || 0;
+                        if (powerKW > 0.01) {
+                            currentPowerSpan.innerHTML = `💡 Current: ${powerKW.toFixed(3)} kW`;
+                            currentPowerSpan.style.color = '#667eea';
+                        } else {
+                            currentPowerSpan.innerHTML = `⚡ Standby (${powerKW.toFixed(3)} kW)`;
+                            currentPowerSpan.style.color = '#f59e0b';
+                        }
+                        console.log(`✅ Loaded initial reading for ${device.name}: ${powerKW} kW`);
+                    }
+                }
+            });
         }
 
         function createDeviceControlCard(device) {
@@ -1276,7 +1298,7 @@
                             currentPowerSpan.style.color = '#667eea';
                         } else {
                             currentPowerSpan.innerHTML = `⚡ Standby (0.000 kW)`;
-                            currentPowerSpan.style.color = '#9ca3af';
+                            currentPowerSpan.style.color = '#f59e0b';
                         }
                     }
                 });

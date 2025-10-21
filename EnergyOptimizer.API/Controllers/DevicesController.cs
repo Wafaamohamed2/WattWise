@@ -52,14 +52,20 @@ namespace EnergyOptimizer.API.Controllers
                     .Select(d => new
                     {
                         d.Id,
+                        DeviceId = d.Id,
                         d.Name,
                         Type = d.Type.ToString(),
                         d.RatedPowerKW,
                         d.IsActive,
                         LastReading = d.EnergyReadings
                             .OrderByDescending(r => r.Timestamp)
-                            .Select(r => new { PowerKW = r.PowerConsumptionKW })
-                            .FirstOrDefault(),
+                            .Select(r => new {
+                                   PowerKW = r.PowerConsumptionKW,
+                                   r.Voltage,
+                                   r.Current,
+                                   r.Temperature,
+                                   r.Timestamp
+                            }).FirstOrDefault(),
                         Zone = new
                         {
                             d.Zone.Id,

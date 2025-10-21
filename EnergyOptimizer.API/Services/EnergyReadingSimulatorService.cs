@@ -77,33 +77,30 @@ namespace EnergyOptimizer.API.Services
             {
                 double consumption = CalculateConsumption(device, hour, dayOfWeek);
 
-                if (consumption >0)
+                //  Generate reading even if consumption is 0 (standby mode)
+                var reading = new EnergyReading
                 {
-                    var reading = new EnergyReading
-                    {
-                        DeviceId = device.Id,
-                        Timestamp = cairoTime,
-                        PowerConsumptionKW = consumption,
-                        Voltage = GenerateVoltage(blackout),
-                        Current = consumption / 220.0 * 1000,
-                        Temperature = GenerateTemperature(hour)
-                    };
-                    readings.Add(reading);
+                    DeviceId = device.Id,
+                    Timestamp = cairoTime,
+                    PowerConsumptionKW = consumption,
+                    Voltage = GenerateVoltage(blackout),
+                    Current = consumption > 0 ? consumption / 220.0 * 1000 : 0,
+                    Temperature = GenerateTemperature(hour)
+                };
+                readings.Add(reading);
 
-                    liveReadings.Add(new LiveReadingDto
-                    {
-                        DeviceId = device.Id,
-                        DeviceName = device.Name ?? "Unknown Device",
-                        ZoneName = device.Zone?.Name ?? "Unknown Zone",
-                        Timestamp = DateTime.UtcNow,
-                        PowerConsumptionKW = Math.Round(consumption, 4),
-                        Current = Math.Round(reading.Current, 2),
-                        Voltage = Math.Round(reading.Voltage, 2),
-                        Temperature = Math.Round(reading.Temperature, 2),
-                        IsActive = device.IsActive
-                    });
-                }
-
+                liveReadings.Add(new LiveReadingDto
+                {
+                    DeviceId = device.Id,
+                    DeviceName = device.Name ?? "Unknown Device",
+                    ZoneName = device.Zone?.Name ?? "Unknown Zone",
+                    Timestamp = DateTime.UtcNow,
+                    PowerConsumptionKW = Math.Round(consumption, 4),
+                    Current = Math.Round(reading.Current, 2),
+                    Voltage = Math.Round(reading.Voltage, 2),
+                    Temperature = Math.Round(reading.Temperature, 2),
+                    IsActive = device.IsActive
+                });
             }
 
             if (readings.Any())
