@@ -707,6 +707,10 @@
                 <h3>🚨 Alerts</h3>
                 <button class="close-alerts" onclick="toggleAlerts()">×</button>
             </div>
+            <div class="alerts-actions" style="display: flex; gap: 10px; margin: 10px;">
+                <button class="alert-action-btn" onclick="markAllAlertsAsRead()">✓ Mark All as Read</button>
+                <button class="alert-action-btn delete" onclick="deleteAllReadAlerts()">🗑️ Delete All Read</button>
+            </div>
             <div class="alerts-body" id="alertsBody">
                 <div class="empty-alerts">
                     <div class="empty-alerts-icon">✅</div>
@@ -888,12 +892,12 @@
 
             if (alerts.length === 0) {
                 container.innerHTML = `
-            <div class="empty-alerts">
-                <div class="empty-alerts-icon">✅</div>
-                <div>No alerts yet</div>
-                <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
-            </div>
-        `;
+                <div class="empty-alerts">
+                    <div class="empty-alerts-icon">✅</div>
+                    <div>No alerts yet</div>
+                    <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                </div>
+            `;
                 return;
             }
 
@@ -907,28 +911,28 @@
                 div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
 
                 div.innerHTML = `
-            <div class="alert-header-row">
-                <div class="alert-device">
-                    ${alert.icon} ${alert.deviceName}
+                <div class="alert-header-row">
+                    <div class="alert-device">
+                        ${alert.icon} ${alert.deviceName}
+                    </div>
+                    <div class="alert-time">${timeAgo}</div>
                 </div>
-                <div class="alert-time">${timeAgo}</div>
-            </div>
-            <div class="alert-message">${alert.message}</div>
-            <div class="alert-footer">
-                <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
-                <span>📍 ${alert.zoneName}</span>
-            </div>
-            <div class="alert-actions" style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
-                ${!alert.isRead ? `
-                    <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
-                        ✓ Mark as Read
+                <div class="alert-message">${alert.message}</div>
+                <div class="alert-footer">
+                    <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
+                    <span>📍 ${alert.zoneName}</span>
+                </div>
+                <div class="alert-actions" style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
+                    ${!alert.isRead ? `
+                        <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
+                            ✓ Mark as Read
+                        </button>
+                    ` : ''}
+                    <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
+                        🗑️ Delete
                     </button>
-                ` : ''}
-                <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
-                    🗑️ Delete
-                </button>
-            </div>
-        `;
+                </div>
+            `;
 
                 container.appendChild(div);
             });
@@ -962,8 +966,8 @@
                     const alert = alerts.find(a => a.id === alertId);
                     if (alert) {
                         alert.isRead = true;
-                        updateUnreadCount(); 
-                        displayAlerts();      
+                        updateUnreadCount();
+                        displayAlerts();
 
                         // Log for debugging
                         console.log('Alert marked as read:', alertId);
@@ -988,7 +992,7 @@
                     alerts = alerts.filter(a => a.id !== alertId);
 
                     // Update UI
-                    updateUnreadCount();  
+                    updateUnreadCount();
                     displayAlerts();
 
                     showToast('Alert deleted', 'info');
@@ -1003,50 +1007,86 @@
                 showToast('Error deleting alert', 'error');
             }
         }
-        // ==================== DASHBOARD & READINGS ====================
-        function displayReadings(readings) {
-            const container = document.getElementById("readings");
-            container.innerHTML = "";
 
-            if (!readings || readings.length === 0) {
-                container.innerHTML = '<div class="empty-state">No active devices</div>';
+        async function markAllAlertsAsRead() {
+            try {
+                const response = await fetch(`${baseUrl}/api/alerts/all-read`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alerts.forEach(a => a.isRead = true);
+                    updateUnreadCount();
+                    displayAlerts();
+
+                    showToast('All alerts marked as read', 'success');
+                } else {
+                    showToast('Failed to mark all alerts as read', 'error');
+                }
+            } catch (error) {
+                console.error('Error marking all alerts as read:', error);
+                showToast('Error marking all alerts as read', 'error');
+            }
+        }
+
+        async function deleteAllReadAlerts() {
+            try {
+                const response = await fetch(`${baseUrl}/api/alerts/clear-read`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alerts = alerts.filter(a => !a.isRead);
+                    updateUnreadCount();
+                    displayAlerts();
+
+                    showToast('All read alerts deleted', 'info');
+                } else {
+                    showToast('Failed to delete read alerts', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting read alerts:', error);
+                showToast('Error deleting read alerts', 'error');
+            }
+        }
+        // ==================== DASHBOARD & READINGS ====================
+        function displayLatestReadings(readings) {
+            const container = document.getElementById("readings");
+            if (!container) {
+                console.error("❌ Element with id='readings' not found!");
                 return;
             }
 
-            const sortedReadings = [...readings].sort((a, b) =>
-                b.powerConsumptionKW - a.powerConsumptionKW
-            );
+            container.innerHTML = "";
 
-            sortedReadings.slice(0, 5).forEach(reading => {
+            if (!readings || readings.length === 0) {
+                container.innerHTML = `
+                <div class="empty-state">
+                    <div class="spinner"></div>
+                    <p>Waiting for data...</p>
+                </div>`;
+                return;
+            }
+
+            const sorted = [...readings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sorted.slice(0, 5).forEach(reading => {
                 const div = document.createElement("div");
                 div.className = "reading";
+
                 div.innerHTML = `
-            <div class="reading-header">
-                <span>${reading.deviceName || 'Unknown Device'}</span>
-                <span class="device-type">${reading.deviceType || 'N/A'}</span>
-            </div>
-            <div style="font-size: 0.85em; color: #6b7280; margin-bottom: 8px;">
-                📍 ${reading.zoneName || 'Unknown Zone'}
-            </div>
-            <div class="reading-data">
-                <div class="metric">
-                    <span class="metric-label">⚡ Power:</span>
-                    <span class="metric-value">${(reading.powerConsumptionKW || 0).toFixed(3)} kW</span>
+                <div class="reading-header">
+                    <strong>${reading.deviceName || 'Unknown Device'}</strong>
+                    <span class="device-zone">📍 ${reading.zoneName || 'Unknown Zone'}</span>
                 </div>
-                <div class="metric">
-                    <span class="metric-label">🔌 Voltage:</span>
-                    <span class="metric-value">${(reading.voltage || 0).toFixed(1)} V</span>
+                <div class="reading-metrics">
+                    <div><b>⚡ Power:</b> ${(reading.powerConsumptionKW || 0).toFixed(3)} kW</div>
+                    <div><b>🌡️ Temp:</b> ${(reading.temperature || 0).toFixed(1)} °C</div>
+                    <div><b>🔌 Voltage:</b> ${(reading.voltage || 0).toFixed(1)} V</div>
+                    <div><b>⚡ Current:</b> ${(reading.current || 0).toFixed(2)} A</div>
                 </div>
-                <div class="metric">
-                    <span class="metric-label">⚡ Current:</span>
-                    <span class="metric-value">${(reading.current || 0).toFixed(2)} A</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">🌡️ Temp:</span>
-                    <span class="metric-value">${(reading.temperature || 0).toFixed(1)} °C</span>
-                </div>
-            </div>
-        `;
+                <div class="reading-time">${new Date(reading.timestamp).toLocaleTimeString()}</div>
+            `;
                 container.appendChild(div);
             });
 
@@ -1070,6 +1110,7 @@
                 }
             });
         }
+
 
         function displayDashboardUpdate(update) {
             const dashboard = document.getElementById("dashboardUpdate");
@@ -1103,50 +1144,70 @@
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-            <div class="reading-header">#${index + 1} ${device.deviceName}</div>
-            <div class="metric">
-                <span class="metric-label">Consumption:</span>
-                <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
-            </div>
-        `;
+                <div class="reading-header">#${index + 1} ${device.deviceName}</div>
+                <div class="metric">
+                    <span class="metric-label">Consumption:</span>
+                    <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
+                </div>
+            `;
                 topConsumersDiv.appendChild(div);
             });
         }
 
-
-
         // ==================== DEVICE CONTROLS ====================
-         async function loadDeviceControls() {
-                try {
-                    const response = await fetch(`${baseUrl}/api/devices`);
-                    const data = await response.json();
+        async function loadDeviceControls() {
+            try {
+                const response = await fetch(`${baseUrl}/api/devices`);
+                const data = await response.json();
 
-                    const container = document.getElementById("deviceControls");
-                    container.innerHTML = "";
+                const container = document.getElementById("deviceControls");
+                container.innerHTML = "";
 
-                    if (!data.data || data.data.length === 0) {
-                        container.innerHTML = '<div class="empty-state">No devices found</div>';
-                        return;
-                    }
-
-                    // Sort: Active devices first
-                    const sortedDevices = data.data.sort((a, b) => {
-                        if (a.isActive === b.isActive) return 0;
-                        return a.isActive ? -1 : 1;
-                    });
-
-                    sortedDevices.forEach(device => {
-                        const card = createDeviceControlCard(device);
-                        container.appendChild(card);
-                    });
-
-                    // Log actual active count
-                    const activeCount = data.data.filter(d => d.isActive).length;
-                    console.log('Total devices:', data.data.length, 'Active:', activeCount);
-                } catch (error) {
-                    console.error('Error loading device controls:', error);
+                if (!data.data || data.data.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No devices found</div>';
+                    return;
                 }
+
+                // Sort: Active devices first
+                const sortedDevices = data.data.sort((a, b) => {
+                    if (a.isActive === b.isActive) return 0;
+                    return a.isActive ? -1 : 1;
+                });
+
+                sortedDevices.forEach(device => {
+                    const card = createDeviceControlCard(device);
+                    container.appendChild(card);
+                });
+
+                // Update initial readings display for active devices with last reading
+                updateInitialDeviceReadings(data.data);
+
+                // Log actual active count
+                const activeCount = data.data.filter(d => d.isActive).length;
+                console.log('Total devices:', data.data.length, 'Active:', activeCount);
+            } catch (error) {
+                console.error('Error loading device controls:', error);
             }
+        }
+
+        function updateInitialDeviceReadings(devices) {
+            devices.forEach(device => {
+                if (device.isActive && device.lastReading) {
+                    const currentPowerSpan = document.getElementById(`device-${device.deviceId}-current`);
+                    if (currentPowerSpan) {
+                        const powerKW = device.lastReading.powerKW || 0;
+                        if (powerKW > 0.01) {
+                            currentPowerSpan.innerHTML = `💡 Current: ${powerKW.toFixed(3)} kW`;
+                            currentPowerSpan.style.color = '#667eea';
+                        } else {
+                            currentPowerSpan.innerHTML = `⚡ Standby (${powerKW.toFixed(3)} kW)`;
+                            currentPowerSpan.style.color = '#f59e0b';
+                        }
+                        console.log(`✅ Loaded initial reading for ${device.name}: ${powerKW} kW`);
+                    }
+                }
+            });
+        }
 
         function createDeviceControlCard(device) {
             const div = document.createElement('div');
@@ -1157,24 +1218,24 @@
             const powerRating = device.ratedPowerKW || 0;
 
             div.innerHTML = `
-        <div class="device-control-header">
-            <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
-            ${device.name}
-        </div>
-        <div class="device-control-info">
-            📍 ${device.zone.name}<br>
-            ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
-            <span id="device-${device.deviceId || device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
-                ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
-            </span>
-        </div>
-        <button 
-            class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
-            onclick="toggleDeviceControl(${device.id})"
-        >
-            ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
-        </button>
-    `;
+            <div class="device-control-header">
+                <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
+                ${device.name}
+            </div>
+            <div class="device-control-info">
+                📍 ${device.zone.name}<br>
+                ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
+                <span id="device-${device.deviceId || device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
+                    ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
+                </span>
+            </div>
+            <button
+                class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
+                onclick="toggleDeviceControl(${device.id})"
+            >
+                ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
+            </button>
+        `;
 
             return div;
         }
@@ -1247,8 +1308,13 @@
             const currentPowerSpan = document.getElementById(`device-${deviceData.deviceId}-current`);
             if (currentPowerSpan) {
                 if (deviceData.isActive) {
-                    currentPowerSpan.innerHTML = `🔄 Waiting for data...`;
-                    currentPowerSpan.style.color = '#667eea';
+                    if (deviceData.lastReading && deviceData.lastReading.PowerKW) {
+                        currentPowerSpan.innerHTML = `⚡ ${deviceData.lastReading.PowerKW.toFixed(2)} kW`;
+                        currentPowerSpan.style.color = '#16a34a'; // لون أخضر
+                    } else {
+                        currentPowerSpan.innerHTML = `🔄 Waiting for data...`;
+                        currentPowerSpan.style.color = '#667eea';
+                    }
                 } else {
                     currentPowerSpan.innerHTML = `💤 Device OFF`;
                     currentPowerSpan.style.color = '#9ca3af';
@@ -1267,6 +1333,44 @@
             }
 
             console.log('✅ Device UI updated successfully');
+        }
+
+        function updateAllDeviceCards(readings) {
+            // First, reset all devices to "Waiting for data..." or "Device OFF"
+            const allCards = document.querySelectorAll('.device-control-card');
+            allCards.forEach(card => {
+                const deviceId = card.id.replace('device-', '');
+                const currentPowerSpan = document.getElementById(`device-${deviceId}-current`);
+                const isActive = card.classList.contains('active');
+
+                if (currentPowerSpan) {
+                    if (isActive) {
+                        currentPowerSpan.innerHTML = `🔄 Waiting for data...`;
+                        currentPowerSpan.style.color = '#9ca3af';
+                    } else {
+                        currentPowerSpan.innerHTML = `💤 Device OFF`;
+                        currentPowerSpan.style.color = '#9ca3af';
+                    }
+                }
+            });
+
+            // Now update with actual readings
+            if (readings && readings.length > 0) {
+                readings.forEach(reading => {
+                    const currentPowerSpan = document.getElementById(`device-${reading.deviceId}-current`);
+                    if (currentPowerSpan) {
+                        if (reading.powerConsumptionKW > 0) {
+                            currentPowerSpan.innerHTML = `💡 Current: ${reading.powerConsumptionKW.toFixed(3)} kW`;
+                            currentPowerSpan.style.color = '#667eea';
+                        } else {
+                            currentPowerSpan.innerHTML = `⚡ Standby (0.000 kW)`;
+                            currentPowerSpan.style.color = '#f59e0b';
+                        }
+                    }
+                });
+
+                console.log(`✅ Updated ${readings.length} device cards with power data`);
+            }
         }
 
         // ==================== SIGNALR HANDLERS ====================
@@ -1294,8 +1398,11 @@
 
         connection.on("ReceiveReadings", (readings) => {
             log(`📊 Received ${readings.length} readings`);
-            displayReadings(readings);
+
+            displayLatestReadings(readings);
+            updateAllDeviceCards(readings);
         });
+
 
         connection.on("DashboardUpdate", (update) => {
             log("📈 Dashboard update received");
@@ -1340,6 +1447,7 @@
         });
 
         // ========== START ==========
+
         async function start() {
             try {
                 await connection.start();
