@@ -1,10 +1,13 @@
 ﻿using EnergyOptimizer.API.DTOs;
+using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Infrastructure.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using EnergyOptimizer.API.Hubs;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -14,11 +17,13 @@ namespace EnergyOptimizer.API.Controllers
     {
         private readonly EnergyDbContext _context;
         private readonly ILogger<DevicesController> _logger;
+        private readonly IHubContext<EnergyHub> _hubContext;
 
-        public DevicesController(EnergyDbContext context, ILogger<DevicesController> logger)
+        public DevicesController(EnergyDbContext context, ILogger<DevicesController> logger, IHubContext<EnergyHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -31,7 +36,8 @@ namespace EnergyOptimizer.API.Controllers
             {
                 var query = _context.Devices
                    .Include(d => d.Zone)
-                   .ThenInclude(z => z.Building)
+                       .ThenInclude(z => z.Building)
+                   .Include(d => d.EnergyReadings)
                    .AsQueryable();
 
                 // Apply filters
@@ -44,25 +50,38 @@ namespace EnergyOptimizer.API.Controllers
                 if (deviceType.HasValue)
                     query = query.Where(d => d.Type == deviceType.Value);
 
-                var devices = await query.Select(d => new
-                {
-                    d.Id,
-                    d.Name,
-                    Type = d.Type.ToString(),
-                    d.IsActive,
-                    Zone = new
+                var devices = await query
+                    .Select(d => new
                     {
-                        d.Zone.Id,
-                        d.Zone.Name,
-                        Type = d.Zone.Type.ToString(),
-                        Building = new
+                        d.Id,
+                        DeviceId = d.Id,
+                        d.Name,
+                        Type = d.Type.ToString(),
+                        d.RatedPowerKW,
+                        d.IsActive,
+                        LastReading = d.EnergyReadings
+                            .OrderByDescending(r => r.Timestamp)
+                            .Select(r => new {
+                                   PowerKW = r.PowerConsumptionKW,
+                                   r.Voltage,
+                                   r.Current,
+                                   r.Temperature,
+                                   r.Timestamp
+                            }).FirstOrDefault(),
+                        Zone = new
                         {
-                            d.Zone.Building.Id,
-                            d.Zone.Building.Name
+                            d.Zone.Id,
+                            d.Zone.Name,
+                            Type = d.Zone.Type.ToString(),
+                            Building = new
+                            {
+                                d.Zone.Building.Id,
+                                d.Zone.Building.Name
+                            }
                         }
-                    }
-                }).OrderBy(d => d.Zone.Name)
-                   .ThenBy(d => d.Name)
+                    })
+                    .OrderBy(d => d.Zone.Name)
+                    .ThenBy(d => d.Name)
                     .ToListAsync();
 
                 return Ok(new
@@ -88,6 +107,7 @@ namespace EnergyOptimizer.API.Controllers
                 var device = await _context.Devices
                     .Include(d => d.Zone)
                     .ThenInclude(z => z.Building)
+                    .Include(d => d.EnergyReadings)
                     .Where(d => d.Id == id)
                     .Select(d => new
                     {
@@ -106,7 +126,6 @@ namespace EnergyOptimizer.API.Controllers
                                 d.Zone.Building.Id,
                                 d.Zone.Building.Name
                             },
-                            
                         },
                         Statistics = new
                         {
@@ -127,9 +146,7 @@ namespace EnergyOptimizer.API.Controllers
                     .FirstOrDefaultAsync();
 
                 if (device == null)
-                {
                     return NotFound(new { error = "Device not found" });
-                }
 
                 return Ok(device);
             }
@@ -162,14 +179,12 @@ namespace EnergyOptimizer.API.Controllers
                     })
                     .ToListAsync();
 
-
                 return Ok(new
                 {
                     zoneId,
                     zoneName = zone.Name,
                     deviceCount = devices.Count,
                     data = devices
-
                 });
             }
             catch (Exception ex)
@@ -239,7 +254,7 @@ namespace EnergyOptimizer.API.Controllers
                 device.Type = dto.Type ?? device.Type;
                 device.RatedPowerKW = dto.RatedPowerKW ?? device.RatedPowerKW;
                 device.IsActive = dto.IsActive ?? device.IsActive;
-              
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -289,6 +304,51 @@ namespace EnergyOptimizer.API.Controllers
             {
                 _logger.LogError(ex, $"Error deleting device with ID {id}");
                 return StatusCode(500, new { error = "Failed to delete device" });
+            }
+        }
+
+        //  Toggle device status (Active/Inactive) + notify clients via SignalR
+        [HttpPatch("{id}/toggle")]
+        public async Task<ActionResult> ToggleDevice(int id)
+        {
+            try
+            {
+                var device = await _context.Devices
+                    .Include(d => d.Zone)
+                    .Include(d => d.EnergyReadings)
+                    .FirstOrDefaultAsync(d => d.Id == id);
+
+                if (device == null)
+                    return NotFound(new { error = "Device not found" });
+
+                device.IsActive = !device.IsActive;
+                await _context.SaveChangesAsync();
+
+                var lastReading = device.EnergyReadings
+                    .OrderByDescending(r => r.Timestamp)
+                    .Select(r => new { PowerKW = r.PowerConsumptionKW })
+                    .FirstOrDefault();
+
+                await _hubContext.Clients.All.SendAsync("DeviceStatusUpdated", new
+                {
+                    DeviceId = device.Id,
+                    IsActive = device.IsActive,
+                    LastReading = lastReading
+                });
+
+                return Ok(new
+                {
+                    id = device.Id,
+                    name = device.Name,
+                    isActive = device.IsActive,
+                    lastReading = lastReading,
+                    message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling device {DeviceId}", id);
+                return StatusCode(500, new { error = "Failed to toggle device" });
             }
         }
     }

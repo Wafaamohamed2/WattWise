@@ -77,32 +77,30 @@ namespace EnergyOptimizer.API.Services
             {
                 double consumption = CalculateConsumption(device, hour, dayOfWeek);
 
-                if (consumption >0)
+                //  Generate reading even if consumption is 0 (standby mode)
+                var reading = new EnergyReading
                 {
-                    var reading = new EnergyReading
-                    {
-                        DeviceId = device.Id,
-                        Timestamp = cairoTime,
-                        PowerConsumptionKW = consumption,
-                        Voltage = GenerateVoltage(blackout),
-                        Current = consumption / 220.0 * 1000,
-                        Temperature = GenerateTemperature(hour)
-                    };
-                    readings.Add(reading);
+                    DeviceId = device.Id,
+                    Timestamp = cairoTime,
+                    PowerConsumptionKW = consumption,
+                    Voltage = GenerateVoltage(blackout),
+                    Current = consumption > 0 ? consumption / 220.0 * 1000 : 0,
+                    Temperature = GenerateTemperature(hour)
+                };
+                readings.Add(reading);
 
-                    liveReadings.Add(new LiveReadingDto
-                    {
-                        DeviceName = device.Name ?? "Unknown Device",
-                        ZoneName = device.Zone?.Name ?? "Unknown Zone",
-                        Timestamp = DateTime.UtcNow,
-                        PowerConsumptionKW = Math.Round(consumption, 4),
-                        Current = Math.Round(reading.Current, 2),
-                        Voltage = Math.Round(reading.Voltage, 2),
-                        Temperature = Math.Round(reading.Temperature, 2),
-                        IsActive = device.IsActive
-                    });
-                }
-
+                liveReadings.Add(new LiveReadingDto
+                {
+                    DeviceId = device.Id,
+                    DeviceName = device.Name ?? "Unknown Device",
+                    ZoneName = device.Zone?.Name ?? "Unknown Zone",
+                    Timestamp = DateTime.UtcNow,
+                    PowerConsumptionKW = Math.Round(consumption, 4),
+                    Current = Math.Round(reading.Current, 2),
+                    Voltage = Math.Round(reading.Voltage, 2),
+                    Temperature = Math.Round(reading.Temperature, 2),
+                    IsActive = device.IsActive
+                });
             }
 
             if (readings.Any())
@@ -125,6 +123,9 @@ namespace EnergyOptimizer.API.Services
         {
             try
             {
+                if (readings == null || readings.Count == 0)
+                    return;
+
                 // Send all readings
                 await _hubContext.Clients.All.SendAsync("ReceiveReadings", readings);
 
@@ -148,17 +149,24 @@ namespace EnergyOptimizer.API.Services
         {
             try
             {
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
+
+                // Get actual count of active devices from database
+                var totalActiveDevices = await context.Devices
+                    .CountAsync(d => d.IsActive);
+
                 var update = new DashboardUpdateDto
                 {
                     Timestamp = DateTime.UtcNow,
                     TotalConsumption = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2),
-                    ActiveDevices = readings.Count,
+                    ActiveDevices = totalActiveDevices, 
                     TotalReadings = readings.Count,
                     TopConsumers = readings
                         .OrderByDescending(r => r.PowerConsumptionKW)
                         .Take(5)
                         .Select(r => new TopConsumerDto
-                        {
+                        { 
                             DeviceName = r.DeviceName,
                             CurrentConsumption = r.PowerConsumptionKW
                         })
@@ -167,7 +175,7 @@ namespace EnergyOptimizer.API.Services
 
                 await _hubContext.Clients.All.SendAsync("DashboardUpdate", update);
 
-                _logger.LogDebug("Broadcasted dashboard update");
+                _logger.LogDebug("Broadcasted dashboard update - Active: {ActiveDevices}", totalActiveDevices);
             }
             catch (Exception ex)
             {
