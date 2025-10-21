@@ -123,6 +123,9 @@ namespace EnergyOptimizer.API.Services
         {
             try
             {
+                if (readings == null || readings.Count == 0)
+                    return;
+
                 // Send all readings
                 await _hubContext.Clients.All.SendAsync("ReceiveReadings", readings);
 
@@ -146,17 +149,24 @@ namespace EnergyOptimizer.API.Services
         {
             try
             {
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
+
+                // Get actual count of active devices from database
+                var totalActiveDevices = await context.Devices
+                    .CountAsync(d => d.IsActive);
+
                 var update = new DashboardUpdateDto
                 {
                     Timestamp = DateTime.UtcNow,
                     TotalConsumption = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2),
-                    ActiveDevices = readings.Count,
+                    ActiveDevices = totalActiveDevices, 
                     TotalReadings = readings.Count,
                     TopConsumers = readings
                         .OrderByDescending(r => r.PowerConsumptionKW)
                         .Take(5)
                         .Select(r => new TopConsumerDto
-                        {
+                        { 
                             DeviceName = r.DeviceName,
                             CurrentConsumption = r.PowerConsumptionKW
                         })
@@ -165,7 +175,7 @@ namespace EnergyOptimizer.API.Services
 
                 await _hubContext.Clients.All.SendAsync("DashboardUpdate", update);
 
-                _logger.LogDebug("Broadcasted dashboard update");
+                _logger.LogDebug("Broadcasted dashboard update - Active: {ActiveDevices}", totalActiveDevices);
             }
             catch (Exception ex)
             {

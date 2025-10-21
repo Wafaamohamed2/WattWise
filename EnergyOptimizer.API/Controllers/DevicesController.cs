@@ -1,8 +1,10 @@
 ﻿using EnergyOptimizer.API.DTOs;
+using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using EnergyOptimizer.API.Hubs;
@@ -305,7 +307,7 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
-        // ✅ Toggle device status (Active/Inactive) + notify clients via SignalR
+        //  Toggle device status (Active/Inactive) + notify clients via SignalR
         [HttpPatch("{id}/toggle")]
         public async Task<ActionResult> ToggleDevice(int id)
         {

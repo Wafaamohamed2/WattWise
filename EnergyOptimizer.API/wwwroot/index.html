@@ -1089,6 +1089,26 @@
             `;
                 container.appendChild(div);
             });
+
+            console.log("🔍 Reading device IDs:", readings.map(r => r.deviceId));
+
+
+            // ✨ Update ALL device cards with current power
+            readings.forEach(reading => {
+                const currentPowerSpan = document.getElementById(`device-${reading.deviceId}-current`);
+                if (!currentPowerSpan) return;
+
+                if (reading.powerConsumptionKW > 0) {
+                    currentPowerSpan.innerHTML = `💡 Current: ${reading.powerConsumptionKW.toFixed(3)} kW`;
+                    currentPowerSpan.style.color = '#667eea';
+                } else if (reading.powerConsumptionKW === 0 && reading.isActive) {
+                    currentPowerSpan.innerHTML = `⚡ Standby`;
+                    currentPowerSpan.style.color = '#9ca3af';
+                } else {
+                    currentPowerSpan.innerHTML = `💤 Device OFF`;
+                    currentPowerSpan.style.color = '#9ca3af';
+                }
+            });
         }
 
 
