@@ -1,0 +1,581 @@
+2025-10-24 20:17:15.079 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-24 20:17:15.104 +03:00 [INF] Alert Detection Service started
+2025-10-24 20:17:15.275 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-24 20:17:15.277 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-24 20:17:15.278 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-24 20:17:15.279 +03:00 [INF] Hosting environment: Development
+2025-10-24 20:17:15.280 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-24 20:17:15.915 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-24 20:17:15.915 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-24 20:17:15.947 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 38.9982ms
+2025-10-24 20:17:15.974 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 66.9872ms
+2025-10-24 20:17:16.002 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-24 20:17:16.142 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 140.0827ms
+2025-10-24 20:17:21.172 +03:00 [INF] Executed DbCommand (28ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:17:21.365 +03:00 [INF] Executed DbCommand (36ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:17:21.392 +03:00 [INF] Generated 10 readings at 2025-10-24 20:17:21
+2025-10-24 20:17:21.415 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:17:25.215 +03:00 [INF] Executed DbCommand (24ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:17:26.872 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - null 0
+2025-10-24 20:17:26.899 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:17:26.900 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:17:26.903 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:17:26.919 +03:00 [INF] Route matched with {action = "PredictConsumption", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] PredictConsumption(Int32) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:17:26.945 +03:00 [INF] Predicting consumption for next 7 days
+2025-10-24 20:17:26.979 +03:00 [INF] Executed DbCommand (14ms) [Parameters=[@__startDate_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e0].[Key] AS [Date], COALESCE(SUM([e0].[PowerConsumptionKW]), 0.0) AS [Consumption], AVG([e0].[Temperature]) AS [AvgTemp]
+FROM (
+    SELECT [e].[PowerConsumptionKW], [e].[Temperature], CONVERT(date, [e].[Timestamp]) AS [Key]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__startDate_0
+) AS [e0]
+GROUP BY [e0].[Key]
+ORDER BY [e0].[Key]
+2025-10-24 20:17:27.014 +03:00 [INF] Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:17:27.018 +03:00 [INF] Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:19:58.271 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-24 20:19:58.296 +03:00 [INF] Alert Detection Service started
+2025-10-24 20:19:58.414 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-24 20:19:58.416 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-24 20:19:58.417 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-24 20:19:58.417 +03:00 [INF] Hosting environment: Development
+2025-10-24 20:19:58.418 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-24 20:19:59.097 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-24 20:19:59.097 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-24 20:19:59.122 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 30.5787ms
+2025-10-24 20:19:59.149 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 58.7902ms
+2025-10-24 20:19:59.175 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-24 20:19:59.300 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 125.3775ms
+2025-10-24 20:20:03.930 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - null 0
+2025-10-24 20:20:03.949 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:20:03.950 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:20:03.953 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:20:03.971 +03:00 [INF] Route matched with {action = "PredictConsumption", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] PredictConsumption(Int32) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:20:04.048 +03:00 [INF] Predicting consumption for next 7 days
+2025-10-24 20:20:04.257 +03:00 [INF] Executed DbCommand (25ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:20:04.264 +03:00 [INF] Executed DbCommand (32ms) [Parameters=[@__startDate_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e0].[Key] AS [Date], COALESCE(SUM([e0].[PowerConsumptionKW]), 0.0) AS [Consumption], AVG([e0].[Temperature]) AS [AvgTemp]
+FROM (
+    SELECT [e].[PowerConsumptionKW], [e].[Temperature], CONVERT(date, [e].[Timestamp]) AS [Key]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__startDate_0
+) AS [e0]
+GROUP BY [e0].[Key]
+ORDER BY [e0].[Key]
+2025-10-24 20:20:04.309 +03:00 [INF] Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:20:04.312 +03:00 [INF] Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:20:04.424 +03:00 [INF] Executed DbCommand (21ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:20:04.444 +03:00 [INF] Generated 10 readings at 2025-10-24 20:20:04
+2025-10-24 20:20:04.494 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:20:08.349 +03:00 [INF] Executed DbCommand (21ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:22:39.356 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-24 20:22:39.385 +03:00 [INF] Alert Detection Service started
+2025-10-24 20:22:39.511 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-24 20:22:39.513 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-24 20:22:39.514 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-24 20:22:39.514 +03:00 [INF] Hosting environment: Development
+2025-10-24 20:22:39.515 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-24 20:22:40.042 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-24 20:22:40.042 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-24 20:22:40.076 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 38.2232ms
+2025-10-24 20:22:40.105 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 68.9097ms
+2025-10-24 20:22:40.133 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-24 20:22:40.265 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 132.4489ms
+2025-10-24 20:22:45.330 +03:00 [INF] Executed DbCommand (32ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:22:45.545 +03:00 [INF] Executed DbCommand (43ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:22:45.565 +03:00 [INF] Generated 10 readings at 2025-10-24 20:22:45
+2025-10-24 20:22:45.589 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:22:49.543 +03:00 [INF] Executed DbCommand (24ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:23:02.725 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/ask - application/json 82
+2025-10-24 20:23:02.768 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:23:02.771 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:23:02.779 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API)'
+2025-10-24 20:23:02.817 +03:00 [INF] Route matched with {action = "AskQuestion", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] AskQuestion(AskQuestionRequest) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:23:02.831 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API) in 6.7987ms
+2025-10-24 20:23:02.834 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API)'
+2025-10-24 20:23:02.838 +03:00 [ERR] HTTP POST /api/AI/ask responded 500 in 75.6206 ms
+System.InvalidOperationException: A suitable constructor for type 'EnergyOptimizer.AI.Services.GeminiService' could not be located. Ensure the type is concrete and all parameters of a public constructor are either registered as services or passed as arguments. Also ensure no extraneous arguments are provided.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.FindApplicableConstructor(Type instanceType, Type[] argumentTypes, ConstructorInfoEx[] constructors, ConstructorInfo& matchingConstructor, Nullable`1[]& matchingParameterMap)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactoryInternal(Type instanceType, Type[] argumentTypes, ParameterExpression& provider, ParameterExpression& argumentArray, Expression& factoryExpressionBody)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type instanceType, Type[] argumentTypes)
+   at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.Cache.get_Activator()
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.CreateClient(HttpClient httpClient)
+   at Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddTransientHelper[TClient,TImplementation](IServiceProvider s, IHttpClientBuilder builder)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method391(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2025-10-24 20:23:02.893 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: A suitable constructor for type 'EnergyOptimizer.AI.Services.GeminiService' could not be located. Ensure the type is concrete and all parameters of a public constructor are either registered as services or passed as arguments. Also ensure no extraneous arguments are provided.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.FindApplicableConstructor(Type instanceType, Type[] argumentTypes, ConstructorInfoEx[] constructors, ConstructorInfo& matchingConstructor, Nullable`1[]& matchingParameterMap)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactoryInternal(Type instanceType, Type[] argumentTypes, ParameterExpression& provider, ParameterExpression& argumentArray, Expression& factoryExpressionBody)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type instanceType, Type[] argumentTypes)
+   at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.Cache.get_Activator()
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.CreateClient(HttpClient httpClient)
+   at Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddTransientHelper[TClient,TImplementation](IServiceProvider s, IHttpClientBuilder builder)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method391(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-10-24 20:23:02.910 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/AI/ask - 500 null text/plain; charset=utf-8 185.2595ms
+2025-10-24 20:23:39.023 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-24 20:23:39.048 +03:00 [INF] Alert Detection Service started
+2025-10-24 20:23:39.172 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-24 20:23:39.174 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-24 20:23:39.175 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-24 20:23:39.176 +03:00 [INF] Hosting environment: Development
+2025-10-24 20:23:39.176 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-24 20:23:39.504 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-24 20:23:39.504 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-24 20:23:39.527 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 28.472ms
+2025-10-24 20:23:39.554 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 56.351ms
+2025-10-24 20:23:39.581 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-24 20:23:39.708 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 128.2487ms
+2025-10-24 20:23:45.000 +03:00 [INF] Executed DbCommand (37ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:23:45.249 +03:00 [INF] Executed DbCommand (49ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:23:45.270 +03:00 [INF] Generated 10 readings at 2025-10-24 20:23:45
+2025-10-24 20:23:45.300 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:23:48.470 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - null 0
+2025-10-24 20:23:48.497 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:23:48.499 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:23:48.502 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:23:48.524 +03:00 [INF] Route matched with {action = "PredictConsumption", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] PredictConsumption(Int32) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:23:48.538 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API) in 5.6332ms
+2025-10-24 20:23:48.540 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:23:48.542 +03:00 [ERR] HTTP POST /api/AI/predict-consumption responded 500 in 47.0755 ms
+System.InvalidOperationException: A suitable constructor for type 'EnergyOptimizer.AI.Services.GeminiService' could not be located. Ensure the type is concrete and all parameters of a public constructor are either registered as services or passed as arguments. Also ensure no extraneous arguments are provided.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.FindApplicableConstructor(Type instanceType, Type[] argumentTypes, ConstructorInfoEx[] constructors, ConstructorInfo& matchingConstructor, Nullable`1[]& matchingParameterMap)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactoryInternal(Type instanceType, Type[] argumentTypes, ParameterExpression& provider, ParameterExpression& argumentArray, Expression& factoryExpressionBody)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type instanceType, Type[] argumentTypes)
+   at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.Cache.get_Activator()
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.CreateClient(HttpClient httpClient)
+   at Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddTransientHelper[TClient,TImplementation](IServiceProvider s, IHttpClientBuilder builder)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitFactory(FactoryCallSite factoryCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method329(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2025-10-24 20:23:48.567 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: A suitable constructor for type 'EnergyOptimizer.AI.Services.GeminiService' could not be located. Ensure the type is concrete and all parameters of a public constructor are either registered as services or passed as arguments. Also ensure no extraneous arguments are provided.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.FindApplicableConstructor(Type instanceType, Type[] argumentTypes, ConstructorInfoEx[] constructors, ConstructorInfo& matchingConstructor, Nullable`1[]& matchingParameterMap)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactoryInternal(Type instanceType, Type[] argumentTypes, ParameterExpression& provider, ParameterExpression& argumentArray, Expression& factoryExpressionBody)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type instanceType, Type[] argumentTypes)
+   at System.Threading.LazyInitializer.EnsureInitializedCore[T](T& target, Boolean& initialized, Object& syncLock, Func`1 valueFactory)
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.Cache.get_Activator()
+   at Microsoft.Extensions.Http.DefaultTypedHttpClientFactory`1.CreateClient(HttpClient httpClient)
+   at Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddTransientHelper[TClient,TImplementation](IServiceProvider s, IHttpClientBuilder builder)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitFactory(FactoryCallSite factoryCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method329(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-10-24 20:23:48.587 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - 500 null text/plain; charset=utf-8 116.6983ms
+2025-10-24 20:23:49.235 +03:00 [INF] Executed DbCommand (24ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:23:49.318 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p3='?' (Size = 500), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Alerts] ([CreatedAt], [DeviceId], [IsRead], [Message], [Severity], [Type])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+2025-10-24 20:23:49.357 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@__alert_DeviceId_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[Id] = @__alert_DeviceId_0
+2025-10-24 20:23:49.360 +03:00 [INF] Broadcasted alert 1361 for device Updated Fan
+2025-10-24 20:23:49.361 +03:00 [INF] Created 1 new alerts
+2025-10-24 20:24:19.415 +03:00 [INF] Executed DbCommand (34ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:24:19.430 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (DbType = Int32), @p2='?' (DbType = Boolean), @p3='?' (Size = 500), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Alerts] ([CreatedAt], [DeviceId], [IsRead], [Message], [Severity], [Type])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+2025-10-24 20:24:19.438 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__alert_DeviceId_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[Id] = @__alert_DeviceId_0
+2025-10-24 20:24:19.440 +03:00 [INF] Broadcasted alert 1362 for device Updated Fan
+2025-10-24 20:24:19.441 +03:00 [INF] Created 1 new alerts
+2025-10-24 20:27:05.735 +03:00 [INF] Energy Reading Simulator Service started
+2025-10-24 20:27:05.763 +03:00 [INF] Alert Detection Service started
+2025-10-24 20:27:05.927 +03:00 [INF] Now listening on: https://localhost:7083
+2025-10-24 20:27:05.929 +03:00 [INF] Now listening on: http://localhost:5167
+2025-10-24 20:27:05.931 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-24 20:27:05.932 +03:00 [INF] Hosting environment: Development
+2025-10-24 20:27:05.933 +03:00 [INF] Content root path: F:\Energy Optimizer\EnergyOptimizer.API
+2025-10-24 20:27:06.599 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_vs/browserLink - null null
+2025-10-24 20:27:06.599 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - null null
+2025-10-24 20:27:06.626 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_framework/aspnetcore-browser-refresh.js - 200 13774 application/javascript; charset=utf-8 31.817ms
+2025-10-24 20:27:06.651 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/_vs/browserLink - 200 null text/javascript; charset=UTF-8 58.583ms
+2025-10-24 20:27:06.678 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - null null
+2025-10-24 20:27:06.812 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7083/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 134.5565ms
+2025-10-24 20:27:11.808 +03:00 [INF] Executed DbCommand (71ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:27:12.014 +03:00 [INF] Executed DbCommand (37ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:27:12.039 +03:00 [INF] Generated 10 readings at 2025-10-24 20:27:11
+2025-10-24 20:27:12.065 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:27:15.906 +03:00 [INF] Executed DbCommand (22ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:27:25.855 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/ask - application/json 82
+2025-10-24 20:27:25.875 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:27:25.876 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:27:25.881 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API)'
+2025-10-24 20:27:25.901 +03:00 [INF] Route matched with {action = "AskQuestion", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] AskQuestion(AskQuestionRequest) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:27:25.973 +03:00 [INF] Processing question: What is energy optimization?
+2025-10-24 20:27:26.000 +03:00 [INF] Calling Gemini API at: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=***KEY***
+2025-10-24 20:27:26.027 +03:00 [INF] Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:27:26.039 +03:00 [INF] Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:27:33.316 +03:00 [INF] Received HTTP response headers after 7243.5452ms - 200
+2025-10-24 20:27:33.318 +03:00 [INF] End processing HTTP request after 7294.5804ms - 200
+2025-10-24 20:27:33.337 +03:00 [INF] Successfully received response from Gemini API
+2025-10-24 20:27:33.343 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-24 20:27:33.356 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API) in 7450.3508ms
+2025-10-24 20:27:33.360 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AIController.AskQuestion (EnergyOptimizer.API)'
+2025-10-24 20:27:33.364 +03:00 [INF] HTTP POST /api/AI/ask responded 200 in 7491.1060 ms
+2025-10-24 20:27:33.369 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/AI/ask - 200 null application/json; charset=utf-8 7513.4284ms
+2025-10-24 20:27:45.959 +03:00 [INF] Executed DbCommand (26ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC
+2025-10-24 20:27:46.027 +03:00 [INF] Request starting HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - null 0
+2025-10-24 20:27:46.038 +03:00 [INF] CORS policy execution failed.
+2025-10-24 20:27:46.040 +03:00 [INF] Request origin https://localhost:7083 does not have permission to access the resource.
+2025-10-24 20:27:46.041 +03:00 [INF] Executing endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:27:46.049 +03:00 [INF] Route matched with {action = "PredictConsumption", controller = "AI"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[System.Object]] PredictConsumption(Int32) on controller EnergyOptimizer.API.Controllers.AIController (EnergyOptimizer.API).
+2025-10-24 20:27:46.059 +03:00 [INF] Predicting consumption for next 7 days
+2025-10-24 20:27:46.103 +03:00 [INF] Executed DbCommand (9ms) [Parameters=[@__startDate_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e0].[Key] AS [Date], COALESCE(SUM([e0].[PowerConsumptionKW]), 0.0) AS [Consumption], AVG([e0].[Temperature]) AS [AvgTemp]
+FROM (
+    SELECT [e].[PowerConsumptionKW], [e].[Temperature], CONVERT(date, [e].[Timestamp]) AS [Key]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__startDate_0
+) AS [e0]
+GROUP BY [e0].[Key]
+ORDER BY [e0].[Key]
+2025-10-24 20:27:46.112 +03:00 [INF] Calling Gemini API at: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=***KEY***
+2025-10-24 20:27:46.115 +03:00 [INF] Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:27:46.116 +03:00 [INF] Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDNWfFMPJzWwKDI12IZgPOj55eYC98SW3w
+2025-10-24 20:28:08.750 +03:00 [INF] Received HTTP response headers after 22633.2167ms - 200
+2025-10-24 20:28:08.758 +03:00 [INF] End processing HTTP request after 22643.5594ms - 200
+2025-10-24 20:28:08.761 +03:00 [INF] Successfully received response from Gemini API
+2025-10-24 20:28:08.803 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@p0='?' (Size = 12) (DbType = Double), @p1='?' (Size = 5) (DbType = Double), @p2='?' (DbType = DateTime2), @p3='?' (Size = -1), @p4='?' (Size = 4000), @p5='?' (Size = 12) (DbType = Double), @p6='?' (DbType = DateTime2), @p7='?' (Size = 50)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [ConsumptionPredictions] ([ActualConsumptionKWh], [ConfidenceScore], [CreatedAt], [Explanation], [Metadata], [PredictedConsumptionKWh], [PredictionDate], [PredictionType])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+2025-10-24 20:28:08.808 +03:00 [INF] Saved prediction for "2025-10-25T17:28:08.7630539Z"
+2025-10-24 20:28:08.810 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType10`4[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Double, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-10-24 20:28:08.820 +03:00 [INF] Executed action EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API) in 22768.8382ms
+2025-10-24 20:28:08.821 +03:00 [INF] Executed endpoint 'EnergyOptimizer.API.Controllers.AIController.PredictConsumption (EnergyOptimizer.API)'
+2025-10-24 20:28:08.822 +03:00 [INF] HTTP POST /api/AI/predict-consumption responded 200 in 22784.5223 ms
+2025-10-24 20:28:08.825 +03:00 [INF] Request finished HTTP/2 POST https://localhost:7083/api/AI/predict-consumption?days=7 - 200 null application/json; charset=utf-8 22801.0863ms
+2025-10-24 20:28:12.083 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:28:12.116 +03:00 [INF] Executed DbCommand (24ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p6='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p7='?' (DbType = Int32), @p8='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (DbType = DateTime2), @p11='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p15='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p16='?' (DbType = DateTime2), @p17='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p18='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p19='?' (DbType = Int32), @p20='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p21='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p22='?' (DbType = DateTime2), @p23='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p24='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p25='?' (DbType = Int32), @p26='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p27='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p28='?' (DbType = DateTime2), @p29='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p30='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p31='?' (DbType = Int32), @p32='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p33='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p34='?' (DbType = DateTime2), @p35='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p36='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p37='?' (DbType = Int32), @p38='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p39='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p40='?' (DbType = DateTime2), @p41='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p42='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p43='?' (DbType = Int32), @p44='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p45='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p46='?' (DbType = DateTime2), @p47='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p48='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p49='?' (DbType = Int32), @p50='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p51='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p52='?' (DbType = DateTime2), @p53='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p54='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p55='?' (DbType = Int32), @p56='?' (Precision = 18) (Scale = 4) (DbType = Decimal), @p57='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p58='?' (DbType = DateTime2), @p59='?' (Precision = 18) (Scale = 2) (DbType = Decimal)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+MERGE [EnergyReadings] USING (
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0),
+(@p6, @p7, @p8, @p9, @p10, @p11, 1),
+(@p12, @p13, @p14, @p15, @p16, @p17, 2),
+(@p18, @p19, @p20, @p21, @p22, @p23, 3),
+(@p24, @p25, @p26, @p27, @p28, @p29, 4),
+(@p30, @p31, @p32, @p33, @p34, @p35, 5),
+(@p36, @p37, @p38, @p39, @p40, @p41, 6),
+(@p42, @p43, @p44, @p45, @p46, @p47, 7),
+(@p48, @p49, @p50, @p51, @p52, @p53, 8),
+(@p54, @p55, @p56, @p57, @p58, @p59, 9)) AS i ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Current], [DeviceId], [PowerConsumptionKW], [Temperature], [Timestamp], [Voltage])
+VALUES (i.[Current], i.[DeviceId], i.[PowerConsumptionKW], i.[Temperature], i.[Timestamp], i.[Voltage])
+OUTPUT INSERTED.[Id], i._Position;
+2025-10-24 20:28:12.188 +03:00 [INF] Generated 10 readings at 2025-10-24 20:28:12
+2025-10-24 20:28:12.208 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Devices] AS [d]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+2025-10-24 20:28:16.005 +03:00 [INF] Executed DbCommand (20ms) [Parameters=[@__fiveMinutesAgo_0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [d].[Id], [d].[InstallationDate], [d].[IsActive], [d].[Name], [d].[RatedPowerKW], [d].[Type], [d].[ZoneId], [z].[Id], [z].[Area], [z].[BuildingId], [z].[Name], [z].[Type], [e0].[Id], [e0].[Current], [e0].[DeviceId], [e0].[PowerConsumptionKW], [e0].[Temperature], [e0].[Timestamp], [e0].[Voltage]
+FROM [Devices] AS [d]
+INNER JOIN [Zones] AS [z] ON [d].[ZoneId] = [z].[Id]
+LEFT JOIN (
+    SELECT [e].[Id], [e].[Current], [e].[DeviceId], [e].[PowerConsumptionKW], [e].[Temperature], [e].[Timestamp], [e].[Voltage]
+    FROM [EnergyReadings] AS [e]
+    WHERE [e].[Timestamp] >= @__fiveMinutesAgo_0
+) AS [e0] ON [d].[Id] = [e0].[DeviceId]
+WHERE [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[Id], [z].[Id], [e0].[Timestamp] DESC

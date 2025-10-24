@@ -3,8 +3,16 @@ using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.API.Services;
+using EnergyOptimizer.AI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Explicitly load appsettings.json (ensures Gemini section is available)
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -36,6 +44,20 @@ builder.Services.AddHostedService<AlertDetectionService>();
 
 // Add Data Seeding Service
 builder.Services.AddTransient<DataSeedingService>();
+
+// Configure Gemini Settings
+builder.Services.Configure<GeminiSettings>(
+    builder.Configuration.GetSection("Gemini"));
+
+// Add Memory Cache for AI responses
+builder.Services.AddMemoryCache();
+
+// Register HttpClient for Gemini Service
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
+
+// Register Pattern Detection Service
+builder.Services.AddScoped<PatternDetectionService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
