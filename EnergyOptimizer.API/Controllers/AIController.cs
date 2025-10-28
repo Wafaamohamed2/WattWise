@@ -1,7 +1,9 @@
 ﻿using EnergyOptimizer.AI.Services;
 using EnergyOptimizer.API.Services;
+using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -12,18 +14,21 @@ namespace EnergyOptimizer.API.Controllers
 
         private readonly PatternDetectionService _patternService;
         private readonly IGeminiService _geminiService;
+        private readonly EnergyDbContext _context;
         private readonly ILogger<AIController> _logger;
 
         public AIController(
             PatternDetectionService patternService,
             IGeminiService geminiService,
+            EnergyDbContext context,
             ILogger<AIController> logger)
         {
             _patternService = patternService;
             _geminiService = geminiService;
+            _context = context;
             _logger = logger;
         }
-
+        #region Action Endpoints
         [HttpPost("analyze-patterns")]
         public async Task<ActionResult<object>> AnalyzePatterns(
           [FromQuery] DateTime? startDate = null,
@@ -80,6 +85,8 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
+
+        // Detect anomalies for a specific device
         [HttpPost("detect-anomalies/{deviceId}")]
         public async Task<ActionResult<object>> DetectAnomalies(
             int deviceId,
@@ -121,6 +128,8 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
+
+        // Generate energy-saving recommendations
         [HttpPost("generate-recommendations")]
         public async Task<ActionResult<object>> GenerateRecommendations(
             [FromQuery] DateTime? startDate = null,
@@ -156,6 +165,7 @@ namespace EnergyOptimizer.API.Controllers
                         potentialSavings = r.PotentialSavingsKWh,
                         actionItems = r.ActionItems
                     }),
+                    totalRecommendations = result.Recommendations.Count,
                     estimatedSavings = new
                     {
                         kWh = result.EstimatedSavingsKWh,
@@ -170,6 +180,8 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
+
+        // Predict future consumption
         [HttpPost("predict-consumption")]
         public async Task<ActionResult<object>> PredictConsumption(
            [FromQuery] int days = 7)
@@ -201,6 +213,8 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
+
+        // Ask a question to the AI system about energy optimization
         [HttpPost("ask")]
         public async Task<ActionResult<object>> AskQuestion([FromBody] AskQuestionRequest request)
         {
@@ -229,20 +243,86 @@ namespace EnergyOptimizer.API.Controllers
                 return StatusCode(500, new { error = "Failed to process question" });
             }
         }
+        #endregion
 
+        #region Analysis Endpoints
+        // Endpoints for managing analysis history, recommendations, and anomalies
         [HttpGet("analysis-history")]
         public async Task<ActionResult<object>> GetAnalysisHistory(
-           [FromQuery] int page = 1,
-           [FromQuery] int pageSize = 10)
+            [FromQuery] string? analysisType = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+
+                var query = context.EnergyAnalyses
+                    .Include(a => a.Insights)
+                    .Include(a => a.Recommendations)
+                    .Include(a => a.Anomalies)
+                    .AsQueryable();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(analysisType))
+                {
+                    query = query.Where(a => a.AnalysisType == analysisType);
+                }
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(a => a.AnalysisDate >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(a => a.AnalysisDate <= endDate.Value);
+                }
+
+                // Get total count
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                // Get paginated results
+                var analyses = await query
+                    .OrderByDescending(a => a.AnalysisDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(a => new
+                    {
+                        a.Id,
+                        a.AnalysisDate,
+                        a.AnalysisType,
+                        a.Summary,
+                        Period = new
+                        {
+                            Start = a.PeriodStart,
+                            End = a.PeriodEnd
+                        },
+                        a.TotalConsumptionKWh,
+                        a.DevicesAnalyzed,
+                        InsightsCount = a.Insights.Count,
+                        RecommendationsCount = a.Recommendations.Count,
+                        AnomaliesCount = a.Anomalies.Count,
+                        Insights = a.Insights.Select(i => new
+                        {
+                            i.Id,
+                            i.InsightText,
+                            i.Category,
+                            i.Priority
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
                 return Ok(new
                 {
                     page,
                     pageSize,
-                    totalCount = 0,
-                    data = new List<object>()
+                    totalCount,
+                    totalPages,
+                    data = analyses
                 });
             }
             catch (Exception ex)
@@ -252,17 +332,241 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
-        [HttpGet("recommendations")]
-        public async Task<ActionResult<object>> GetRecommendations(
-        [FromQuery] bool? isImplemented = null,
-        [FromQuery] string? priority = null)
+        // Get detailed analysis by ID
+        [HttpGet("analysis/{id}")]
+        public async Task<ActionResult<object>> GetAnalysisById(int id)
         {
             try
             {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+
+                var analysis = await context.EnergyAnalyses
+                    .Include(a => a.Insights)
+                    .Include(a => a.Recommendations)
+                    .Include(a => a.Anomalies)
+                        .ThenInclude(an => an.Device)
+                    .Where(a => a.Id == id)
+                    .Select(a => new
+                    {
+                        a.Id,
+                        a.AnalysisDate,
+                        a.AnalysisType,
+                        a.Summary,
+                        a.FullResponse,
+                        Period = new
+                        {
+                            Start = a.PeriodStart,
+                            End = a.PeriodEnd
+                        },
+                        a.TotalConsumptionKWh,
+                        a.DevicesAnalyzed,
+                        Insights = a.Insights.OrderBy(i => i.Priority).Select(i => new
+                        {
+                            i.Id,
+                            i.InsightText,
+                            i.Category,
+                            Priority = i.Priority == 1 ? "High" : i.Priority == 2 ? "Medium" : "Low",
+                            i.CreatedAt
+                        }).ToList(),
+                        Recommendations = a.Recommendations.Select(r => new
+                        {
+                            r.Id,
+                            r.Title,
+                            r.Description,
+                            r.Category,
+                            r.Priority,
+                            r.EstimatedSavingsKWh,
+                            r.IsImplemented,
+                            r.CreatedAt
+                        }).ToList(),
+                        Anomalies = a.Anomalies.Select(an => new
+                        {
+                            an.Id,
+                            Device = new
+                            {
+                                an.Device.Id,
+                                an.Device.Name
+                            },
+                            an.AnomalyTimestamp,
+                            an.ActualValue,
+                            an.ExpectedValue,
+                            an.Deviation,
+                            an.Severity,
+                            an.Description,
+                            an.IsResolved
+                        }).ToList()
+                    })
+                        .FirstOrDefaultAsync();
+
+                if (analysis == null)
+                {
+                    return NotFound(new { error = $"Analysis with ID {id} not found" });
+                }
+                return Ok(analysis);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving analysis by ID {Id}", id);
+                return StatusCode(500, new { error = "Failed to retrieve analysis" });
+            }
+        }
+
+        [HttpGet("Statistics")]
+        public async Task<ActionResult<object>> GetAIStatistics()
+        {
+            try
+            {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+
+                var stats = new
+                {
+                    Analyses = new
+                    {
+                        Total = await context.EnergyAnalyses.CountAsync(),
+                        Last30Days = await context.EnergyAnalyses
+                           .CountAsync(a => a.AnalysisDate >= DateTime.UtcNow.AddDays(-30)),
+                        ByType = await context.EnergyAnalyses
+                           .GroupBy(a => a.AnalysisType)
+                           .Select(g => new { Type = g.Key, Count = g.Count() })
+                           .ToListAsync()
+                    },
+                    Recommendations = new
+                    {
+                        Total = await context.EnergyRecommendations.CountAsync(),
+                        Active = await context.EnergyRecommendations
+                            .CountAsync(r => !r.IsImplemented && (r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)),
+                        Implemented = await context.EnergyRecommendations.CountAsync(r => r.IsImplemented),
+                        TotalPotentialSavings = Math.Round(
+                              (await _context.EnergyRecommendations
+                                 .Where(r => !r.IsImplemented)
+                                 .Select(r => r.EstimatedSavingsKWh)
+                                 .ToListAsync())
+                                 .Sum(), 2),
+                        ByPriority = await context.EnergyRecommendations
+                            .Where(r => !r.IsImplemented)
+                            .GroupBy(r => r.Priority)
+                            .Select(g => new { Priority = g.Key, Count = g.Count() })
+                            .ToListAsync()
+                    },
+                    Anomalies = new
+                    {
+                        Total = await context.DetectedAnomalies.CountAsync(),
+                        Unresolved = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved),
+                        Resolved = await context.DetectedAnomalies.CountAsync(a => a.IsResolved),
+                        Last7Days = await context.DetectedAnomalies
+                            .CountAsync(a => a.DetectedAt >= DateTime.UtcNow.AddDays(-7)),
+                        BySeverity = await context.DetectedAnomalies
+                            .Where(a => !a.IsResolved)
+                            .GroupBy(a => a.Severity)
+                            .Select(g => new { Severity = g.Key, Count = g.Count() })
+                            .ToListAsync(),
+                        DevicesAffected = await context.DetectedAnomalies
+                            .Where(a => !a.IsResolved)
+                            .Select(a => a.DeviceId)
+                            .Distinct()
+                            .CountAsync()
+                    },
+                    LastAnalysis = await context.EnergyAnalyses
+                        .OrderByDescending(a => a.AnalysisDate)
+                        .Select(a => new
+                        {
+                            a.Id,
+                            a.AnalysisDate,
+                            a.AnalysisType,
+                            a.Summary
+                        })
+                        .FirstOrDefaultAsync()
+                };
+
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving AI statistics");
+                return StatusCode(500, new { error = "Failed to retrieve statistics" });
+            }
+        }
+
+        #endregion
+
+
+        #region Recommendations Endpoints
+        [HttpGet("recommendations")]
+        public async Task<ActionResult<object>> GetRecommendations(
+        [FromQuery] bool? isImplemented = null,
+            [FromQuery] string? priority = null,
+            [FromQuery] string? category = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+
+                var query = context.EnergyRecommendations
+                    .Where(r => r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)
+                    .AsQueryable();
+
+                // Apply filters
+                if (isImplemented.HasValue)
+                {
+                    query = query.Where(r => r.IsImplemented == isImplemented.Value);
+                }
+
+                if (!string.IsNullOrEmpty(priority))
+                {
+                    query = query.Where(r => r.Priority == priority);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    query = query.Where(r => r.Category == category);
+                }
+
+                // Get total count
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                var recommendations = await query
+                    .OrderByDescending(r => r.Priority == "High" ? 1 : r.Priority == "Medium" ? 2 : 3)
+                    .ThenByDescending(r => r.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new
+                    {
+                        r.Id,
+                        r.Title,
+                        r.Description,
+                        r.Category,
+                        r.Priority,
+                        r.EstimatedSavingsKWh,
+                        r.EstimatedSavingsPercent,
+                        r.IsImplemented,
+                        r.CreatedAt
+                    })
+                    .ToListAsync();
+
+                var stats = await context.EnergyRecommendations
+                  .Where(r => r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)
+                  .GroupBy(_ => 1)
+                  .Select(g => new
+                  {
+                      Total = g.Count(),
+                      Implemented = g.Count(r => r.IsImplemented),
+                      Pending = g.Count(r => !r.IsImplemented),
+                      HighPriority = g.Count(r => !r.IsImplemented && r.Priority == "High"),
+                      TotalEstimatedSavings = g.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh)
+                  })
+                 .FirstOrDefaultAsync();
+
                 return Ok(new
                 {
-                    totalCount = 0,
-                    data = new List<object>()
+                    page,
+                    pageSize,
+                    totalCount,
+                    totalPages,
+                    statistics = stats,
+                    data = recommendations
                 });
             }
             catch (Exception ex)
@@ -277,10 +581,32 @@ namespace EnergyOptimizer.API.Controllers
         {
             try
             {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var recommendation = await context.EnergyRecommendations.FindAsync(id);
+
+                if (recommendation == null)
+                {
+                    return NotFound(new { error = $"Recommendation with ID {id} not found" });
+                }
+
+                if (recommendation.IsImplemented)
+                {
+                    return BadRequest(new { error = "Recommendation is already implemented" });
+                }
+
+                recommendation.IsImplemented = true;
+                recommendation.ImplementedDate = DateTime.UtcNow;
+                await context.SaveChangesAsync();
+
+                _logger.LogInformation("Recommendation {Id} marked as implemented", id);
+
                 return Ok(new
                 {
-                    id,
-                    message = "Recommendation marked as implemented"
+                    id = recommendation.Id,
+                    title = recommendation.Title,
+                    isImplemented = recommendation.IsImplemented,
+                    implementedDate = recommendation.ImplementedDate,
+                    message = "Recommendation marked as implemented successfully"
                 });
             }
             catch (Exception ex)
@@ -290,24 +616,188 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
-        [HttpGet("anomalies")]
-        public async Task<ActionResult<object>> GetAnomalies(
-            [FromQuery] bool? isResolved = null,
-            [FromQuery] string? severity = null,
-            [FromQuery] int? deviceId = null)
+        [HttpDelete("recommrndations/{id}")]
+        public async Task<ActionResult<object>> DeleteRecommendation(int id)
         {
             try
             {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var recommendation = await context.EnergyRecommendations.FindAsync(id);
+                if (recommendation == null)
+                {
+                    return NotFound(new { error = $"Recommendation with ID {id} not found" });
+                }
+
+                context.EnergyRecommendations.Remove(recommendation);
+                await context.SaveChangesAsync();
                 return Ok(new
                 {
-                    totalCount = 0,
-                    data = new List<object>()
+                    id,
+                    message = "Recommendation deleted successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting recommendation");
+                return StatusCode(500, new { error = "Failed to delete recommendation" });
+            }
+        }
+        #endregion
+
+
+        #region Anomalies Endpoints
+        [HttpGet("anomalies")]
+        public async Task<ActionResult<object>> GetAnomalies(
+           [FromQuery] bool? isResolved = null,
+            [FromQuery] string? severity = null,
+            [FromQuery] int? deviceId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var query = context.DetectedAnomalies
+                    .Include(a => a.Device)
+                        .ThenInclude(d => d.Zone)
+                    .AsQueryable();
+
+                // Apply filters
+                if (isResolved.HasValue)
+                {
+                    query = query.Where(a => a.IsResolved == isResolved.Value);
+                }
+                if (!string.IsNullOrEmpty(severity))
+                {
+                    query = query.Where(a => a.Severity == severity);
+                }
+                if (deviceId.HasValue)
+                {
+                    query = query.Where(a => a.DeviceId == deviceId.Value);
+                }
+                if (startDate.HasValue)
+                {
+                    query = query.Where(a => a.DetectedAt >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(a => a.DetectedAt <= endDate.Value);
+                }
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                var anomalies = await query
+                     .OrderByDescending(a => a.Severity == "Critical" ? 1 : a.Severity == "High" ? 2 : a.Severity == "Medium" ? 3 : 4)
+                    .ThenByDescending(a => a.DetectedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(a => new
+                    {
+                        a.Id,
+                        Device = new
+                        {
+                            a.Device.Id,
+                            a.Device.Name,
+                            Zone = a.Device.Zone.Name
+                        },
+                        a.AnomalyTimestamp,
+                        a.ActualValue,
+                        a.ExpectedValue,
+                        a.Deviation,
+                        DeviationPercent = a.ExpectedValue > 0
+                            ? Math.Round((a.Deviation / a.ExpectedValue) * 100, 2)
+                            : 0,
+                        a.Severity,
+                        a.Description,
+                        a.IsResolved,
+                        a.ResolutionNotes
+                    })
+                    .ToListAsync();
+
+                var stats = new
+                {
+                    Total = totalCount,
+                    Unresolved = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved),
+                    Resolved = await context.DetectedAnomalies.CountAsync(a => a.IsResolved),
+                    Critical = await context.DetectedAnomalies.CountAsync(a => a.Severity == "Critical" && !a.IsResolved),
+                    High = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved && a.Severity == "High"),
+                    Medium = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved && a.Severity == "Medium"),
+                    BySeverity = await context.DetectedAnomalies
+                      .Where(a => !a.IsResolved)
+                        .Select(a => a.DeviceId)
+                        .Distinct()
+                        .CountAsync()
+                };
+
+                return Ok(new
+                {
+                    page,
+                    pageSize,
+                    totalCount,
+                    totalPages,
+                    statistics = stats,
+                    data = anomalies
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving anomalies");
                 return StatusCode(500, new { error = "Failed to retrieve anomalies" });
+            }
+        }
+
+        [HttpGet("anomalies/{id}")]
+        public async Task<ActionResult<object>> GetAnomalyById(int id)
+        {
+            try
+            {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var anomaly = await context.DetectedAnomalies
+                    .Include(a => a.Device)
+                        .ThenInclude(d => d.Zone)
+                        .Where(a => a.Id == id)
+                        .Select( a => new
+                        {
+                            a.Id,
+                            Device = new
+                            {
+                                a.Device.Id,
+                                a.Device.Name,
+                                Zone = new
+                                {
+                                    a.Device.Zone.Id,
+                                    a.Device.Zone.Name
+                                }
+                            },
+                            a.AnomalyTimestamp,
+                            a.ActualValue,
+                            a.ExpectedValue,
+                            a.Deviation,
+                            DeviationPercent = a.ExpectedValue > 0
+                            ? Math.Round((a.Deviation / a.ExpectedValue) * 100, 2)
+                            : 0,
+                            a.Severity,
+                            a.Description,
+                            a.IsResolved,
+                            a.ResolutionNotes
+                        })
+                    .FirstOrDefaultAsync();
+
+                if (anomaly == null)
+                {
+                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
+                }
+
+                return Ok(anomaly);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving anomaly by ID {Id}", id);
+                return StatusCode(500, new { error = "Failed to retrieve anomaly" });
             }
         }
 
@@ -318,10 +808,33 @@ namespace EnergyOptimizer.API.Controllers
         {
             try
             {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var  anomaly = await context.DetectedAnomalies.FindAsync(id);
+
+                if (anomaly == null)
+                {
+                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
+                }
+                if (anomaly.IsResolved)
+                {
+                    return BadRequest(new { error = "Anomaly is already resolved" });
+                }
+
+                anomaly.IsResolved = true;
+                anomaly.ResolvedAt = DateTime.UtcNow;
+                anomaly.ResolutionNotes = request.ResolutionNotes;
+
+                await context.SaveChangesAsync();
+
+                _logger.LogInformation("Anomaly {Id} marked as resolved", id);
+
                 return Ok(new
                 {
-                    id,
-                    message = "Anomaly marked as resolved"
+                    id = anomaly.Id,
+                    isResolved = anomaly.IsResolved,
+                    resolvedAt = anomaly.ResolvedAt,
+                    resolutionNotes = anomaly.ResolutionNotes,
+                    message = "Anomaly marked as resolved successfully"
                 });
             }
             catch (Exception ex)
@@ -331,10 +844,71 @@ namespace EnergyOptimizer.API.Controllers
             }
         }
 
+        [HttpDelete("anomalies/{id}")]
+        public async Task<ActionResult<object>> DeleteAnomaly(int id)
+        {
+            try
+            {
+                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+                var anomaly = await context.DetectedAnomalies.FindAsync(id);
+                if (anomaly == null)
+                {
+                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
+                }
+
+                context.DetectedAnomalies.Remove(anomaly);
+                await context.SaveChangesAsync();
+                return Ok(new
+                {
+                    id,
+                    message = "Anomaly deleted successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting anomaly");
+                return StatusCode(500, new { error = "Failed to delete anomaly" });
+            }
+        }
+
+        #endregion
+
+
+
+        [HttpGet("test-connection")]
+        public async Task<ActionResult<object>> TestConnection()
+        {
+            try
+            {
+                _logger.LogInformation("Testing Gemini API connection");
+
+                var result = await _geminiService.AskQuestion(
+                    "Say 'Hello from Gemini!' if you can read this.",
+                    "This is a connection test");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Connection successful",
+                    response = result
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Connection test failed");
+                return Ok(new
+                {
+                    success = false,
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message
+                });
+            }
+        }
+
         public record class AskQuestionRequest(
                   string Question,
                   string? Context = null
-          );
+        );
 
         public record class ResolveAnomalyRequest(
             string ResolutionNotes
