@@ -54,10 +54,15 @@ builder.Services.AddMemoryCache();
 
 // Register HttpClient for Gemini Service
 builder.Services.AddHttpClient();
+
+// Register Gemini Service
 builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 // Register Pattern Detection Service
 builder.Services.AddScoped<PatternDetectionService>();
+
+// Register Pattern Detection Service
+builder.Services.AddScoped<AIAnalysisBackgroundService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
