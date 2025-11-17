@@ -1,0 +1,1010 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History - Energy Optimizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header h1 {
+                color: #667eea;
+                font-size: 2em;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+            .btn-secondary:hover {
+                background: #667eea;
+                color: white;
+            }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .filters-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+            .filter-group label {
+                font-size: 0.85em;
+                color: #6b7280;
+                font-weight: 600;
+            }
+
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.95em;
+            min-width: 150px;
+        }
+
+            .filter-select:focus, .filter-input:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 15px;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            }
+
+        .timeline-item {
+            position: relative;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+            .timeline-item:hover {
+                transform: translateX(5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+
+            .timeline-item::before {
+                content: '';
+                position: absolute;
+                left: -28px;
+                top: 30px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: white;
+                border: 4px solid #667eea;
+                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            }
+
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .analysis-title-section {
+            flex: 1;
+        }
+
+        .analysis-type {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .type-pattern {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-anomaly {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .type-prediction {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .analysis-date {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .analysis-period {
+            font-size: 0.9em;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-id {
+            font-size: 0.85em;
+            color: #9ca3af;
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .analysis-summary {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-text {
+            color: #4b5563;
+            line-height: 1.7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .stat-box-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-label {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .insights-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+        }
+
+        .insights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .insight-item {
+            background: #f0fdf4;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .insight-icon {
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .recommendations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .recommendation-item {
+            background: #fffbeb;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .rec-icon {
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .analysis-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        .analysis-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+            .action-btn-view:hover {
+                background: #5568d3;
+            }
+
+        .action-btn-export {
+            background: #10b981;
+            color: white;
+        }
+
+            .action-btn-export:hover {
+                background: #059669;
+            }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .page-btn:hover:not(:disabled) {
+                background: #667eea;
+                color: white;
+            }
+
+            .page-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .page-btn.active {
+                background: #667eea;
+                color: white;
+            }
+
+        .loading, .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+            .modal.show {
+                display: flex;
+            }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .close-btn {
+            background: #e5e7eb;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+            .close-btn:hover {
+                background: #d1d5db;
+                transform: rotate(90deg);
+            }
+        /* ===== Navigation Menu ===== */
+        .main-nav {
+            background: white;
+            padding: 18px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+            .main-nav ul {
+                display: flex;
+                justify-content: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 30px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-nav li a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.1em;
+                padding: 12px 24px;
+                border-radius: 12px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                position: relative;
+            }
+
+                .main-nav li a:hover {
+                    background: #667eea;
+                    color: white;
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                }
+
+                .main-nav li a.active {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    transform: translateY(-3px);
+                }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-nav ul {
+                gap: 15px;
+            }
+
+            .main-nav li a {
+                padding: 10px 16px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .main-nav li a {
+                width: 80%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Menu -->
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html" class="active-if-dashboard">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
+                <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
+                <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
+            </ul>
+        </nav>
+        <!-- Header -->
+        <div class="header">
+            <h1>📈 Analysis History</h1>
+            <div class="header-actions">
+                <a href="ai-dashboard.html" class="btn btn-secondary">
+                    ← Dashboard
+                </a>
+                <button class="btn btn-primary" onclick="runNewAnalysis()">
+                    ▶️ Run New Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Analysis Type</label>
+                <select class="filter-select" id="filterType" onchange="applyFilters()">
+                    <option value="">All Types</option>
+                    <option value="Pattern">Pattern Analysis</option>
+                    <option value="Anomaly">Anomaly Detection</option>
+                    <option value="Prediction">Prediction</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Start Date</label>
+                <input type="date" class="filter-input" id="filterStartDate" onchange="applyFilters()">
+            </div>
+
+            <div class="filter-group">
+                <label>End Date</label>
+                <input type="date" class="filter-input" id="filterEndDate" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline" id="timeline">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Loading analysis history...</div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination" style="display: none;"></div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Analysis Details</div>
+                <button class="close-btn" onclick="closeDetailModal()">×</button>
+            </div>
+            <div id="modalBody">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading details...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {
+            analysisType: '',
+            startDate: '',
+            endDate: ''
+        };
+
+        // ===== Load Analysis History =====
+        async function loadHistory() {
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    pageSize: 5,
+                    ...(currentFilters.analysisType && { analysisType: currentFilters.analysisType }),
+                    ...(currentFilters.startDate && { startDate: currentFilters.startDate }),
+                    ...(currentFilters.endDate && { endDate: currentFilters.endDate })
+                });
+
+                const response = await fetch(`${baseUrl}/api/AI/analysis-history?${params}`);
+                const data = await response.json();
+
+                displayAnalyses(data.data);
+                displayPagination(data.page, data.totalPages);
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('timeline').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div>Failed to load analysis history</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayAnalyses(analyses) {
+            const timeline = document.getElementById('timeline');
+
+            if (!analyses || analyses.length === 0) {
+                timeline.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div>No analysis history found</div>
+                        <p style="margin-top: 10px;">Try running a new analysis or adjusting filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            timeline.innerHTML = analyses.map(analysis => {
+                const analysisDate = new Date(analysis.analysisDate);
+                const periodStart = new Date(analysis.period.start);
+                const periodEnd = new Date(analysis.period.end);
+
+                return `
+                    <div class="timeline-item">
+                        <div class="analysis-header">
+                            <div class="analysis-title-section">
+                                <span class="analysis-type type-${analysis.analysisType.toLowerCase()}">
+                                    ${analysis.analysisType}
+                                </span>
+                                <div class="analysis-date">
+                                    ${analysisDate.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                                <div class="analysis-period">
+                                    <span>📅</span>
+                                    <span>${periodStart.toLocaleDateString()} - ${periodEnd.toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div class="analysis-id">ID: ${analysis.id}</div>
+                        </div>
+
+                        ${analysis.summary ? `
+                            <div class="analysis-summary">
+                                <div class="summary-title">
+                                    <span>📝</span>
+                                    <span>Summary</span>
+                                </div>
+                                <div class="summary-text">${analysis.summary}</div>
+                            </div>
+                        ` : ''}
+
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-box-value">${analysis.totalConsumptionKWh.toFixed(2)}</div>
+                                <div class="stat-box-label">Total kWh</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-value">${analysis.devicesAnalyzed}</div>
+                                <div class="stat-box-label">Devices</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-value">${analysis.insightsCount}</div>
+                                <div class="stat-box-label">Insights</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-value">${analysis.recommendationsCount}</div>
+                                <div class="stat-box-label">Recommendations</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-value">${analysis.anomaliesCount}</div>
+                                <div class="stat-box-label">Anomalies</div>
+                            </div>
+                        </div>
+
+                        ${analysis.insights && analysis.insights.length > 0 ? `
+                            <div class="insights-section">
+                                <div class="section-title">
+                                    <span>💡</span>
+                                    <span>Key Insights</span>
+                                </div>
+                                <div class="insights-list">
+                                    ${analysis.insights.slice(0, 3).map(insight => `
+                                        <div class="insight-item">
+                                            <span class="insight-icon">✓</span>
+                                            <span>${insight.insightText}</span>
+                                        </div>
+                                    `).join('')}
+                                    ${analysis.insights.length > 3 ? `
+                                        <div style="text-align: center; color: #667eea; font-size: 0.9em;">
+                                            +${analysis.insights.length - 3} more insights
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="analysis-footer">
+                            <div class="analysis-meta">
+                                <span>🕐 ${analysisDate.toLocaleTimeString()}</span>
+                            </div>
+                            <div class="action-btns">
+                                <button class="action-btn action-btn-view" onclick="viewDetails(${analysis.id})">
+                                    <span>👁️</span>
+                                    <span>View Details</span>
+                                </button>
+                                <button class="action-btn action-btn-export" onclick="exportAnalysis(${analysis.id})">
+                                    <span>📥</span>
+                                    <span>Export</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayPagination(page, total) {
+            totalPages = total;
+            const pagination = document.getElementById('pagination');
+
+            if (total <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex';
+
+            let html = `
+                <button class="page-btn" onclick="goToPage(${page - 1})" ${page === 1 ? 'disabled' : ''}>
+                    ← Previous
+                </button>
+            `;
+
+            for (let i = 1; i <= Math.min(total, 5); i++) {
+                html += `
+                    <button class="page-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (total > 5) {
+                html += `<span>...</span>`;
+            }
+
+            html += `
+                <button class="page-btn" onclick="goToPage(${page + 1})" ${page === total ? 'disabled' : ''}>
+                    Next →
+                </button>
+            `;
+
+            pagination.innerHTML = html;
+        }
+
+        function applyFilters() {
+            currentFilters = {
+                analysisType: document.getElementById('filterType').value,
+                startDate: document.getElementById('filterStartDate').value,
+                endDate: document.getElementById('filterEndDate').value
+            };
+            currentPage = 1;
+            loadHistory();
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadHistory();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== View Details =====
+        async function viewDetails(id) {
+            document.getElementById('detailModal').classList.add('show');
+            document.getElementById('modalBody').innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading details...</div></div>';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/analysis/${id}`);
+                const analysis = await response.json();
+
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="analysis-summary">
+                        <div class="summary-title">
+                            <span>📝</span>
+                            <span>Full Summary</span>
+                        </div>
+                        <div class="summary-text">${analysis.summary || 'No summary available'}</div>
+                    </div>
+
+                    ${analysis.insights && analysis.insights.length > 0 ? `
+                        <div class="insights-section">
+                            <div class="section-title">
+                                <span>💡</span>
+                                <span>All Insights (${analysis.insights.length})</span>
+                            </div>
+                            <div class="insights-list">
+                                ${analysis.insights.map(insight => `
+                                    <div class="insight-item">
+                                        <span class="insight-icon">✓</span>
+                                        <div>
+                                            <div>${insight.insightText}</div>
+                                            <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                                Category: ${insight.category} | Priority: ${insight.priority}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${analysis.recommendations && analysis.recommendations.length > 0 ? `
+                        <div class="insights-section" style="margin-top: 20px;">
+                            <div class="section-title">
+                                <span>💡</span>
+                                <span>Recommendations (${analysis.recommendations.length})</span>
+                            </div>
+                            <div class="recommendations-list">
+                                ${analysis.recommendations.map(rec => `
+                                    <div class="recommendation-item">
+                                        <span class="rec-icon">→</span>
+                                        <div>
+                                            <div><strong>${rec.title}</strong></div>
+                                            <div style="font-size: 0.9em; margin-top: 5px;">${rec.description}</div>
+                                            <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                                Priority: ${rec.priority} | Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${analysis.anomalies && analysis.anomalies.length > 0 ? `
+                        <div class="insights-section" style="margin-top: 20px;">
+                            <div class="section-title">
+                                <span>🚨</span>
+                                <span>Detected Anomalies (${analysis.anomalies.length})</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                ${analysis.anomalies.map(anomaly => `
+                                    <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                        <div><strong>${anomaly.device.name}</strong> - ${anomaly.severity}</div>
+                                        <div style="font-size: 0.9em; margin-top: 5px;">${anomaly.description}</div>
+                                        <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                            Deviation: ${anomaly.deviation.toFixed(3)} kW (${((anomaly.deviation / anomaly.expectedValue) * 100).toFixed(1)}%)
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+            } catch (error) {
+                console.error('Error loading details:', error);
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div>Failed to load details</div>
+                    </div>
+                `;
+            }
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        // ===== Actions =====
+        async function runNewAnalysis() {
+            if (!confirm('Run new AI analysis? This may take a few minutes.')) return;
+
+            const endDate = new Date().toISOString().split('T')[0];
+            const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('✅ Analysis completed! Refreshing...');
+                    loadHistory();
+                } else {
+                    alert('❌ Analysis failed');
+                }
+            } catch (error) {
+                console.error('Error running analysis:', error);
+                alert('❌ Error running analysis');
+            }
+        }
+
+        function exportAnalysis(id) {
+            alert(`Export functionality for analysis ${id} coming soon!`);
+            // TODO: Implement export to PDF/Excel
+        }
+
+        // ===== Initialize =====
+        loadHistory();
+
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') {
+                closeDetailModal();
+            }
+        });
+    </script>
+</body>
+</html>
