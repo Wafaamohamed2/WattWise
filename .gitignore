@@ -57,5 +57,6 @@ wwwroot/lib/
 .DS_Store
 Thumbs.db
 
+EnergyOptimizer.API/logs/
 
 appsettings.Development.json

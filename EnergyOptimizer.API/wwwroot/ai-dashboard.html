@@ -1,0 +1,721 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights - Energy Optimizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header h1 {
+                color: #667eea;
+                font-size: 2.5em;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+            .btn-secondary:hover {
+                background: #667eea;
+                color: white;
+            }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 1em;
+        }
+
+        .stat-change {
+            font-size: 0.85em;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+            .stat-change.positive {
+                color: #10b981;
+            }
+
+            .stat-change.negative {
+                color: #ef4444;
+            }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+            .chart-card h3 {
+                color: #1f2937;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .section-header h3 {
+                color: #1f2937;
+                font-size: 1.3em;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .view-all {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+            .view-all:hover {
+                color: #764ba2;
+            }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .item {
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+            .item:hover {
+                background: #f3f4f6;
+                transform: translateX(5px);
+            }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #1f2937;
+            flex: 1;
+        }
+
+        .item-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .badge-high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-critical {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+
+        .item-description {
+            color: #6b7280;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #9ca3af;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .action-btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+            .action-btn-success:hover {
+                background: #059669;
+            }
+
+        .action-btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+            .action-btn-danger:hover {
+                background: #dc2626;
+            }
+
+        /* ===== Navigation Menu ===== */
+        .main-nav {
+            background: white;
+            padding: 18px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+            .main-nav ul {
+                display: flex;
+                justify-content: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 30px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-nav li a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.1em;
+                padding: 12px 24px;
+                border-radius: 12px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                position: relative;
+            }
+
+                .main-nav li a:hover {
+                    background: #667eea;
+                    color: white;
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                }
+
+                .main-nav li a.active {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    transform: translateY(-3px);
+                }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-nav ul {
+                gap: 15px;
+            }
+
+            .main-nav li a {
+                padding: 10px 16px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .main-nav li a {
+                width: 80%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Navigation Menu -->
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
+                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
+                <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html" class="active-if-history">📜 Analysis History</a></li>
+                <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
+            </ul>
+        </nav>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>🤖</span>
+                AI Insights Dashboard
+            </h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='/'">
+                    ← Back to Monitor
+                </button>
+                <button class="btn btn-primary" onclick="runAnalysis()">
+                    🔄 Run New Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Loading statistics...</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📊 Analysis by Type</h3>
+                <canvas id="analysisChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🚨 Anomalies by Severity</h3>
+                <canvas id="anomaliesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recommendations & Anomalies -->
+        <div class="sections-grid">
+            <!-- Recommendations -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>💡 Top Recommendations</h3>
+                    <a href="#" class="view-all" onclick="showAllRecommendations(); return false;">View All →</a>
+                </div>
+                <div class="item-list" id="recommendationsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading recommendations...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anomalies -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🚨 Recent Anomalies</h3>
+                    <a href="#" class="view-all" onclick="showAllAnomalies(); return false;">View All →</a>
+                </div>
+                <div class="item-list" id="anomaliesList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading anomalies...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        // ===== Load Dashboard Data =====
+        async function loadDashboard() {
+            try {
+                await Promise.all([
+                    loadStatistics(),
+                    loadRecommendations(),
+                    loadAnomalies()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // ===== Load Statistics =====
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/statistics`);
+                const data = await response.json();
+
+                displayStatistics(data);
+                displayCharts(data);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                document.getElementById('statsGrid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load statistics</div></div>';
+            }
+        }
+
+        function displayStatistics(data) {
+            const statsGrid = document.getElementById('statsGrid');
+
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">${data.analyses.total}</div>
+                    <div class="stat-label">Total Analyses</div>
+                    <div class="stat-change positive">↑ ${data.analyses.last30Days} in last 30 days</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💡</div>
+                    <div class="stat-value">${data.recommendations.active}</div>
+                    <div class="stat-label">Active Recommendations</div>
+                    <div class="stat-change">${data.recommendations.implemented} implemented</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value">${data.recommendations.totalPotentialSavings.toFixed(1)}</div>
+                    <div class="stat-label">Potential Savings (kWh)</div>
+                    <div class="stat-change positive">💰 Cost savings available</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-value">${data.anomalies.unresolved}</div>
+                    <div class="stat-label">Unresolved Anomalies</div>
+                    <div class="stat-change ${data.anomalies.last7Days > 0 ? 'negative' : 'positive'}">
+                        ${data.anomalies.last7Days > 0 ? '↑' : '✓'} ${data.anomalies.last7Days} in last 7 days
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayCharts(data) {
+            // Analysis by Type Chart
+            const analysisCtx = document.getElementById('analysisChart').getContext('2d');
+            new Chart(analysisCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.analyses.byType.map(t => t.type),
+                    datasets: [{
+                        data: data.analyses.byType.map(t => t.count),
+                        backgroundColor: ['#667eea', '#764ba2', '#f59e0b', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Anomalies by Severity Chart
+            const anomaliesCtx = document.getElementById('anomaliesChart').getContext('2d');
+            new Chart(anomaliesCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.anomalies.bySeverity.map(s => s.severity),
+                    datasets: [{
+                        label: 'Anomalies',
+                        data: data.anomalies.bySeverity.map(s => s.count),
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // ===== Load Recommendations =====
+        async function loadRecommendations() {
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
+                const data = await response.json();
+
+                displayRecommendations(data.data);
+            } catch (error) {
+                console.error('Error loading recommendations:', error);
+                document.getElementById('recommendationsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load recommendations</div></div>';
+            }
+        }
+
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+
+            if (!recommendations || recommendations.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div>No pending recommendations</div></div>';
+                return;
+            }
+
+            container.innerHTML = recommendations.map(rec => `
+                <div class="item">
+                    <div class="item-header">
+                        <div class="item-title">${rec.title}</div>
+                        <span class="item-badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>
+                    </div>
+                    <div class="item-description">${rec.description}</div>
+                    <div class="item-meta">
+                        <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
+                        <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== Load Anomalies =====
+        async function loadAnomalies() {
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/anomalies?pageSize=5&isResolved=false`);
+                const data = await response.json();
+
+                displayAnomalies(data.data);
+            } catch (error) {
+                console.error('Error loading anomalies:', error);
+                document.getElementById('anomaliesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load anomalies</div></div>';
+            }
+        }
+
+        function displayAnomalies(anomalies) {
+            const container = document.getElementById('anomaliesList');
+
+            if (!anomalies || anomalies.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div>No unresolved anomalies</div></div>';
+                return;
+            }
+
+            container.innerHTML = anomalies.map(anomaly => `
+                <div class="item">
+                    <div class="item-header">
+                        <div class="item-title">${anomaly.device.name}</div>
+                        <span class="item-badge badge-${anomaly.severity.toLowerCase()}">${anomaly.severity}</span>
+                    </div>
+                    <div class="item-description">${anomaly.description}</div>
+                    <div class="item-meta">
+                        <span>📍 ${anomaly.device.zone}</span>
+                        <span>⚠️ ${anomaly.deviationPercent.toFixed(1)}% deviation</span>
+                        <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== Actions =====
+        async function runAnalysis() {
+            if (!confirm('Run new AI analysis? This may take a few minutes.')) return;
+
+            const endDate = new Date().toISOString().split('T')[0];
+            const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            try {
+                const response = await fetch(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('✅ Analysis completed! Refreshing dashboard...');
+                    loadDashboard();
+                } else {
+                    alert('❌ Analysis failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error running analysis:', error);
+                alert('❌ Error running analysis');
+            }
+        }
+
+        function showAllRecommendations() {
+            // TODO: Navigate to full recommendations page
+            alert('Full recommendations page coming soon!');
+        }
+
+        function showAllAnomalies() {
+            // TODO: Navigate to full anomalies page
+            alert('Full anomalies page coming soon!');
+        }
+
+        // ===== Initialize =====
+        loadDashboard();
+    </script>
+</body>
+</html>
