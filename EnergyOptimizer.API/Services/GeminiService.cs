@@ -165,7 +165,7 @@ Please provide a clear, concise answer focused on energy optimization and effici
             await _rateLimiter.WaitAsync();
             try
             {
-                // ✅ Validate configuration
+                // Validate configuration
                 if (string.IsNullOrWhiteSpace(_settings.ApiKey))
                 {
                     _logger.LogError("Gemini API Key is missing");
@@ -174,28 +174,21 @@ Please provide a clear, concise answer focused on energy optimization and effici
                         "Get your API key from: https://aistudio.google.com/app/apikey");
                 }
 
-                // Rate limiting
+                // Manual rate limiting
                 var timeSinceLastRequest = DateTime.UtcNow - _lastRequestTime;
                 var minInterval = TimeSpan.FromMilliseconds(60000.0 / _settings.RateLimitPerMinute);
-
                 if (timeSinceLastRequest < minInterval)
                 {
                     await Task.Delay(minInterval - timeSinceLastRequest);
                 }
 
-                // ✅ Prepare request body
+                // Prepare request body
                 var requestBody = new
                 {
                     contents = new[]
                     {
-                        new
-                        {
-                            parts = new[]
-                            {
-                                new { text = prompt }
-                            }
-                        }
-                    },
+                new { parts = new[] { new { text = prompt } } }
+            },
                     generationConfig = new
                     {
                         temperature = _settings.Temperature,
@@ -210,89 +203,75 @@ Please provide a clear, concise answer focused on energy optimization and effici
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
 
-                _logger.LogDebug("Request payload: {Json}", json);
+                _logger.LogDebug("Gemini request payload: {Json}", json);
 
-                // ✅ Build correct URL
-                var baseUrl = "https://generativelanguage.googleapis.com/v1beta";
-                var url = $"{baseUrl}/models/{_settings.Model}:generateContent?key={_settings.ApiKey}";
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.Model}:generateContent?key={_settings.ApiKey}";
+                _logger.LogInformation("Calling Gemini API: {Url}", url.Replace(_settings.ApiKey, "***KEY***"));
 
-                _logger.LogInformation("Calling Gemini API at: {Url}",
-                    url.Replace(_settings.ApiKey, "***KEY***"));
-
-                // ✅ Send request
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(url, content);
-
+                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(url, httpContent);
                 _lastRequestTime = DateTime.UtcNow;
 
-                // ✅ Read response
                 var responseBody = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Gemini response ({Status}): {Body}", response.StatusCode, responseBody);
 
-                _logger.LogDebug("Response status: {Status}", response.StatusCode);
-                _logger.LogDebug("Response body: {Body}", responseBody);
-
-                // ✅ Handle errors
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Gemini API error: {StatusCode} - {Body}",
-                        response.StatusCode, responseBody);
-
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        throw new InvalidOperationException(
-                            "Gemini API authentication failed. Please check your API key. " +
-                            "Get a valid key from: https://aistudio.google.com/app/apikey");
-                    }
-
-                    throw new HttpRequestException(
-                        $"Gemini API returned {response.StatusCode}: {responseBody}");
+                    _logger.LogError("Gemini API error {StatusCode}: {Body}", response.StatusCode, responseBody);
+                    throw new HttpRequestException($"Gemini API returned {response.StatusCode}");
                 }
 
-                // ✅ Parse response
                 if (string.IsNullOrWhiteSpace(responseBody))
-                {
-                    throw new InvalidOperationException("Gemini API returned empty response");
-                }
+                    throw new InvalidOperationException("Gemini returned an empty response");
 
                 var jsonDoc = JsonDocument.Parse(responseBody);
 
-                // Check for error in response
+                // Check for API-level error
                 if (jsonDoc.RootElement.TryGetProperty("error", out var errorElement))
                 {
-                    var errorMessage = errorElement.GetProperty("message").GetString();
-                    throw new InvalidOperationException($"Gemini API error: {errorMessage}");
+                    var message = errorElement.TryGetProperty("message", out var msg) ? msg.GetString() : "Unknown error";
+                    throw new InvalidOperationException($"Gemini API error: {message}");
                 }
 
-                // Extract text
-                if (!jsonDoc.RootElement.TryGetProperty("candidates", out var candidates))
+                // Safely extract text (fully protected against 2025+ API changes)
+                if (!jsonDoc.RootElement.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
                 {
-                    throw new InvalidOperationException("Invalid response format: missing 'candidates'");
+                    _logger.LogWarning("Gemini returned no candidates: {Response}", responseBody);
+                    throw new InvalidOperationException("No response generated by Gemini (possibly blocked by safety filters)");
                 }
 
-                var text = candidates[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
-                    .GetString();
+                var firstCandidate = candidates[0];
 
-                if (string.IsNullOrWhiteSpace(text))
+                if (!firstCandidate.TryGetProperty("content", out var contentElement))
                 {
-                    throw new InvalidOperationException("Gemini API returned empty text");
+                    _logger.LogWarning("Missing 'content' in candidate");
+                    throw new InvalidOperationException("Invalid response format: missing 'content'");
                 }
 
-                _logger.LogInformation("Successfully received response from Gemini API");
-                return text;
+                if (!contentElement.TryGetProperty("parts", out var parts) || parts.GetArrayLength() == 0)
+                {
+                    _logger.LogWarning("Missing 'parts' in content");
+                    throw new InvalidOperationException("Invalid response format: missing 'parts'");
+                }
+
+                var firstPart = parts[0];
+                if (!firstPart.TryGetProperty("text", out var textElement))
+                {
+                    _logger.LogWarning("Missing 'text' field in part");
+                    throw new InvalidOperationException("Invalid response format: missing 'text'");
+                }
+
+                var result = textElement.GetString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(result))
+                    throw new InvalidOperationException("Gemini returned empty text");
+
+                _logger.LogInformation("Successfully received Gemini response ({Length} characters)", result.Length);
+                return result;
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                _logger.LogError(ex, "HTTP error calling Gemini API");
-                throw new InvalidOperationException(
-                    "Failed to call Gemini API. Check your internet connection and API key.", ex);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Error parsing Gemini API response");
-                throw new InvalidOperationException("Invalid response from Gemini API", ex);
+                _logger.LogError(ex, "Unexpected error in CallGeminiAPI");
+                throw new InvalidOperationException("Failed to get response from Gemini AI. Please try again later.", ex);
             }
             finally
             {
