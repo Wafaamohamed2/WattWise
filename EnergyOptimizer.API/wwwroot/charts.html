@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics & Charts - Energy Optimizer</title>
+    <title>Charts & Analytics - Energy Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
@@ -24,6 +24,50 @@
             max-width: 1600px;
             margin: 0 auto;
         }
+
+        /* ===== Navigation Menu ===== */
+        .main-nav {
+            background: white;
+            padding: 18px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+            .main-nav ul {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 30px;
+                list-style: none;
+            }
+
+            .main-nav li a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.1em;
+                padding: 12px 24px;
+                border-radius: 12px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+                .main-nav li a:hover {
+                    background: #667eea;
+                    color: white;
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                }
+
+                .main-nav li a.active {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    transform: translateY(-3px);
+                }
 
         .header {
             background: white;
@@ -77,7 +121,7 @@
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
-            align-items: center;
+            align-items: end;
         }
 
         .control-group {
@@ -103,6 +147,66 @@
             .control-select:focus, .control-input:focus {
                 outline: none;
                 border-color: #667eea;
+            }
+
+        .btn-apply {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .btn-apply:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+        .stats-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+
+        .stat-change {
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+            .stat-change.positive {
+                color: #10b981;
+            }
+
+            .stat-change.negative {
+                color: #ef4444;
             }
 
         .charts-grid {
@@ -161,11 +265,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.2em;
         }
 
             .icon-btn:hover {
                 background: #667eea;
                 color: white;
+                transform: scale(1.1);
             }
 
         .chart-container {
@@ -203,98 +309,6 @@
             }
         }
 
-        .stats-summary {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-box {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea15, #764ba215);
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-
-        .stat-change {
-            font-size: 0.85em;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-
-            .stat-change.positive {
-                color: #10b981;
-            }
-
-            .stat-change.negative {
-                color: #ef4444;
-            }
-        /* ===== Navigation Menu ===== */
-        .main-nav {
-            background: white;
-            padding: 18px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-            .main-nav ul {
-                display: flex;
-                justify-content: center;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
-
-            .main-nav li a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 1.1em;
-                padding: 12px 24px;
-                border-radius: 12px;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                position: relative;
-            }
-
-                .main-nav li a:hover {
-                    background: #667eea;
-                    color: white;
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-                }
-
-                .main-nav li a.active {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    transform: translateY(-3px);
-                }
-
         /* Responsive */
         @media (max-width: 900px) {
             .main-nav ul {
@@ -304,6 +318,10 @@
             .main-nav li a {
                 padding: 10px 16px;
                 font-size: 1em;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -319,23 +337,26 @@
             }
         }
     </style>
-
 </head>
 <body>
     <div class="container">
         <!-- Navigation Menu -->
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html" class="active-if-dashboard">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
-                <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
-                <li><a href="analysis-history.html" class="active-if-history">📜 Analysis History</a></li>
+                <li><a href="index.html">📊 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html">💡 Recommendations</a></li>
+                <li><a href="anomalies.html">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html">📜 Analysis History</a></li>
+                <li><a href="charts.html" class="active">📈 Analytics & Charts</a></li>
+                <li><a href="setup.html">⚙️ AI Setup</a></li>
+
             </ul>
         </nav>
+
         <!-- Header -->
         <div class="header">
-            <h1>📊 Analytics & Insights</h1>
+            <h1>📈 Advanced Analytics</h1>
             <a href="ai-dashboard.html" class="btn btn-secondary">
                 ← Back to Dashboard
             </a>
@@ -345,7 +366,7 @@
         <div class="controls-bar">
             <div class="control-group">
                 <label>Time Period</label>
-                <select class="control-select" id="timePeriod" onchange="loadData()">
+                <select class="control-select" id="timePeriod" onchange="toggleCustomDates()">
                     <option value="7">Last 7 Days</option>
                     <option value="30" selected>Last 30 Days</option>
                     <option value="90">Last 90 Days</option>
@@ -353,22 +374,33 @@
                 </select>
             </div>
 
-            <div class="control-group" id="customDateGroup" style="display: none;">
+            <div class="control-group" id="customStartGroup" style="display: none;">
                 <label>Start Date</label>
                 <input type="date" class="control-input" id="startDate">
             </div>
 
-            <div class="control-group" id="customDateGroup2" style="display: none;">
+            <div class="control-group" id="customEndGroup" style="display: none;">
                 <label>End Date</label>
                 <input type="date" class="control-input" id="endDate">
             </div>
 
             <div class="control-group">
                 <label>Device Filter</label>
-                <select class="control-select" id="deviceFilter" onchange="loadData()">
+                <select class="control-select" id="deviceFilter">
                     <option value="">All Devices</option>
                 </select>
             </div>
+
+            <div class="control-group">
+                <label>Zone Filter</label>
+                <select class="control-select" id="zoneFilter">
+                    <option value="">All Zones</option>
+                </select>
+            </div>
+
+            <button class="btn-apply" onclick="loadData()">
+                🔍 Apply Filters
+            </button>
         </div>
 
         <!-- Stats Summary -->
@@ -403,7 +435,7 @@
                     </div>
                     <div class="chart-actions">
                         <button class="icon-btn" onclick="downloadChart('consumptionChart')" title="Download">💾</button>
-                        <button class="icon-btn" onclick="refreshChart('consumption')" title="Refresh">🔄</button>
+                        <button class="icon-btn" onclick="loadData()" title="Refresh">🔄</button>
                     </div>
                 </div>
                 <div class="chart-container large">
@@ -481,15 +513,13 @@
         const baseUrl = window.location.origin;
         let charts = {};
 
-        // ===== Initialize =====
-        document.getElementById('timePeriod').addEventListener('change', function() {
-            const customGroups = document.querySelectorAll('[id^="customDateGroup"]');
-            customGroups.forEach(group => {
-                group.style.display = this.value === 'custom' ? 'flex' : 'none';
-            });
-        });
+        function toggleCustomDates() {
+            const period = document.getElementById('timePeriod').value;
+            const isCustom = period === 'custom';
+            document.getElementById('customStartGroup').style.display = isCustom ? 'flex' : 'none';
+            document.getElementById('customEndGroup').style.display = isCustom ? 'flex' : 'none';
+        }
 
-        // ===== Load Data =====
         async function loadData() {
             try {
                 const period = document.getElementById('timePeriod').value;
@@ -510,7 +540,6 @@
                 const response = await fetch(`${baseUrl}/api/readings/latest?limit=1000`);
                 const data = await response.json();
 
-                // Filter by date range
                 const filteredData = data.data.filter(reading => {
                     const readingDate = new Date(reading.timestamp).toISOString().split('T')[0];
                     return readingDate >= startDate && readingDate <= endDate;
@@ -518,7 +547,7 @@
 
                 updateStatistics(filteredData);
                 createCharts(filteredData);
-                populateDeviceFilter(filteredData);
+                populateFilters(filteredData);
             } catch (error) {
                 console.error('Error loading data:', error);
             }
@@ -553,7 +582,6 @@
         function createConsumptionChart(data) {
             const ctx = document.getElementById('consumptionChart').getContext('2d');
 
-            // Group by date
             const dailyData = {};
             data.forEach(reading => {
                 const date = new Date(reading.timestamp).toISOString().split('T')[0];
@@ -581,16 +609,10 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true, position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => `${context.parsed.y} kWh`
-                            }
-                        }
+                        legend: { display: true, position: 'top' }
                     },
                     scales: {
-                        y: { beginAtZero: true, title: { display: true, text: 'kWh' } },
-                        x: { title: { display: true, text: 'Date' } }
+                        y: { beginAtZero: true }
                     }
                 }
             });
@@ -654,7 +676,7 @@
             charts.hourly = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
                     datasets: [{
                         label: 'Avg Consumption (kW)',
                         data: avgHourly,
@@ -745,16 +767,28 @@
             });
         }
 
-        function populateDeviceFilter(data) {
+        function populateFilters(data) {
             const devices = [...new Set(data.map(r => ({ id: r.device.id, name: r.device.name })))];
-            const select = document.getElementById('deviceFilter');
+            const zones = [...new Set(data.map(r => ({ id: r.zone.id, name: r.zone.name })))];
+
+            const deviceSelect = document.getElementById('deviceFilter');
+            const zoneSelect = document.getElementById('zoneFilter');
 
             devices.forEach(device => {
-                if (!Array.from(select.options).some(opt => opt.value == device.id)) {
+                if (!Array.from(deviceSelect.options).some(opt => opt.value == device.id)) {
                     const option = document.createElement('option');
                     option.value = device.id;
                     option.textContent = device.name;
-                    select.appendChild(option);
+                    deviceSelect.appendChild(option);
+                }
+            });
+
+            zones.forEach(zone => {
+                if (!Array.from(zoneSelect.options).some(opt => opt.value == zone.id)) {
+                    const option = document.createElement('option');
+                    option.value = zone.id;
+                    option.textContent = zone.name;
+                    zoneSelect.appendChild(option);
                 }
             });
         }
@@ -768,11 +802,6 @@
             link.click();
         }
 
-        function refreshChart(type) {
-            loadData();
-        }
-
-        // Initialize
         loadData();
     </script>
 </body>

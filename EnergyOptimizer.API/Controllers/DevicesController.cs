@@ -62,11 +62,11 @@ namespace EnergyOptimizer.API.Controllers
                         LastReading = d.EnergyReadings
                             .OrderByDescending(r => r.Timestamp)
                             .Select(r => new {
-                                   PowerKW = r.PowerConsumptionKW,
-                                   r.Voltage,
-                                   r.Current,
-                                   r.Temperature,
-                                   r.Timestamp
+                                PowerKW = r.PowerConsumptionKW,
+                                r.Voltage,
+                                r.Current,
+                                r.Temperature,
+                                r.Timestamp
                             }).FirstOrDefault(),
                         Zone = new
                         {

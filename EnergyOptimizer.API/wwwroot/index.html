@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -776,6 +777,7 @@
                 <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
                 <li><a href="analysis-history.html" class="active-if-history">📜 Analysis History</a></li>
                 <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
+                <li><a href="setup.html">⚙️ AI Setup</a></li>
             </ul>
         </nav>
         <!-- Alerts Bell -->
@@ -975,12 +977,12 @@
 
             if (alerts.length === 0) {
                 container.innerHTML = `
-                <div class="empty-alerts">
-                    <div class="empty-alerts-icon">✅</div>
-                    <div>No alerts yet</div>
-                    <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
-                </div>
-            `;
+                    <div class="empty-alerts">
+                        <div class="empty-alerts-icon">✅</div>
+                        <div>No alerts yet</div>
+                        <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                    </div>
+                `;
                 return;
             }
 
@@ -994,28 +996,28 @@
                 div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
 
                 div.innerHTML = `
-                <div class="alert-header-row">
-                    <div class="alert-device">
-                        ${alert.icon} ${alert.deviceName}
+                    <div class="alert-header-row">
+                        <div class="alert-device">
+                            ${alert.icon} ${alert.deviceName}
+                        </div>
+                        <div class="alert-time">${timeAgo}</div>
                     </div>
-                    <div class="alert-time">${timeAgo}</div>
-                </div>
-                <div class="alert-message">${alert.message}</div>
-                <div class="alert-footer">
-                    <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
-                    <span>📍 ${alert.zoneName}</span>
-                </div>
-                <div class="alert-actions" style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
-                    ${!alert.isRead ? `
-                        <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
-                            ✓ Mark as Read
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-footer">
+                        <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
+                        <span>📍 ${alert.zoneName}</span>
+                    </div>
+                    <div class="alert-actions" style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
+                        ${!alert.isRead ? `
+                            <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
+                                ✓ Mark as Read
+                            </button>
+                        ` : ''}
+                        <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
+                            🗑️ Delete
                         </button>
-                    ` : ''}
-                    <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
-                        🗑️ Delete
-                    </button>
-                </div>
-            `;
+                    </div>
+                `;
 
                 container.appendChild(div);
             });
@@ -1144,10 +1146,10 @@
 
             if (!readings || readings.length === 0) {
                 container.innerHTML = `
-                <div class="empty-state">
-                    <div class="spinner"></div>
-                    <p>Waiting for data...</p>
-                </div>`;
+                    <div class="empty-state">
+                        <div class="spinner"></div>
+                        <p>Waiting for data...</p>
+                    </div>`;
                 return;
             }
 
@@ -1158,18 +1160,18 @@
                 div.className = "reading";
 
                 div.innerHTML = `
-                <div class="reading-header">
-                    <strong>${reading.deviceName || 'Unknown Device'}</strong>
-                    <span class="device-zone">📍 ${reading.zoneName || 'Unknown Zone'}</span>
-                </div>
-                <div class="reading-metrics">
-                    <div><b>⚡ Power:</b> ${(reading.powerConsumptionKW || 0).toFixed(3)} kW</div>
-                    <div><b>🌡️ Temp:</b> ${(reading.temperature || 0).toFixed(1)} °C</div>
-                    <div><b>🔌 Voltage:</b> ${(reading.voltage || 0).toFixed(1)} V</div>
-                    <div><b>⚡ Current:</b> ${(reading.current || 0).toFixed(2)} A</div>
-                </div>
-                <div class="reading-time">${new Date(reading.timestamp).toLocaleTimeString()}</div>
-            `;
+                    <div class="reading-header">
+                        <strong>${reading.deviceName || 'Unknown Device'}</strong>
+                        <span class="device-zone">📍 ${reading.zoneName || 'Unknown Zone'}</span>
+                    </div>
+                    <div class="reading-metrics">
+                        <div><b>⚡ Power:</b> ${(reading.powerConsumptionKW || 0).toFixed(3)} kW</div>
+                        <div><b>🌡️ Temp:</b> ${(reading.temperature || 0).toFixed(1)} °C</div>
+                        <div><b>🔌 Voltage:</b> ${(reading.voltage || 0).toFixed(1)} V</div>
+                        <div><b>⚡ Current:</b> ${(reading.current || 0).toFixed(2)} A</div>
+                    </div>
+                    <div class="reading-time">${new Date(reading.timestamp).toLocaleTimeString()}</div>
+                `;
                 container.appendChild(div);
             });
 
@@ -1227,12 +1229,12 @@
                 const div = document.createElement("div");
                 div.className = "reading";
                 div.innerHTML = `
-                <div class="reading-header">#${index + 1} ${device.deviceName}</div>
-                <div class="metric">
-                    <span class="metric-label">Consumption:</span>
-                    <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
-                </div>
-            `;
+                    <div class="reading-header">#${index + 1} ${device.deviceName}</div>
+                    <div class="metric">
+                        <span class="metric-label">Consumption:</span>
+                        <span class="metric-value">${device.currentConsumption.toFixed(3)} kW</span>
+                    </div>
+                `;
                 topConsumersDiv.appendChild(div);
             });
         }
@@ -1301,24 +1303,24 @@
             const powerRating = device.ratedPowerKW || 0;
 
             div.innerHTML = `
-            <div class="device-control-header">
-                <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
-                ${device.name}
-            </div>
-            <div class="device-control-info">
-                📍 ${device.zone.name}<br>
-                ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
-                <span id="device-${device.deviceId || device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
-                    ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
-                </span>
-            </div>
-            <button
-                class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
-                onclick="toggleDeviceControl(${device.id})"
-            >
-                ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
-            </button>
-        `;
+                <div class="device-control-header">
+                    <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
+                    ${device.name}
+                </div>
+                <div class="device-control-info">
+                    📍 ${device.zone.name}<br>
+                    ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
+                    <span id="device-${device.deviceId || device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
+                        ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
+                    </span>
+                </div>
+                <button
+                    class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
+                    onclick="toggleDeviceControl(${device.id})"
+                >
+                    ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
+                </button>
+            `;
 
             return div;
         }
