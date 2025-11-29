@@ -161,9 +161,17 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasKey(a => a.Id);
                 entity.Property(a => a.Description).IsRequired();
                 entity.Property(a => a.Severity).IsRequired().HasMaxLength(20);
-                entity.Property(a => a.ActualValue).HasPrecision(10, 4);
-                entity.Property(a => a.ExpectedValue).HasPrecision(10, 4);
-                entity.Property(a => a.Deviation).HasPrecision(10, 4);
+                entity.Property(a => a.ActualValue)
+               .HasColumnType("float")        
+               .HasConversion<double>();     
+
+                entity.Property(a => a.ExpectedValue)
+                      .HasColumnType("float")
+                      .HasConversion<double>();
+
+                entity.Property(a => a.Deviation)
+                      .HasColumnType("float")
+                      .HasConversion<double>();
 
                 entity.HasOne(a => a.Device)
                     .WithMany()
