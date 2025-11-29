@@ -762,20 +762,42 @@
 
         async function loadAnomalies() {
             try {
+                // Show loading
+                document.getElementById('anomaliesList').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading anomalies...</div>
+                    </div>
+                `;
+
                 const params = new URLSearchParams({
                     page: currentPage,
                     pageSize: 10,
                 });
 
+                // Add filters
+                const status = document.getElementById('filterStatus').value;
+                const severity = document.getElementById('filterSeverity').value;
+                const device = document.getElementById('filterDevice').value;
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+
+                if (status !== '') params.append('isResolved', status);
+                if (severity) params.append('severity', severity);
+                if (device) params.append('deviceId', device);
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+
                 const response = await fetch(`${baseUrl}/api/AI/anomalies?${params}`, {
                     cache: "no-cache"
                 });
 
-                if (!response.ok) throw new Error('Failed to fetch');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
 
                 const data = await response.json();
-
-                console.log('Anomalies API Response:', data); 
+                console.log('Anomalies API Response:', data);
 
                 displayStatistics(data.statistics || {});
                 displayAnomalies(data.data || []);
@@ -785,12 +807,20 @@
                 console.error('Error loading anomalies:', error);
                 document.getElementById('anomaliesList').innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-icon">Error</div>
+                        <div class="empty-icon">⚠️</div>
                         <div>Failed to load anomalies</div>
-                        <p>${error.message}</p>
+                        <p style="color: #ef4444; margin-top: 10px;">${error.message}</p>
+                        <button class="btn action-btn" style="margin-top: 15px; background: #667eea; color: white;" onclick="loadAnomalies()">
+                            🔄 Retry
+                        </button>
                     </div>
                 `;
             }
+        }
+
+        function applyFilters() {
+            currentPage = 1; // Reset to first page when filtering
+            loadAnomalies();
         }
 
         function displayStatistics(stats) {
