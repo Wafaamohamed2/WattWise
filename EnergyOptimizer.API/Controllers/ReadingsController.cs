@@ -1,12 +1,10 @@
 ﻿using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {
-    [EnableRateLimiting("GeneralPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class ReadingsController : ControllerBase
