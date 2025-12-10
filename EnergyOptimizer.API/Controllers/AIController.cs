@@ -719,6 +719,7 @@ namespace EnergyOptimizer.API.Controllers
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
 
                 var query = context.DetectedAnomalies
+                    .AsNoTracking()
                     .Include(a => a.Device)
                         .ThenInclude(d => d.Zone)
                     .AsQueryable();
@@ -746,7 +747,6 @@ namespace EnergyOptimizer.API.Controllers
                 }
 
                 var totalCount = await query.CountAsync();
-                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
                 // Fetch to memory first
                 var anomaliesList = await query
@@ -764,7 +764,7 @@ namespace EnergyOptimizer.API.Controllers
                     {
                         a.Device.Id,
                         a.Device.Name,
-                        Zone = a.Device.Zone.Name
+                        Zone = a.Device.Zone.Name ?? "Unknown"
                     },
                     a.AnomalyTimestamp,
                     ActualValue = (double)a.ActualValue,     
@@ -777,24 +777,28 @@ namespace EnergyOptimizer.API.Controllers
                     a.Description,
                     a.IsResolved,
                     a.ResolutionNotes,
-                    a.DetectedAt
+                    a.ResolvedAt,
+                    a.DetectedAt,
+                    a.PossibleCauses
                 }).ToList();
+
+                var unresolvedQuery = context.DetectedAnomalies.Where(a => !a.IsResolved);
 
                 var stats = new
                 {
                     Total = totalCount,
-                    Unresolved = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved),
-                    Resolved = await context.DetectedAnomalies.CountAsync(a => a.IsResolved),
-                    Critical = await context.DetectedAnomalies.CountAsync(a => a.Severity == "Critical" && !a.IsResolved),
-                    High = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved && a.Severity == "High"),
-                    Medium = await context.DetectedAnomalies.CountAsync(a => !a.IsResolved && a.Severity == "Medium"),
-                    DevicesAffected = await context.DetectedAnomalies
-                        .Where(a => !a.IsResolved)
-                        .Select(a => a.DeviceId)
-                        .Distinct()
-                        .CountAsync()
+                    Unresolved = await unresolvedQuery.CountAsync(),
+                    Resolved = await query.CountAsync(a => a.IsResolved),
+                    Critical = await unresolvedQuery.CountAsync(a => a.Severity == "Critical"),
+                    High = await unresolvedQuery.CountAsync(a => a.Severity == "High"),
+                    Medium = await unresolvedQuery.CountAsync(a => a.Severity == "Medium"),
+                    DevicesAffected = await unresolvedQuery
+                            .Select(a => a.DeviceId)
+                            .Distinct()
+                            .CountAsync()
                 };
 
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
                 return Ok(new
                 {
                     page,
