@@ -4,6 +4,8 @@ using Serilog;
 using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.AI.Services;
+using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,9 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Add DbContext
 builder.Services.AddDbContext<EnergyDbContext>(options =>
