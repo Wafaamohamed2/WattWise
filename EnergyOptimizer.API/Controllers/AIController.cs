@@ -2,15 +2,14 @@
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 
 namespace EnergyOptimizer.API.Controllers
 {
-    [EnableRateLimiting("AI_Policy")]
     [Route("api/[controller]")]
     [ApiController]
     public class AIController : ControllerBase

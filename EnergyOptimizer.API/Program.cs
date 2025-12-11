@@ -4,8 +4,8 @@ using Serilog;
 using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.AI.Services;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
+using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +29,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 // Add DbContext
 builder.Services.AddDbContext<EnergyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -39,44 +42,6 @@ builder.Services.AddSignalR(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });
-
-// Configure Rate Limiting
-builder.Services.AddRateLimiter( Options =>
-{
-    // AI Analysis Rate Limiter
-    Options.AddSlidingWindowLimiter("AI_Policy", config =>
-    {
-        config.PermitLimit = 10;
-        config.Window = TimeSpan.FromMinutes(1);
-        config.SegmentsPerWindow = 5;
-        config.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        config.QueueLimit = 0;
-    });
-
-    // Concurrency Limiter for Heavy I/O Operations (Export CSV)
-    Options.AddConcurrencyLimiter("HeavyIoPolicy", opt =>
-     {
-        opt.PermitLimit = 2; 
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 2;
-     });
-      
-    // General Rate Limiter for Dashboard & Browssing
-    Options.AddTokenBucketLimiter("GeneralPolicy", opt =>
-    {
-        opt.TokenLimit = 50; 
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 10;
-        opt.TokensPerPeriod = 25;
-    });
-
-    Options.OnRejected = async (context, token) =>
-    {
-        context.HttpContext.Response.StatusCode = 429; // Too Many Requests
-        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
-    };
-});
-
 
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
@@ -128,7 +93,7 @@ if (app.Environment.IsDevelopment())
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
-app.UseRateLimiter();
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
