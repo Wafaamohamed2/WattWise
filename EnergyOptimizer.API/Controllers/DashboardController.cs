@@ -1,11 +1,13 @@
 ﻿using EnergyOptimizer.API.DTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DashboardController : ControllerBase

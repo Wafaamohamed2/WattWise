@@ -1,5 +1,6 @@
 ﻿using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,10 @@ using System.Threading.Tasks;
 
 namespace EnergyOptimizer.Infrastructure.Data
 {
-    public class EnergyDbContext : DbContext
+    public class EnergyDbContext : IdentityDbContext<ApplicationUser>
     {
-        public EnergyDbContext(DbContextOptions<EnergyDbContext> options) : base(options)
-        {
-        }
-
+        public EnergyDbContext(DbContextOptions<EnergyDbContext> options) : base(options) { }       
+        
         #region DbSets
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Zone> Zones { get; set; }

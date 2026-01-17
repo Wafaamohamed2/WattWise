@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.API.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EnergyOptimizer.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SeedController : ControllerBase
