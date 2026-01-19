@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis History - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <style>
         * {
             margin: 0;
@@ -683,7 +684,7 @@
                     ...(currentFilters.endDate && { endDate: currentFilters.endDate })
                 });
 
-                const response = await fetch(`${baseUrl}/api/AI/analysis-history?${params}`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis-history?${params}`);
                 const data = await response.json();
 
                 displayAnalyses(data.data);
@@ -691,11 +692,11 @@
             } catch (error) {
                 console.error('Error loading history:', error);
                 document.getElementById('timeline').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div>Failed to load analysis history</div>
-                    </div>
-                `;
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div>Failed to load analysis history</div>
+                </div>
+            `;
             }
         }
 
@@ -876,7 +877,7 @@
             document.getElementById('modalBody').innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading details...</div></div>';
 
             try {
-                const response = await fetch(`${baseUrl}/api/AI/analysis/${id}`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis/${id}`);
                 const analysis = await response.json();
 
                 document.getElementById('modalBody').innerHTML = `
@@ -955,12 +956,6 @@
                 `;
             } catch (error) {
                 console.error('Error loading details:', error);
-                document.getElementById('modalBody').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div>Failed to load details</div>
-                    </div>
-                `;
             }
         }
 
@@ -976,7 +971,7 @@
             const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
             try {
-                const response = await fetch(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
                     method: 'POST'
                 });
 

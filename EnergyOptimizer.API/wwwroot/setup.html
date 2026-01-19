@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI System Setup - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <style>
         * {
             margin: 0;
@@ -322,7 +323,7 @@
             try {
                 // Step 1: Check readings
                 addLog('🔍 Checking system readings...', 'info');
-                const readingsResponse = await fetch(`${baseUrl}/api/readings/latest?limit=100`);
+                const readingsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=100`);
                 const readingsData = await readingsResponse.json();
 
                 if (!readingsData.data || readingsData.data.length === 0) {
@@ -337,7 +338,7 @@
                 const endDate = new Date().toISOString().split('T')[0];
                 const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-                const analysisResponse = await fetch(
+                const analysisResponse = await AuthHelper.fetchWithAuth(
                     `${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
                     { method: 'POST' }
                 );
@@ -353,8 +354,8 @@
 
                 // Step 3: Generate Recommendations
                 addLog('💡 Generating energy-saving recommendations...', 'info');
-                const recsResponse = await fetch(
-                    `${baseUrl}/api/AI/generate-recommendations?startDate=${startDate}&endDate=${endDate}`,
+                const analysisResponse = await AuthHelper.fetchWithAuth(
+                    `${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
                     { method: 'POST' }
                 );
 
@@ -371,7 +372,7 @@
 
                 // Step 4: Detect Anomalies
                 addLog('🚨 Detecting consumption anomalies...', 'info');
-                const devicesResponse = await fetch(`${baseUrl}/api/devices`);
+                const devicesResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/devices`);
                 const devicesData = await devicesResponse.json();
 
                 let totalAnomalies = 0;
@@ -382,7 +383,7 @@
                     addLog(`  → Checking ${device.name}...`, 'info');
 
                     try {
-                        const anomalyResponse = await fetch(
+                        const anomalyResponse = await AuthHelper.fetchWithAuth(
                             `${baseUrl}/api/AI/detect-anomalies/${device.id}?days=7`,
                             { method: 'POST' }
                         );
@@ -404,11 +405,11 @@
                 addLog(`✅ Anomaly detection complete: ${totalAnomalies} total anomalies found`, 'success');
                 await sleep(500);
 
-                // Step 5: Fetch Statistics - ✅ FIX HERE
+                // Step 5: Fetch Statistics - FIX HERE
                 addLog('📊 Fetching final statistics...', 'info');
 
                 try {
-                    const statsResponse = await fetch(`${baseUrl}/api/AI/Statistics`);
+                    const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
 
                     if (!statsResponse.ok) {
                         throw new Error(`Failed to fetch statistics: ${statsResponse.status}`);
@@ -416,7 +417,7 @@
 
                     const statsData = await statsResponse.json();
 
-                    // ✅ Debug: طباعة الـ response
+                    // Debug: response
                     console.log('Statistics Response:', statsData);
                     addLog(`📊 Received statistics data`, 'success');
 

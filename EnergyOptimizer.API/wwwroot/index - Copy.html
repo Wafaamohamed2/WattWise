@@ -1448,27 +1448,35 @@
             if (card) card.remove();
         });
 
+        // حركي كل استدعاءات البيانات لتعمل "فقط" بعد تحميل الصفحة والأمان
         document.addEventListener('DOMContentLoaded', async () => {
+            // 1. فحص الأمان أولاً
             if (!AuthHelper.checkAuth()) return;
+
+            // 2. إعداد اتصال SignalR المؤمن
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/energyhub", {
+                    accessTokenFactory: () => localStorage.getItem('token') // استدعاء حي دائماً
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            // ربط الأحداث (ReceiveReadings, etc...)
+            connection.on("ReceiveReadings", (r) => displayLatestReadings(r));
+            connection.on("ReceiveAlert", (a) => addAlert(a));
 
             try {
                 await connection.start();
-                log("🚀 SignalR connection started");
                 updateStatus("Connected", true);
 
-                Promise.all([
+                // 3. جلب البيانات الأولية (بالتوازي لسرعة الأداء)
+                await Promise.all([
                     fetchDashboardStats(),
                     loadInitialAlerts(),
                     loadDeviceControls()
                 ]);
-
             } catch (err) {
-                log(`❌ Connection Error: ${err}`);
-                if (err.toString().includes("401")) {
-                    AuthHelper.logout();
-                } else {
-                    setTimeout(() => window.location.reload(), 5000);
-                }
+                if (err.toString().includes("401")) AuthHelper.logout();
             }
         });
     </script>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendations - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <style>
         * {
             margin: 0;
@@ -395,17 +396,13 @@
                 });
 
                 const url = `${baseUrl}/api/AI/recommendations?${params}`;
-                console.log('Fetching:', url);
-
-                const response = await fetch(url);
+                const response = await AuthHelper.fetchWithAuth(url);
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                console.log('Received data:', data);
-
                 displayStatistics(data.statistics);
                 displayRecommendations(data.data);
                 populateCategories(data.data);
@@ -534,7 +531,7 @@
             if (!confirm('Mark this recommendation as implemented?')) return;
 
             try {
-                const response = await fetch(`${baseUrl}/api/AI/recommendations/${id}/implement`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/${id}/implement`, {
                     method: 'PATCH'
                 });
 

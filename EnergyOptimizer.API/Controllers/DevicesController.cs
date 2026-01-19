@@ -32,13 +32,13 @@ namespace EnergyOptimizer.API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetAllDevices(
-            [FromQuery] bool? isActive = null,
-            [FromQuery] int? zoneId = null,
-            [FromQuery] DeviceType? deviceType = null,
-            [FromQuery] double? minPower = null,
-            [FromQuery] double? maxPower = null,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20 )
+        [FromQuery] bool? isActive = null,
+        [FromQuery] int? zoneId = null,
+        [FromQuery] DeviceType? deviceType = null,
+        [FromQuery] double? minPower = null,
+        [FromQuery] double? maxPower = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
         {
             try
             {
@@ -67,33 +67,34 @@ namespace EnergyOptimizer.API.Controllers
                         Type = d.Type.ToString(),
                         d.RatedPowerKW,
                         d.IsActive,
-                        LastReading = d.EnergyReadings
-                        .OrderByDescending(r => r.Timestamp)
+                        LastReading = d.EnergyReadings != null ? d.EnergyReadings
+                            .OrderByDescending(r => r.Timestamp)
                             .Select(r => new {
                                 PowerKW = r.PowerConsumptionKW,
                                 r.Voltage,
                                 r.Current,
                                 r.Temperature,
                                 r.Timestamp
-                            }).FirstOrDefault(),
-                        Zone = new
+                            }).FirstOrDefault() : null,
+
+                        Zone = d.Zone != null ? new
                         {
                             d.Zone.Id,
                             d.Zone.Name,
                             Type = d.Zone.Type.ToString(),
-                            Building = new
+                            Building = d.Zone.Building != null ? new
                             {
                                 d.Zone.Building.Id,
                                 d.Zone.Building.Name
-                            }
-                        }
+                            } : null
+                        } : null 
                     })
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving devices");
-                return StatusCode(500, new { error = "Failed to get devices" });
+                return StatusCode(500, new { error = "Failed to get devices", details = ex.Message });
             }
         }
 

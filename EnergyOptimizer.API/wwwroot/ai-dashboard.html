@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Insights - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -501,24 +502,10 @@
         const baseUrl = window.location.origin;
 
         // ===== Load Dashboard Data =====
-        async function loadDashboard() {
-            try {
-                await Promise.all([
-                    loadStatistics(),
-                    loadRecommendations(),
-                    loadAnomalies()
-                ]);
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
-        }
-
-        // ===== Load Statistics =====
         async function loadStatistics() {
             try {
-                const response = await fetch(`${baseUrl}/api/AI/statistics`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/statistics`);
                 const data = await response.json();
-
                 displayStatistics(data);
                 displayCharts(data);
             } catch (error) {
@@ -526,6 +513,7 @@
                 document.getElementById('statsGrid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load statistics</div></div>';
             }
         }
+
 
         function displayStatistics(data) {
             const statsGrid = document.getElementById('statsGrid');
@@ -612,13 +600,11 @@
         // ===== Load Recommendations =====
         async function loadRecommendations() {
             try {
-                const response = await fetch(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
                 const data = await response.json();
-
                 displayRecommendations(data.data);
             } catch (error) {
                 console.error('Error loading recommendations:', error);
-                document.getElementById('recommendationsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load recommendations</div></div>';
             }
         }
 
@@ -648,13 +634,11 @@
         // ===== Load Anomalies =====
         async function loadAnomalies() {
             try {
-                const response = await fetch(`${baseUrl}/api/AI/anomalies?pageSize=5&isResolved=false`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5&isResolved=false`);
                 const data = await response.json();
-
                 displayAnomalies(data.data);
             } catch (error) {
                 console.error('Error loading anomalies:', error);
-                document.getElementById('anomaliesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load anomalies</div></div>';
             }
         }
 
@@ -690,7 +674,7 @@
             const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
             try {
-                const response = await fetch(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
                     method: 'POST'
                 });
 
@@ -717,7 +701,11 @@
         }
 
         // ===== Initialize =====
-        loadDashboard();
+        document.addEventListener('DOMContentLoaded', () => {
+            if (AuthHelper.checkAuth()) {
+                loadDashboard();
+            }
+        });
     </script>
 </body>
 </html>

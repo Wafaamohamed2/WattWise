@@ -101,12 +101,12 @@ builder.Services.AddScoped<AIAnalysisBackgroundService>();
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.WithOrigins("http://localhost:3000", "http://localhost:5173") // React/Vite ports
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+        policy.WithOrigins("https://localhost:7083", "http://localhost:5167", "http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 

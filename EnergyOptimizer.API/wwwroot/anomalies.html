@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anomalies - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <style>
         * {
             margin: 0;
@@ -788,7 +789,7 @@
                 if (startDate) params.append('startDate', startDate);
                 if (endDate) params.append('endDate', endDate);
 
-                const response = await fetch(`${baseUrl}/api/AI/anomalies?${params}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?${params}`, {
                     cache: "no-cache"
                 });
 
@@ -926,16 +927,21 @@
 
         async function confirmResolve() {
             const notes = document.getElementById('resolutionNotes').value.trim();
-            if (!notes) return alert('اكتبي ملاحظة الحل');
+            if (!notes) return alert('Please enter resolution notes');
 
-            await fetch(`${baseUrl}/api/AI/anomalies/${currentAnomalyId}/resolve`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ resolutionNotes: notes })
-            });
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies/${currentAnomalyId}/resolve`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ resolutionNotes: notes })
+                });
 
-            document.getElementById('resolveModal').classList.remove('show');
-            loadAnomalies();
+                if (response.ok) {
+                    document.getElementById('resolveModal').classList.remove('show');
+                    loadAnomalies();
+                }
+            } catch (error) {
+                console.error('Error resolving anomaly:', error);
+            }
         }
 
         window.onload = loadAnomalies;

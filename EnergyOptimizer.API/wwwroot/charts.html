@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Charts & Analytics - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
@@ -537,7 +538,7 @@
                     startDate = new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
                 }
 
-                const response = await fetch(`${baseUrl}/api/readings/latest?limit=1000`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=1000`);
                 const data = await response.json();
 
                 const filteredData = data.data.filter(reading => {
@@ -802,7 +803,11 @@
             link.click();
         }
 
-        loadData();
+        document.addEventListener('DOMContentLoaded', () => {
+            if (AuthHelper.checkAuth()) {
+                loadData(); 
+            }
+        });
     </script>
 </body>
 </html>
