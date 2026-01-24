@@ -26,8 +26,6 @@ namespace EnergyOptimizer.API.Controllers
         [HttpGet("overview")]
         public async Task<ActionResult<DashboardOverviewDto>> GetOverview()
         {
-            try
-            {
                 var today = DateTime.UtcNow.Date;
 
                 var totalDevices = await _context.Devices.CountAsync();
@@ -72,13 +70,6 @@ namespace EnergyOptimizer.API.Controllers
                     LastReadingTime = lastReading?.Timestamp ?? DateTime.UtcNow
                 };
                 return Ok(overview);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting dashboard overview");
-                return StatusCode(500, new { error = "Failed to get dashboard overview" });
-            }
-
         }
 
         /// <summary>
@@ -91,8 +82,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? startDate = null,
             [FromQuery] string? endDate = null)
         {
-            try
-            {
                 DateTime start;
                 DateTime end;
 
@@ -120,7 +109,7 @@ namespace EnergyOptimizer.API.Controllers
                 }
                 else
                 {
-                    end = DateTime.UtcNow; // Default to now
+                    end = DateTime.UtcNow; 
                 }
 
                 // Validate date range
@@ -168,12 +157,6 @@ namespace EnergyOptimizer.API.Controllers
                     totalConsumption = Math.Round(totalConsumption, 2),
                     data = result
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting consumption by zone");
-                return StatusCode(500, new { error = "Failed to get zone consumption" });
-            }
         }
 
 
@@ -187,8 +170,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? startDate = null,
             [FromQuery] string? endDate = null)
         {
-            try
-            {
                 DateTime start;
                 DateTime end;
 
@@ -264,21 +245,13 @@ namespace EnergyOptimizer.API.Controllers
                     totalConsumption = Math.Round(totalConsumption, 2),
                     data = result
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting consumption by device");
-                return StatusCode(500, new { error = "Failed to get device consumption" });
-            }
         }
 
 
         [HttpGet("hourly-consumption")]
         public async Task<ActionResult<List<HourlyConsumptionDto>>> GetHourlyConsumption(
-     [FromQuery] string? date = null)
+        [FromQuery] string? date = null)
         {
-            try
-            {
                 DateTime targetDate;
 
                 if (!string.IsNullOrEmpty(date))
@@ -290,7 +263,7 @@ namespace EnergyOptimizer.API.Controllers
                 }
                 else
                 {
-                    targetDate = DateTime.UtcNow; // ✅ Use today
+                    targetDate = DateTime.UtcNow;
                 }
 
                 targetDate = targetDate.Date;
@@ -317,7 +290,6 @@ namespace EnergyOptimizer.API.Controllers
                     .OrderBy(h => h.Hour)
                     .ToList();
 
-                // Fill missing hours with zero
                 var completeHours = Enumerable.Range(0, 24)
                     .Select(hour => hourlyData.FirstOrDefault(h => h.Hour == hour) ?? new HourlyConsumptionDto
                     {
@@ -341,12 +313,6 @@ namespace EnergyOptimizer.API.Controllers
                     totalReadings = readings.Count,
                     data = completeHours
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting hourly consumption");
-                return StatusCode(500, new { error = "Failed to get hourly consumption" });
-            }
         }
 
 
@@ -355,8 +321,6 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<ActionResult<List<ConsumptionTrendDto>>> GetConsumptionTrend(
             [FromQuery] int hours = 24)
         {
-            try
-            {
                 var startTime = DateTime.UtcNow.AddHours(-hours);
                 var readings = await _context.EnergyReadings
                     .Where(r => r.Timestamp >= startTime)
@@ -375,22 +339,13 @@ namespace EnergyOptimizer.API.Controllers
                     .ToList();
 
                 return Ok(trend);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting consumption trend");
-                return StatusCode(500, new { error = "Failed to get consumption trend" });
-            }
-
         }
 
         [HttpGet("top-consumers")]
         public async Task<ActionResult<List<DeviceConsumptionDto>>> GetTopConsumers(
-      [FromQuery] int count = 5,
-      [FromQuery] string? startDate = null)
+        [FromQuery] int count = 5,
+        [FromQuery] string? startDate = null)
         {
-            try
-            {
                 DateTime start;
 
                 if (!string.IsNullOrEmpty(startDate))
@@ -406,7 +361,7 @@ namespace EnergyOptimizer.API.Controllers
                     start = DateTime.UtcNow.Date;
                 }
 
-                var end = DateTime.UtcNow; // Until now
+                var end = DateTime.UtcNow; 
 
                 var topDevices = await _context.Devices
                     .Include(d => d.Zone)
@@ -429,7 +384,7 @@ namespace EnergyOptimizer.API.Controllers
                             DeviceName = d.Name,
                             DeviceType = d.Type.ToString(),
                             ZoneName = d.Zone.Name,
-                            RatedPowerKW = d.RatedPowerKW, // ✅ Fixed
+                            RatedPowerKW = d.RatedPowerKW,
                             CurrentConsumption = latestReading?.PowerConsumptionKW ?? 0,
                             TodayConsumption = Math.Round(totalConsumption, 2),
                             AverageConsumption = readings.Count > 0
@@ -440,7 +395,7 @@ namespace EnergyOptimizer.API.Controllers
                             IsActive = d.IsActive
                         };
                     })
-                    .Where(d => d.TodayConsumption > 0) // ✅ Only show devices with consumption
+                    .Where(d => d.TodayConsumption > 0) // Only show devices with consumption
                     .OrderByDescending(d => d.TodayConsumption)
                     .Take(count)
                     .ToList();
@@ -453,15 +408,7 @@ namespace EnergyOptimizer.API.Controllers
                     totalConsumption = Math.Round(result.Sum(d => d.TodayConsumption), 2),
                     data = result
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting top consumers");
-                return StatusCode(500, new { error = "Failed to get top consumers" });
-            }
         }
-
-
     }
 }
 

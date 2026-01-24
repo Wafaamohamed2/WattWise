@@ -21,16 +21,9 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("run")]
         public async Task<IActionResult> SeedData()
         {
-            try
-            {
+
                 await _seedingService.SeedAsync();
                 return Ok(new { message = "Data seeded successfully!" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to seed data");
-                return StatusCode(500, new { error = ex.Message });
-            }
         }
     }
 }

@@ -31,8 +31,6 @@ namespace EnergyOptimizer.API.Controllers
         [HttpGet("latest")]
         public async Task<ActionResult<IEnumerable<object>>> GetLatestReadings([FromQuery] int limit = 50)
         {
-            try
-            {
                 var spec = new LatestReadingsSpec(limit);
                 var readings = await _readingsRepo.ListAsync(spec);
 
@@ -61,12 +59,6 @@ namespace EnergyOptimizer.API.Controllers
                         }
                     })
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving latest readings");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
-            }
         }
 
 
@@ -78,8 +70,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? endDate = null,
             [FromQuery] int limit = 100)
         {
-            try
-            {
                 // Check if device exists
                 var deviceSpec = new DeviceWithDetailsSpec(deviceId);
                 var device = await _deviceRepo.GetEntityWithSpec(deviceSpec);
@@ -136,13 +126,6 @@ namespace EnergyOptimizer.API.Controllers
                         r.Temperature
                     })
                 });
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving readings for device {deviceId}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get device readings");
-            }
         }
 
 
@@ -154,8 +137,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? startDate = null,
             [FromQuery] int days = 7)
         {
-            try
-            {
                 var deviceSpec = new DeviceWithDetailsSpec(deviceId);
                 var device = await _deviceRepo.GetEntityWithSpec(deviceSpec);
 
@@ -245,12 +226,6 @@ namespace EnergyOptimizer.API.Controllers
                     dailyStats,
                     hourlyPattern
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting statistics for device {DeviceId}", deviceId);
-                return StatusCode(500, new { error = "Failed to get device statistics" });
-            }
         }
 
        
@@ -261,8 +236,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? endDate = null,
             [FromQuery] int? deviceId = null)
         {
-            try
-            {
                 DateTime start = DateTime.UtcNow.AddDays(-7).Date;
                 DateTime end = DateTime.UtcNow;
 
@@ -275,7 +248,7 @@ namespace EnergyOptimizer.API.Controllers
                     end = end.AddDays(1).AddSeconds(-1);
                 }
 
-                var spec = new PaginatedReadingsSpec(start, end, deviceId: deviceId, pageSize: int.MaxValue); // pageSize Max لجلب الكل
+                var spec = new PaginatedReadingsSpec(start, end, deviceId: deviceId, pageSize: int.MaxValue); 
                 var readings = await _readingsRepo.ListAsync(spec);
 
                 var csv = new System.Text.StringBuilder();
@@ -288,12 +261,6 @@ namespace EnergyOptimizer.API.Controllers
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
                 return File(bytes, "text/csv", $"readings_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error exporting readings");
-                return StatusCode(500, new { error = "Failed to export readings" });
-            }
         }
     }
 }

@@ -112,6 +112,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// add custom exception middleware
+app.UseMiddleware<EnergyOptimizer.API.Middleware.ExceptionMiddleware>();
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {

@@ -32,8 +32,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 50)
         {
-            try
-            {
                 DateTime start = DateTime.UtcNow.AddDays(-7).Date;
                 DateTime end = DateTime.UtcNow;
 
@@ -102,31 +100,17 @@ namespace EnergyOptimizer.API.Controllers
                        },
                         data = alerts
                     });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting alerts");
-                return StatusCode(500, new { error = "Failed to get alerts" });
-            }
         }
 
         // Get unread alerts count
         [HttpGet("unread-count")]
         public async Task<ActionResult<object>> GetUnreadCount()
         {
-            try
-            {
                 var count = await _context.Alerts
                     .Where(a => !a.IsRead)
                     .CountAsync();
 
                 return Ok(new { unreadCount = count });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting unread count");
-                return StatusCode(500, new { error = "Failed to get unread count" });
-            }
         }
 
         // Get alerts statistics
@@ -135,8 +119,6 @@ namespace EnergyOptimizer.API.Controllers
            [FromQuery] string? startDate = null,
            [FromQuery] int days = 7)
         {
-            try
-            {
                 DateTime start;
                 if (!string.IsNullOrEmpty(startDate))
                 {
@@ -160,20 +142,12 @@ namespace EnergyOptimizer.API.Controllers
                     InfoAlerts = alerts.Count(a => a.Severity == 1)
                 };
                 return StatusCode(200, statistics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting alert statistics");
-                return StatusCode(500, new { error = "Failed to get alert statistics" });
-            }
         }
 
         // Get alert by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<AlertDto>> GetAlert(int id)
         {
-            try
-            {
                 var alert = await _context.Alerts
                    .Include(a => a.Device)
                    .ThenInclude(d => d.Zone)
@@ -197,20 +171,12 @@ namespace EnergyOptimizer.API.Controllers
                     return NotFound(new { error = $"Alert with ID {id} not found" });
 
                 return Ok(alert);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting alert {AlertId}", id);
-                return StatusCode(500, new { error = "Failed to get alert" });
-            }
         }
 
         // Mark alert as read
         [HttpPatch("{id}/read")]
         public async Task<ActionResult> MarkAsRead(int id)
         {
-            try
-            {
                 var alert = await _context.Alerts.FindAsync(id);
 
                 if (alert == null)
@@ -227,20 +193,12 @@ namespace EnergyOptimizer.API.Controllers
                     isRead = alert.IsRead,
                     message = "Alert marked as read"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error marking alert {AlertId} as read", id);
-                return StatusCode(500, new { error = "Failed to mark alert as read" });
-            }
         }
 
         // Mark all alerts as read
         [HttpPost("all-read")]
         public async Task<ActionResult> MarkAllAsRead()
         {
-            try
-            {
                 var unreadAlerts = await _context.Alerts
                     .Where(a => !a.IsRead)
                     .ToListAsync();
@@ -259,20 +217,12 @@ namespace EnergyOptimizer.API.Controllers
                     count = unreadAlerts.Count,
                     message = $"{unreadAlerts.Count} alerts marked as read"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error marking all alerts as read");
-                return StatusCode(500, new { error = "Failed to mark alerts as read" });
-            }
         }
 
         // Delete alert 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAlert(int id)
         {
-            try
-            {
                 var alert = await _context.Alerts.FindAsync(id);
 
                 if (alert == null)
@@ -288,22 +238,12 @@ namespace EnergyOptimizer.API.Controllers
                     id,
                     message = "Alert deleted successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting alert {AlertId}", id);
-                return StatusCode(500, new { error = "Failed to delete alert" });
-            }
-
         }
-
 
         // Delete all read alerts
         [HttpDelete("clear-read")]
         public async Task<ActionResult> ClearReadAlerts()
         {
-            try
-            {
                 var readAlerts = await _context.Alerts
                     .Where(a => a.IsRead)
                     .ToListAsync();
@@ -318,15 +258,6 @@ namespace EnergyOptimizer.API.Controllers
                     count = readAlerts.Count,
                     message = $"{readAlerts.Count} read alerts deleted"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error clearing read alerts");
-                return StatusCode(500, new { error = "Failed to clear read alerts" });
-            }
         }
-
-
-
     }
 }

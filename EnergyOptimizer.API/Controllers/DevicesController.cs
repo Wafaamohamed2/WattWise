@@ -40,8 +40,6 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
-            try
-            {
                 var spec = new DeviceFilterSpec(isActive, zoneId, deviceType, minPower, maxPower, page - 1, pageSize);
                 var devices = await _deviceRepo.ListAsync(spec);
 
@@ -90,19 +88,12 @@ namespace EnergyOptimizer.API.Controllers
                         } : null 
                     })
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving devices");
-                return StatusCode(500, new { error = "Failed to get devices", details = ex.Message });
-            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> GetDeviceById(int id)
         {
-            try
-            {
+            
                 var spec = new DeviceWithDetailsSpec(id);
                 var device = await _deviceRepo.GetEntityWithSpec(spec);
 
@@ -143,19 +134,12 @@ namespace EnergyOptimizer.API.Controllers
                             .Sum(r => r.PowerConsumptionKW)
                   }
               } );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving device with ID {id}");
-                return StatusCode(500, new { error = "Failed to get device" });
-            }
         }
 
         [HttpGet("zone/{zoneId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetDevicesByZone(int zoneId)
         {
-            try
-            {
+            
                 var zone = await _zoneRepo.GetByIdAsync(zoneId);
                 if (zone == null)
                     return NotFound(new { error = $"Zone with ID {zoneId} not found" });
@@ -178,19 +162,11 @@ namespace EnergyOptimizer.API.Controllers
                         d.InstallationDate
                     })
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving devices for zone ID {zoneId}");
-                return StatusCode(500, new { error = "Failed to get devices for the specified zone" });
-            }
         }
 
         [HttpPost]
         public async Task<ActionResult<object>> CreateDevice([FromBody] CreateDeviceDto dto)
         {
-            try
-            {
                 var zone = await _zoneRepo.GetByIdAsync(dto.ZoneId);
                 if (zone == null)
                     return BadRequest(new { error = $"Zone with ID {dto.ZoneId} does not exist" });
@@ -217,19 +193,11 @@ namespace EnergyOptimizer.API.Controllers
                     newDevice.IsActive,
                     message = "Device created successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating new device");
-                return StatusCode(500, new { error = "Failed to create device" });
-            }
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<object>> UpdateDevice(int id, [FromBody] UpdateDeviceDto dto)
         {
-            try
-            {
                 var device = await _deviceRepo.GetByIdAsync(id);
                 if (device == null)
                     return NotFound(new { error = "Device not found" });
@@ -259,12 +227,6 @@ namespace EnergyOptimizer.API.Controllers
                     device.IsActive,
                     message = "Device updated successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error updating device with ID {id}");
-                return StatusCode(500, new { error = "Failed to update device" });
-            }
         }
 
         [HttpDelete("{id}")]

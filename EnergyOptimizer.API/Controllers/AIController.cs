@@ -39,8 +39,6 @@ namespace EnergyOptimizer.API.Controllers
           [FromQuery] DateTime? startDate = null,
           [FromQuery] DateTime? endDate = null)
         {
-            try
-            {
                 var start = startDate ?? DateTime.UtcNow.AddDays(-30);
                 var end = endDate ?? DateTime.UtcNow;
 
@@ -97,12 +95,6 @@ namespace EnergyOptimizer.API.Controllers
                         metrics = result.Metrics
                     }
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error analyzing patterns");
-                return StatusCode(500, new { error = "Failed to analyze patterns" });
-            }
         }
 
 
@@ -112,8 +104,6 @@ namespace EnergyOptimizer.API.Controllers
             int deviceId,
             [FromQuery] int days = 7)
         {
-            try
-            {
                 if (days < 1 || days > 30)
                 {
                     return BadRequest(new { error = "Days must be between 1 and 30" });
@@ -140,12 +130,6 @@ namespace EnergyOptimizer.API.Controllers
                     }),
                     analysis = result.Analysis
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error detecting anomalies for device {DeviceId}", deviceId);
-                return StatusCode(500, new { error = "Failed to detect anomalies" });
-            }
         }
 
 
@@ -155,8 +139,6 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)
         {
-            try
-            {
                 var start = startDate ?? DateTime.UtcNow.AddDays(-30);
                 var end = endDate ?? DateTime.UtcNow;
 
@@ -223,12 +205,6 @@ namespace EnergyOptimizer.API.Controllers
                         percent = result.EstimatedSavingsPercent
                     }
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating recommendations");
-                return StatusCode(500, new { error = "Failed to generate recommendations" });
-            }
         }
 
 
@@ -237,8 +213,6 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<ActionResult<object>> PredictConsumption(
            [FromQuery] int days = 7)
         {
-            try
-            {
                 if (days < 1 || days > 30)
                 {
                     return BadRequest(new { error = "Days must be between 1 and 30" });
@@ -256,12 +230,6 @@ namespace EnergyOptimizer.API.Controllers
                     confidenceScore = result.ConfidenceScore,
                     explanation = result.Explanation
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error predicting consumption");
-                return StatusCode(500, new { error = "Failed to predict consumption" });
-            }
         }
 
 
@@ -269,8 +237,6 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("ask")]
         public async Task<ActionResult<object>> AskQuestion([FromBody] AskQuestionRequest request)
         {
-            try
-            {
                 if (string.IsNullOrWhiteSpace(request.Question))
                 {
                     return BadRequest(new { error = "Question is required" });
@@ -287,12 +253,7 @@ namespace EnergyOptimizer.API.Controllers
                     question = request.Question,
                     answer
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing question");
-                return StatusCode(500, new { error = "Failed to process question" });
-            }
+            
         }
         #endregion
 
@@ -306,8 +267,7 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            try
-            {
+
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
 
                 var query = context.EnergyAnalyses
@@ -375,20 +335,12 @@ namespace EnergyOptimizer.API.Controllers
                     totalPages,
                     data = analyses
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving analysis history");
-                return StatusCode(500, new { error = "Failed to retrieve history" });
-            }
         }
 
         // Get detailed analysis by ID
         [HttpGet("analysis/{id}")]
         public async Task<ActionResult<object>> GetAnalysisById(int id)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
 
                 var analysis = await context.EnergyAnalyses
@@ -454,21 +406,11 @@ namespace EnergyOptimizer.API.Controllers
                     return NotFound(new { error = $"Analysis with ID {id} not found" });
                 }
                 return Ok(analysis);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving analysis by ID {Id}", id);
-                return StatusCode(500, new { error = "Failed to retrieve analysis" });
-            }
         }
 
         [HttpGet("Statistics")]
         public async Task<ActionResult<object>> GetAIStatistics()
-        {
-            try
-            {
-             
-
+        { 
                 var stats = new
                 {
                     Analyses = new
@@ -530,12 +472,6 @@ namespace EnergyOptimizer.API.Controllers
                 };
 
                 return Ok(stats);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving AI statistics");
-                return StatusCode(500, new { error = "Failed to retrieve statistics" });
-            }
         }
 
 
@@ -551,8 +487,6 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
 
                 var query = _context.EnergyRecommendations
@@ -579,15 +513,13 @@ namespace EnergyOptimizer.API.Controllers
                 var totalCount = await query.CountAsync();
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                // ✅ FIX: استخدام ToListAsync أولاً قبل التحويل
                 var recommendationsList = await query
                     .OrderByDescending(r => r.Priority == "High" ? 1 : r.Priority == "Medium" ? 2 : 3)
                     .ThenByDescending(r => r.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(); // ← جلب البيانات من الـ database
+                    .ToListAsync(); 
 
-                // ✅ التحويل في الـ memory بدلاً من الـ database
                 var recommendations = recommendationsList.Select(r => new
                 {
                     r.Id,
@@ -595,16 +527,16 @@ namespace EnergyOptimizer.API.Controllers
                     r.Description,
                     r.Category,
                     r.Priority,
-                    EstimatedSavingsKWh = (double)r.EstimatedSavingsKWh, // ← Cast explicit
-                    EstimatedSavingsPercent = (double)r.EstimatedSavingsPercent, // ← Cast explicit
+                    EstimatedSavingsKWh = (double)r.EstimatedSavingsKWh, 
+                    EstimatedSavingsPercent = (double)r.EstimatedSavingsPercent, 
                     r.IsImplemented,
                     r.CreatedAt
                 }).ToList();
 
-                // ✅ FIX: حساب الـ statistics بنفس الطريقة
+      
                 var allRecommendations = await _context.EnergyRecommendations
                     .Where(r => r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)
-                    .ToListAsync(); // ← جلب البيانات أولاً
+                    .ToListAsync(); 
 
                 var stats = new
                 {
@@ -614,7 +546,7 @@ namespace EnergyOptimizer.API.Controllers
                     HighPriority = allRecommendations.Count(r => !r.IsImplemented && r.Priority == "High"),
                     TotalEstimatedSavings = (double)allRecommendations
                         .Where(r => !r.IsImplemented)
-                        .Sum(r => r.EstimatedSavingsKWh) // ← Cast بعد الـ Sum
+                        .Sum(r => r.EstimatedSavingsKWh) 
                 };
 
                 return Ok(new
@@ -626,21 +558,13 @@ namespace EnergyOptimizer.API.Controllers
                     statistics = stats,
                     data = recommendations
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving recommendations");
-                return StatusCode(500, new { error = "Failed to retrieve recommendations" });
-            }
         }
 
     
         [HttpPatch("recommendations/{id}/implement")]
         public async Task<ActionResult<object>> ImplementRecommendation(int id)
         {
-            try
-            {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+            var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
                 var recommendation = await context.EnergyRecommendations.FindAsync(id);
 
                 if (recommendation == null)
@@ -667,19 +591,11 @@ namespace EnergyOptimizer.API.Controllers
                     implementedDate = recommendation.ImplementedDate,
                     message = "Recommendation marked as implemented successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error implementing recommendation");
-                return StatusCode(500, new { error = "Failed to implement recommendation" });
-            }
         }
 
         [HttpDelete("recommndations/{id}")]
         public async Task<ActionResult<object>> DeleteRecommendation(int id)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
                 var recommendation = await context.EnergyRecommendations.FindAsync(id);
                 if (recommendation == null)
@@ -694,12 +610,6 @@ namespace EnergyOptimizer.API.Controllers
                     id,
                     message = "Recommendation deleted successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting recommendation");
-                return StatusCode(500, new { error = "Failed to delete recommendation" });
-            }
         }
         #endregion
 
@@ -715,8 +625,7 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
-            try
-            {
+
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
 
                 var query = context.DetectedAnomalies
@@ -755,7 +664,7 @@ namespace EnergyOptimizer.API.Controllers
                     .ThenByDescending(a => a.DetectedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(); // ← Get from DB first
+                    .ToListAsync(); // Get from DB first
 
                 // in memory with explicit casts
                 var anomalies = anomaliesList.Select(a => new
@@ -809,18 +718,10 @@ namespace EnergyOptimizer.API.Controllers
                     statistics = stats,
                     data = anomalies
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving anomalies");
-                return StatusCode(500, new { error = "Failed to retrieve anomalies" });
-            }
         }
         [HttpGet("anomalies/{id}")]
         public async Task<ActionResult<object>> GetAnomalyById(int id)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
                 var anomaly = await context.DetectedAnomalies
                     .Include(a => a.Device)
@@ -859,12 +760,6 @@ namespace EnergyOptimizer.API.Controllers
                 }
 
                 return Ok(anomaly);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving anomaly by ID {Id}", id);
-                return StatusCode(500, new { error = "Failed to retrieve anomaly" });
-            }
         }
 
         [HttpPatch("anomalies/{id}/resolve")]
@@ -872,8 +767,6 @@ namespace EnergyOptimizer.API.Controllers
            int id,
            [FromBody] ResolveAnomalyRequest request)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
                 var anomaly = await context.DetectedAnomalies.FindAsync(id);
 
@@ -902,19 +795,11 @@ namespace EnergyOptimizer.API.Controllers
                     resolutionNotes = anomaly.ResolutionNotes,
                     message = "Anomaly marked as resolved successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error resolving anomaly");
-                return StatusCode(500, new { error = "Failed to resolve anomaly" });
-            }
         }
 
         [HttpDelete("anomalies/{id}")]
         public async Task<ActionResult<object>> DeleteAnomaly(int id)
         {
-            try
-            {
                 var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
                 var anomaly = await context.DetectedAnomalies.FindAsync(id);
                 if (anomaly == null)
@@ -929,12 +814,7 @@ namespace EnergyOptimizer.API.Controllers
                     id,
                     message = "Anomaly deleted successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting anomaly");
-                return StatusCode(500, new { error = "Failed to delete anomaly" });
-            }
+
         }
 
         #endregion
@@ -944,9 +824,7 @@ namespace EnergyOptimizer.API.Controllers
         [HttpGet("test-connection")]
         public async Task<ActionResult<object>> TestConnection()
         {
-            try
-            {
-                _logger.LogInformation("Testing Gemini API connection");
+           _logger.LogInformation("Testing Gemini API connection");
 
                 var result = await _geminiService.AskQuestion(
                     "Say 'Hello from Gemini!' if you can read this.",
@@ -957,16 +835,6 @@ namespace EnergyOptimizer.API.Controllers
                     success = true,
                     message = "Connection successful",
                     response = result
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Connection test failed");
-                return Ok(new
-                {
-                    success = false,
-                    error = ex.Message,
-                    innerError = ex.InnerException?.Message
                 });
             }
         }
@@ -981,4 +849,3 @@ namespace EnergyOptimizer.API.Controllers
         );
 
     }
-}
