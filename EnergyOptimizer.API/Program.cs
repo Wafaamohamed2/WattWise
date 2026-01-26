@@ -95,8 +95,10 @@ builder.Services.AddScoped<IGeminiService, GeminiService>();
 // Register Pattern Detection Service
 builder.Services.AddScoped<PatternDetectionService>();
 
-// Register Pattern Detection Service
-builder.Services.AddScoped<AIAnalysisBackgroundService>();
+// Register AI Analysis and Data Cleanup Services
+builder.Services.AddScoped<IAIAnalysisService, AIAnalysisService>();
+builder.Services.AddScoped<IDataCleanupService, DataCleanupService>();
+builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

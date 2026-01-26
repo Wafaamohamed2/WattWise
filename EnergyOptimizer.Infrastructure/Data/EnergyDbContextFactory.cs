@@ -7,7 +7,7 @@ public class EnergyDbContextFactory : IDesignTimeDbContextFactory<EnergyDbContex
     public EnergyDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<EnergyDbContext>();
-        optionsBuilder.UseSqlServer("Data Source=WAFAA;Initial Catalog=EnergyOptimizer;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False"); 
+        optionsBuilder.UseSqlServer("Server=localhost;Database=EnergyOptimizerDB;Trusted_Connection=True;MultipleActiveResultSets=true"); 
 
         return new EnergyDbContext(optionsBuilder.Options);
     }
