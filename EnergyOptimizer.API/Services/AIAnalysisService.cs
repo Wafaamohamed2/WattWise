@@ -1,4 +1,8 @@
 ﻿
+using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Specifications.DeviceSpec;
+using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,12 +12,20 @@ namespace EnergyOptimizer.API.Services
     public class AIAnalysisService : IAIAnalysisService
     {
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IGenericRepository<Device> _deviceRepo;
+        private readonly IGenericRepository<EnergyReading> _readingRepo;
+        private readonly IGenericRepository<Alert> _alertRepo; 
         private readonly ILogger<AIAnalysisService> _logger;
 
-        public AIAnalysisService(IServiceProvider serviceProvider, ILogger<AIAnalysisService> logger)
+        public AIAnalysisService(
+             IGenericRepository<Device> deviceRepo,
+             IGenericRepository<EnergyReading> readingRepo,
+             IGenericRepository<Alert> alertRepo,
+             ILogger<AIAnalysisService> logger)
         {
-            _serviceProvider = serviceProvider;
+            _deviceRepo = deviceRepo;
+            _readingRepo = readingRepo;
+            _alertRepo = alertRepo;
             _logger = logger;
         }
 
@@ -23,116 +35,61 @@ namespace EnergyOptimizer.API.Services
             await RunDailyAnalysis(ct);
             await DetectAnomalies(ct);
             await GenerateRecommendations(ct);
+            await _deviceRepo.SaveChangesAsync();
         }
 
         private async Task DetectAnomalies(CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var patternService = scope.ServiceProvider.GetRequiredService<PatternDetectionService>();
-            var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
+            var deviceSpec = new ActiveDevicesWithZoneSpec();
+            var activeDevices = await _deviceRepo.ListAsync(deviceSpec);
 
-            try
+            int anomaliesFound = 0;
+            foreach (var activeDevice in activeDevices)
             {
-                var activeDevices = await context.Devices
-                    .Where(d => d.IsActive)
-                    .Select(d => d.Id)
-                    .ToListAsync(cancellationToken);
+                if (cancellationToken.IsCancellationRequested) break;
 
-                _logger.LogInformation("Checking {Count} devices for anomalies", activeDevices.Count);
+                var readingSpec = new ReadingsByDeviceAndDateSpec(activeDevice.Id, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+                var readings = await _readingRepo.ListAsync(readingSpec);
 
-                int anomaliesFound = 0;
+                if (readings.Any()) { 
+                    var avg = readings.Average(r => r.PowerConsumptionKW);
+                    var anomalySpec = new AnomalyReadingsSpec(activeDevice.Id, avg, 0.5);
 
-                foreach (var deviceId in activeDevices)
-                {
-                    if (cancellationToken.IsCancellationRequested) break;
-
-                    try
+                    if (await _readingRepo.AnyAsync(anomalySpec))
                     {
-                        var result = await patternService.DetectDeviceAnomalies(deviceId, daysToAnalyze: 7);
-
-                        if (result.HasAnomalies && result.Anomalies.Any())
+                        await _alertRepo.AddAsync(new Alert
                         {
-                            anomaliesFound += result.Anomalies.Count;
-                            _logger.LogWarning("Device {DeviceId}: {Count} anomalies detected",
-                                deviceId, result.Anomalies.Count);
-                        }
+                            DeviceId = activeDevice.Id,
+                            Message = $"Unusual consumption detected for {activeDevice.Name}",
+                            CreatedAt = DateTime.UtcNow
+                        });
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error detecting anomalies for device {DeviceId}", deviceId);
-                    }
-
-                    // Small delay between devices to avoid overloading on API calls
-                    await Task.Delay(1000, cancellationToken);
                 }
-
-                _logger.LogInformation("Anomaly detection completed: {Count} anomalies found", anomaliesFound);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in anomaly detection");
-            }
+       
         }
 
         private async Task RunDailyAnalysis(CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var patternService = scope.ServiceProvider.GetRequiredService<PatternDetectionService>();
-            var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
-
-            try
-            {
-                var endDate = DateTime.UtcNow;
-                var startDate = endDate.AddDays(-7);
-
-                _logger.LogInformation("Analyzing patterns from {Start} to {End}",
-                    startDate.ToString("yyyy-MM-dd"), endDate.ToString("yyyy-MM-dd"));
-
-                var result = await patternService.AnalyzeConsumptionPatterns(startDate, endDate);
-
-                if (result.Success)
-                {
-                    _logger.LogInformation("Pattern analysis completed: {InsightCount} insights, {RecommendationCount} recommendations",
-                        result.Insights.Count, result.Recommendations.Count);
-                }
-                else
-                {
-                    _logger.LogWarning("Pattern analysis failed: {Error}", result.ErrorMessage);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error running daily analysis");
-            }
+            var spec = new TodayReadingsSpec();
+            var todayData = await _readingRepo.ListAsync(spec);
         }
 
         private async Task GenerateRecommendations(CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var patternService = scope.ServiceProvider.GetRequiredService<PatternDetectionService>();
+            var highPowerSpec = new HighPowerDevicesSpec(minPowerKW: 2.0);
+            var targetDevices = await _deviceRepo.ListAsync(highPowerSpec);
 
-            try
-            {
-                var endDate = DateTime.UtcNow;
-                var startDate = endDate.AddDays(-30);
+            _logger.LogInformation("Generating recommendations for last 30 days");
 
-                _logger.LogInformation("Generating recommendations for last 30 days");
-
-                var result = await patternService.GenerateRecommendations(startDate, endDate);
-
-                if (result.Recommendations.Any())
+            foreach (var device in targetDevices) { 
+                
+                await _alertRepo.AddAsync(new Alert
                 {
-                    _logger.LogInformation("Generated {Count} recommendations, estimated savings: {Savings:F2} kWh",
-                        result.Recommendations.Count, result.EstimatedSavingsKWh);
-                }
-                else
-                {
-                    _logger.LogWarning("No recommendations generated");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating recommendations");
+                    DeviceId = device.Id,
+                    Message = $"Consider optimizing usage of {device.Name} to reduce energy consumption.",
+                    CreatedAt = DateTime.UtcNow
+                });
             }
         }
     }

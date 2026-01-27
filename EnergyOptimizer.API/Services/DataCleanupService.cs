@@ -1,21 +1,35 @@
 ﻿
+using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
+using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using EnergyOptimizer.Core.Specifications.DeviceSpec;
 
 namespace EnergyOptimizer.API.Services
 {
     public class DataCleanupService : IDataCleanupService
     {
-        private readonly EnergyDbContext _context;
+        private readonly IGenericRepository<EnergyReading> _readingRepo;
+        private readonly IGenericRepository<Alert> _alertRepo;
+        private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
+        private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
         private readonly ILogger<DataCleanupService> _logger;
-        private readonly IServiceProvider _serviceProvider;
 
-        public DataCleanupService(EnergyDbContext context, ILogger<DataCleanupService> logger, IServiceProvider serviceProvider)
+        public DataCleanupService(
+            IGenericRepository<EnergyReading> readingRepo,
+            IGenericRepository<Alert> alertRepo,
+            IGenericRepository<EnergyRecommendation> recRepo,
+            IGenericRepository<EnergyAnalysis> analysisRepo,
+            ILogger<DataCleanupService> logger)
         {
-            _context = context;
+            _readingRepo = readingRepo;
+            _alertRepo = alertRepo;
+            _recommendationRepo = recRepo;
+            _analysisRepo = analysisRepo;
             _logger = logger;
-            _serviceProvider = serviceProvider;
         }
 
         // This method runs all cleanup tasks sequentially
@@ -30,14 +44,14 @@ namespace EnergyOptimizer.API.Services
         {
             var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
 
-            int deletedCount = await _context.EnergyAnalyses
-                .Where(a => a.AnalysisDate < cutoffDate)
-                .ExecuteDeleteAsync(cancellationToken);
+            var spec = new CleanupSpecification<EnergyAnalysis>(a => a.AnalysisDate < cutoffDate);
+            var oldAnalyses = await _analysisRepo.ListAsync(spec);
 
-            if (deletedCount > 0)
+            if (oldAnalyses.Any())
             {
-                _logger.LogInformation("Database Cleanup: Removed {Count} old analysis records older than {Date}",
-                    deletedCount, cutoffDate.ToShortDateString());
+                _analysisRepo.DeleteRange(oldAnalyses);
+                await _analysisRepo.SaveChangesAsync();
+                _logger.LogInformation("Deleted {Count} old analyses", oldAnalyses.Count);
             }
         }
 
@@ -45,26 +59,38 @@ namespace EnergyOptimizer.API.Services
         {
             var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
 
-            int deletedCount = await _context.Alerts
-                .Where(a => a.Type == AlertType.Anomaly && a.IsRead && a.CreatedAt < cutoffDate)
-                .ExecuteDeleteAsync(cancellationToken);
+            var spec = new CleanupSpecification<Alert>(a =>
+                  a.Type == Core.Enums.AlertType.Anomaly &&
+                  a.IsRead &&
+                  a.CreatedAt < cutoffDate);
 
-            if (deletedCount > 0)
+            var oldAlerts = await _alertRepo.ListAsync(spec);
+
+            if (oldAlerts.Any())
             {
-                _logger.LogInformation("Cleanup: Deleted {Count} resolved anomalies", deletedCount);
+                _alertRepo.DeleteRange(oldAlerts);
+                await _alertRepo.SaveChangesAsync();
+                _logger.LogInformation("Deleted {Count} old alerts", oldAlerts.Count);
             }
         }
 
         public async Task MarkExpiredRecommendations(CancellationToken cancellationToken)
         {
-            int updatedCount = await _context.EnergyRecommendations
-                .Where(r => !r.IsImplemented && r.ExpiresAt < DateTime.UtcNow)
-                .ExecuteUpdateAsync(setters => setters
-                .SetProperty(r => r.Description, r => r.Description + " (EXPIRED)"),
-             cancellationToken);
+            var spec = new CleanupSpecification<EnergyRecommendation>(r =>
+                  !r.IsImplemented &&
+                  r.ExpiresAt < DateTime.UtcNow);
 
-            if (updatedCount > 0)
+            var expiredRecs = await _recommendationRepo.ListAsync(spec);
+
+            if (expiredRecs.Any())
             {
+                foreach (var rec in expiredRecs)
+                {
+                    rec.Description += " (EXPIRED)";
+                }
+
+                _recommendationRepo.UpdateRange(expiredRecs);
+                int updatedCount = await _recommendationRepo.SaveChangesAsync();
                 _logger.LogInformation("Updated {Count} expired recommendations", updatedCount);
             }
         }

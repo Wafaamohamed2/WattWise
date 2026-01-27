@@ -232,8 +232,6 @@ namespace EnergyOptimizer.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<object>> DeleteDevice(int id)
         {
-            try
-            {
                 var device = await _deviceRepo.GetByIdAsync(id);
                 if (device == null)
                     return NotFound(new { error = $"Device with ID {id} not found" });
@@ -255,20 +253,12 @@ namespace EnergyOptimizer.API.Controllers
                     isActive = device.IsActive,
                     message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error deleting device with ID {id}");
-                return StatusCode(500, new { error = "Failed to delete device" });
-            }
         }
 
         //  Toggle device status (Active/Inactive) + notify clients via SignalR
         [HttpPatch("{id}/toggle")]
         public async Task<ActionResult> ToggleDevice(int id)
         {
-            try
-            {
                 var spec = new DeviceWithDetailsSpec(id);
                 var device = await _deviceRepo.GetEntityWithSpec(spec);
 
@@ -299,12 +289,6 @@ namespace EnergyOptimizer.API.Controllers
                     lastReading = lastReading,
                     message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error toggling device {DeviceId}", id);
-                return StatusCode(500, new { error = "Failed to toggle device" });
-            }
         }
     }
 }
