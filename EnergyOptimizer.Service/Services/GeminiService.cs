@@ -1,4 +1,5 @@
 ﻿using EnergyOptimizer.API.DTOs.Gemini;
+using EnergyOptimizer.Service.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;

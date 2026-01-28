@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.API.DTOs.Gemini;
 
-namespace EnergyOptimizer.AI.Services
+namespace EnergyOptimizer.Service.Services
 {
     public interface IGeminiService
     {

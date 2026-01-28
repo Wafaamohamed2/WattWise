@@ -1,7 +1,7 @@
-﻿using EnergyOptimizer.AI.Services;
-using EnergyOptimizer.API.Services;
+﻿using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Infrastructure.Data;
+using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

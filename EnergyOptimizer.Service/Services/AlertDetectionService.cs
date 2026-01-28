@@ -1,11 +1,12 @@
 ﻿using EnergyOptimizer.API.DTOs;
-using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
-using EnergyOptimizer.Infrastructure.Data;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-
+using EnergyOptimizer.Core.Interfaces;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using EnergyOptimizer.Core.Specifications.DeviceSpec;
+using EnergyOptimizer.Core.Specifications.ReadSpec;
 namespace EnergyOptimizer.API.Services
 {
 
@@ -13,16 +14,15 @@ namespace EnergyOptimizer.API.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AlertDetectionService> _logger;
-        private readonly IHubContext<EnergyHub> _hubContext;
-
+        private readonly IEnergyHubService _hubService;
         public AlertDetectionService(
              IServiceProvider serviceProvider,
              ILogger<AlertDetectionService> logger,
-             IHubContext<EnergyHub> hubContext)
+             IEnergyHubService hubService)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _hubContext = hubContext;
+            _hubService = hubService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,9 +36,7 @@ namespace EnergyOptimizer.API.Services
             {
                 try
                 {
-                    await DetectAlertsAsync();
-
-                    // Check every 30 seconds
+                    await DetectAlertsAsync(stoppingToken);
                     await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                 }
                 catch (Exception ex)
@@ -50,68 +48,55 @@ namespace EnergyOptimizer.API.Services
             }
         }
 
-        private async Task DetectAlertsAsync()
+        private async Task DetectAlertsAsync(CancellationToken ct)
         {
             using var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
+            var deviceRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Device>>();
+            var alertRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Alert>>();
 
             var now = DateTime.UtcNow;
             var fiveMinutesAgo = now.AddMinutes(-5);
-            var oneMinuteAgo = now.AddMinutes(-1);
 
-            // Get all active devices with recent readings
-            var devices = await context.Devices
-                .Include(d => d.Zone)
-                .Include(d => d.EnergyReadings
-                    .Where(r => r.Timestamp >= fiveMinutesAgo)
-                    .OrderByDescending(r => r.Timestamp))
-                .Where(d => d.IsActive)
-                .ToListAsync();
+            var deviceSpec = new DevicesWithRecentReadingsSpec(fiveMinutesAgo);
+            var devices = await deviceRepo.ListAsync(deviceSpec);
 
             var alertsToCreate = new List<Alert>();
 
+
             foreach (var device in devices)
             {
+                if (ct.IsCancellationRequested) break;
+
                 var recentReadings = device.EnergyReadings.ToList();
 
                 if (!recentReadings.Any())
                 {
-                    // Device Offline Alert
-                    var offlineAlert = await CheckDeviceOffline(context, device, now);
-                    if (offlineAlert != null)
-                        alertsToCreate.Add(offlineAlert);
-
+                    var offlineAlert = await CheckDeviceOffline(alertRepo, device, now);
+                    if (offlineAlert != null) alertsToCreate.Add(offlineAlert);
                     continue;
                 }
                 var latestReading = recentReadings.First();
 
-                // 1. High Consumption Alert
                 var highConsumptionAlert = CheckHighConsumption(device, latestReading, recentReadings);
-                if (highConsumptionAlert != null)
-                    alertsToCreate.Add(highConsumptionAlert);
+                if (highConsumptionAlert != null) alertsToCreate.Add(highConsumptionAlert);
 
-                // 2. Anomaly Detection Alert
                 var anomalyAlert = CheckAnomaly(device, latestReading, recentReadings);
-                if (anomalyAlert != null)
-                    alertsToCreate.Add(anomalyAlert);
+                if (anomalyAlert != null) alertsToCreate.Add(anomalyAlert);
 
-                // 3. Wastage Detection Alert
                 var wastageAlert = CheckWastage(device, latestReading, now);
-                if (wastageAlert != null)
-                    alertsToCreate.Add(wastageAlert);
+                if (wastageAlert != null) alertsToCreate.Add(wastageAlert);
             }
 
             // Save new alerts to database and broadcast via SignalR
             if (alertsToCreate.Any())
             {
-                await context.Alerts.AddRangeAsync(alertsToCreate);
-                await context.SaveChangesAsync();
+                await alertRepo.AddRangeAsync(alertsToCreate);
+                await alertRepo.SaveChangesAsync();
 
                 // Broadcast each alert
                 foreach (var alert in alertsToCreate)
                 {
-                    await BroadcastAlert(context, alert);
-
+                    await BroadcastAlert(deviceRepo, alert);
                 }
 
                 _logger.LogInformation("Created {Count} new alerts", alertsToCreate.Count);
@@ -237,20 +222,17 @@ namespace EnergyOptimizer.API.Services
 
 
         // 4. Device Offline Detection
-        private async Task<Alert?> CheckDeviceOffline(EnergyDbContext context, Device device, DateTime now)
+        private async Task<Alert?> CheckDeviceOffline(IGenericRepository<Alert> alertRepo, Device device, DateTime now)
         {
             // Skip check if device is intentionally turned off
             if (!device.IsActive)
                 return null;
 
-            // Check if there's already an offline alert for this device
-            var existingAlert = await context.Alerts
-                .Where(a => a.DeviceId == device.Id &&
-                           a.Type == AlertType.DeviceOffline &&
-                           a.CreatedAt >= now.AddMinutes(-10))
-                .AnyAsync();
+            var tenMinutesAgo = now.AddMinutes(-10);
+            var hasExistingAlert = await alertRepo.
+                AnyAsync(new AlertOfflineCheckSpec(device.Id, tenMinutesAgo));
 
-            if (existingAlert)
+            if (hasExistingAlert)
                 return null; // Don't create duplicate alerts
 
             return new Alert
@@ -265,13 +247,12 @@ namespace EnergyOptimizer.API.Services
         }
 
         // Broadcast Alert via SignalR
-        private async Task BroadcastAlert(EnergyDbContext context, Alert alert)
+        private async Task BroadcastAlert(IGenericRepository<Device> deviceRepo, Alert alert)
         {
             try
             {
-                var device = await context.Devices
-                   .Include(d => d.Zone)
-                   .FirstOrDefaultAsync(d => d.Id == alert.DeviceId);
+                var spec = new DeviceWithDetailsSpec(alert.DeviceId);
+                var device = await deviceRepo.GetEntityWithSpec(spec);
 
                 if (device == null)
                     return;
@@ -302,10 +283,8 @@ namespace EnergyOptimizer.API.Services
                     CreatedAt = alert.CreatedAt,
                     IsRead = alert.IsRead
                 };
-                await _hubContext.Clients.All.SendAsync("NewAlert", alertDto);
-
-                _logger.LogInformation("Broadcasted alert {AlertId} for device {DeviceName}", alert.Id, device.Name, alert.Message);
-
+                await _hubService.SendAlertNotification(System.Text.Json.JsonSerializer.Serialize(alertDto));
+                _logger.LogInformation("Broadcasted alert {AlertId} for device {DeviceName}", alert.Id, device.Name);
             }
             catch (Exception ex)
             {

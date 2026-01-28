@@ -4,6 +4,7 @@ using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Infrastructure.Data;
+using EnergyOptimizer.Service.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EnergyOptimizer.Core\EnergyOptimizer.Core.csproj" />
+    <ProjectReference Include="..\EnergyOptimizer.Data\EnergyOptimizer.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>

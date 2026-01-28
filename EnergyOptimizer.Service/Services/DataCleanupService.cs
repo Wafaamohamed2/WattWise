@@ -7,6 +7,7 @@ using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
+using EnergyOptimizer.Service.Services;
 
 namespace EnergyOptimizer.API.Services
 {

@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.API.WebServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,9 @@ builder.Services.AddAuthentication(options => {
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();
+
+// Add Energy Hub Service
+builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
 
 // Add Data Seeding Service
 builder.Services.AddTransient<DataSeedingService>();
