@@ -1,11 +1,9 @@
 ﻿using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Infrastructure.Data;
+using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 
@@ -19,19 +17,44 @@ namespace EnergyOptimizer.API.Controllers
 
         private readonly PatternDetectionService _patternService;
         private readonly IGeminiService _geminiService;
-        private readonly EnergyDbContext _context;
         private readonly ILogger<AIController> _logger;
-
+        private readonly IAIAnalysisService _aiService;
+        private readonly IDataCleanupService _cleanupService;
+        private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
+        private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
+        private readonly IGenericRepository<DetectedAnomaly> _anomalyRepo;
         public AIController(
-            PatternDetectionService patternService,
-            IGeminiService geminiService,
-            EnergyDbContext context,
-            ILogger<AIController> logger)
+             PatternDetectionService patternService,
+             IGeminiService geminiService,
+             IAIAnalysisService aiService,
+             IDataCleanupService cleanupService,
+             IGenericRepository<EnergyAnalysis> analysisRepo,
+             IGenericRepository<EnergyRecommendation> recommendationRepo,
+             IGenericRepository<DetectedAnomaly> anomalyRepo,
+             ILogger<AIController> logger)
         {
             _patternService = patternService;
             _geminiService = geminiService;
-            _context = context;
+            _aiService = aiService;
+            _cleanupService = cleanupService;
+            _analysisRepo = analysisRepo;
+            _recommendationRepo = recommendationRepo;
+            _anomalyRepo = anomalyRepo;
             _logger = logger;
+        }
+
+        [HttpPost("run-analysis")]
+        public async Task<IActionResult> RunAnalysis()
+        {
+            await _aiService.RunGlobalAnalysisAsync(default);
+            return Ok(new { message = "AI Analysis started successfully" });
+        }
+
+        [HttpPost("cleanup")]
+        public async Task<IActionResult> RunCleanup()
+        {
+            await _cleanupService.RunAllCleanupTasks(default);
+            return Ok(new { message = "Data cleanup completed successfully" });
         }
         #region Action Endpoints
         [HttpPost("analyze-patterns")]
@@ -51,7 +74,6 @@ namespace EnergyOptimizer.API.Controllers
                 {
                     return BadRequest(new { error = "Maximum analysis period is 90 days" });
                 }
-                _logger.LogInformation("Analyzing patterns from {Start} to {End}", start, end);
 
                 var result = await _patternService.AnalyzeConsumptionPatterns(start, end);
 
@@ -73,28 +95,10 @@ namespace EnergyOptimizer.API.Controllers
                     FullResponse = JsonSerializer.Serialize(result)
                 };
 
-                _context.EnergyAnalyses.Add(analysis);
-                await _context.SaveChangesAsync();
+                await _analysisRepo.AddAsync(analysis);
+                await _analysisRepo.SaveChangesAsync();
 
-
-
-
-                return Ok(new
-                {
-                    success = true,
-                    period = new
-                    {
-                        startDate = start.ToString("yyyy-MM-dd"),
-                        endDate = end.ToString("yyyy-MM-dd")
-                    },
-                    analysis = new
-                    {
-                        summary = result.Summary,
-                        insights = result.Insights,
-                        recommendations = result.Recommendations,
-                        metrics = result.Metrics
-                    }
-                });
+            return Ok(new { success = true, analysis = result });
         }
 
 
@@ -147,8 +151,6 @@ namespace EnergyOptimizer.API.Controllers
                     return BadRequest(new { error = "Start date must be before end date" });
                 }
 
-                _logger.LogInformation("Generating recommendations from {Start} to {End}", start, end);
-
                 var result = await _patternService.GenerateRecommendations(start, end);
 
                 // Save to DB
@@ -163,12 +165,12 @@ namespace EnergyOptimizer.API.Controllers
                     TotalConsumptionKWh = 0,
                     DevicesAnalyzed = 0
                 };
-                _context.EnergyAnalyses.Add(analysis);
-                await _context.SaveChangesAsync();
+                await _analysisRepo.AddAsync(analysis);
+                await _analysisRepo.SaveChangesAsync();
 
                 foreach (var rec in result.Recommendations)
                 {
-                    _context.EnergyRecommendations.Add(new EnergyRecommendation
+                    await _recommendationRepo.AddAsync(new EnergyRecommendation
                     {
                         Title = rec.Title,
                         Description = rec.Description,
@@ -177,34 +179,10 @@ namespace EnergyOptimizer.API.Controllers
                         EstimatedSavingsKWh = rec.PotentialSavingsKWh,
                         AnalysisId = analysis.Id
                     });
-
                 }
 
-                await _context.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    success = true,
-                    period = new
-                    {
-                        startDate = start.ToString("yyyy-MM-dd"),
-                        endDate = end.ToString("yyyy-MM-dd")
-                    },
-                    recommendations = result.Recommendations.Select(r => new
-                    {
-                        title = r.Title,
-                        description = r.Description,
-                        priority = r.Priority,
-                        potentialSavings = r.PotentialSavingsKWh,
-                        actionItems = r.ActionItems
-                    }),
-                    totalRecommendations = result.Recommendations.Count,
-                    estimatedSavings = new
-                    {
-                        kWh = result.EstimatedSavingsKWh,
-                        percent = result.EstimatedSavingsPercent
-                    }
-                });
+                await _recommendationRepo.SaveChangesAsync();
+                return Ok(new { success = true, count = result.Recommendations.Count });
         }
 
 
@@ -218,10 +196,7 @@ namespace EnergyOptimizer.API.Controllers
                     return BadRequest(new { error = "Days must be between 1 and 30" });
                 }
 
-                _logger.LogInformation("Predicting consumption for next {Days} days", days);
-
                 var result = await _patternService.PredictConsumption(days);
-
 
                 return Ok(new
                 {
@@ -237,23 +212,11 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("ask")]
         public async Task<ActionResult<object>> AskQuestion([FromBody] AskQuestionRequest request)
         {
-                if (string.IsNullOrWhiteSpace(request.Question))
-                {
-                    return BadRequest(new { error = "Question is required" });
-                }
+            if (string.IsNullOrWhiteSpace(request.Question)) return BadRequest(new { error = "Question is required" });
 
-                _logger.LogInformation("Processing question: {Question}", request.Question);
+            var answer = await _geminiService.AskQuestion(request.Question, request.Context ?? "Energy optimization system");
+            return Ok(new { question = request.Question, answer });
 
-                var answer = await _geminiService.AskQuestion(
-                    request.Question,
-                    request.Context ?? "Energy optimization system");
-
-                return Ok(new
-                {
-                    question = request.Question,
-                    answer
-                });
-            
         }
         #endregion
 
@@ -261,217 +224,62 @@ namespace EnergyOptimizer.API.Controllers
         // Endpoints for managing analysis history, recommendations, and anomalies
         [HttpGet("analysis-history")]
         public async Task<ActionResult<object>> GetAnalysisHistory(
-            [FromQuery] string? analysisType = null,
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
 
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+            var analyses = await _analysisRepo.ListAllAsync();
+            var paginated = analyses.OrderByDescending(a => a.AnalysisDate)
+                                    .Skip((page - 1) * pageSize)
+                                    .Take(pageSize);
 
-                var query = context.EnergyAnalyses
-                    .Include(a => a.Insights)
-                    .Include(a => a.Recommendations)
-                    .Include(a => a.Anomalies)
-                    .AsQueryable();
-
-                // Apply filters
-                if (!string.IsNullOrEmpty(analysisType))
-                {
-                    query = query.Where(a => a.AnalysisType == analysisType);
-                }
-
-                if (startDate.HasValue)
-                {
-                    query = query.Where(a => a.AnalysisDate >= startDate.Value);
-                }
-
-                if (endDate.HasValue)
-                {
-                    query = query.Where(a => a.AnalysisDate <= endDate.Value);
-                }
-
-                // Get total count
-                var totalCount = await query.CountAsync();
-                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-                // Get paginated results
-                var analyses = await query
-                    .OrderByDescending(a => a.AnalysisDate)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(a => new
-                    {
-                        a.Id,
-                        a.AnalysisDate,
-                        a.AnalysisType,
-                        a.Summary,
-                        Period = new
-                        {
-                            Start = a.PeriodStart,
-                            End = a.PeriodEnd
-                        },
-                        a.TotalConsumptionKWh,
-                        a.DevicesAnalyzed,
-                        InsightsCount = a.Insights.Count,
-                        RecommendationsCount = a.Recommendations.Count,
-                        AnomaliesCount = a.Anomalies.Count,
-                        Insights = a.Insights.Select(i => new
-                        {
-                            i.Id,
-                            i.InsightText,
-                            i.Category,
-                            i.Priority
-                        }).ToList()
-                    })
-                    .ToListAsync();
-
-                return Ok(new
-                {
-                    page,
-                    pageSize,
-                    totalCount,
-                    totalPages,
-                    data = analyses
-                });
+            return Ok(new { totalCount = analyses.Count(), data = paginated });
         }
 
         // Get detailed analysis by ID
         [HttpGet("analysis/{id}")]
         public async Task<ActionResult<object>> GetAnalysisById(int id)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+            var analysis = await _analysisRepo.GetByIdAsync(id);
 
-                var analysis = await context.EnergyAnalyses
-                    .Include(a => a.Insights)
-                    .Include(a => a.Recommendations)
-                    .Include(a => a.Anomalies)
-                        .ThenInclude(an => an.Device)
-                    .Where(a => a.Id == id)
-                    .Select(a => new
-                    {
-                        a.Id,
-                        a.AnalysisDate,
-                        a.AnalysisType,
-                        a.Summary,
-                        a.FullResponse,
-                        Period = new
-                        {
-                            Start = a.PeriodStart,
-                            End = a.PeriodEnd
-                        },
-                        a.TotalConsumptionKWh,
-                        a.DevicesAnalyzed,
-                        Insights = a.Insights.OrderBy(i => i.Priority).Select(i => new
-                        {
-                            i.Id,
-                            i.InsightText,
-                            i.Category,
-                            Priority = i.Priority == 1 ? "High" : i.Priority == 2 ? "Medium" : "Low",
-                            i.CreatedAt
-                        }).ToList(),
-                        Recommendations = a.Recommendations.Select(r => new
-                        {
-                            r.Id,
-                            r.Title,
-                            r.Description,
-                            r.Category,
-                            r.Priority,
-                            r.EstimatedSavingsKWh,
-                            r.IsImplemented,
-                            r.CreatedAt
-                        }).ToList(),
-                        Anomalies = a.Anomalies.Select(an => new
-                        {
-                            an.Id,
-                            Device = new
-                            {
-                                an.Device.Id,
-                                an.Device.Name
-                            },
-                            an.AnomalyTimestamp,
-                            an.ActualValue,
-                            an.ExpectedValue,
-                            an.Deviation,
-                            an.Severity,
-                            an.Description,
-                            an.IsResolved
-                        }).ToList()
-                    })
-                        .FirstOrDefaultAsync();
+            if (analysis == null) return NotFound(new { error = $"Analysis {id} not found" });
 
-                if (analysis == null)
-                {
-                    return NotFound(new { error = $"Analysis with ID {id} not found" });
-                }
-                return Ok(analysis);
+            return Ok(analysis);
         }
 
         [HttpGet("Statistics")]
         public async Task<ActionResult<object>> GetAIStatistics()
-        { 
-                var stats = new
-                {
-                    Analyses = new
-                    {
-                        Total = await _context.EnergyAnalyses.CountAsync(),
-                        Last30Days = await _context.EnergyAnalyses
-                           .CountAsync(a => a.AnalysisDate >= DateTime.UtcNow.AddDays(-30)),
-                        ByType = await _context.EnergyAnalyses
-                           .GroupBy(a => a.AnalysisType)
-                           .Select(g => new { Type = g.Key, Count = g.Count() })
-                           .ToListAsync()
-                    },
-                    Recommendations = new
-                    {
-                        Total = await _context.EnergyRecommendations.CountAsync(),
-                        Active = await _context.EnergyRecommendations
-                            .CountAsync(r => !r.IsImplemented && (r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)),
-                        Implemented = await _context.EnergyRecommendations.CountAsync(r => r.IsImplemented),
-                        TotalPotentialSavings = Math.Round(
-                              (await _context.EnergyRecommendations
-                                 .Where(r => !r.IsImplemented)
-                                 .Select(r => r.EstimatedSavingsKWh)
-                                 .ToListAsync())
-                                 .Sum(), 2),
-                        ByPriority = await _context.EnergyRecommendations
-                            .Where(r => !r.IsImplemented)
-                            .GroupBy(r => r.Priority)
-                            .Select(g => new { Priority = g.Key, Count = g.Count() })
-                            .ToListAsync()
-                    },
-                    Anomalies = new
-                    {
-                        Total = await _context.DetectedAnomalies.CountAsync(),
-                        Unresolved = await _context.DetectedAnomalies.CountAsync(a => !a.IsResolved),
-                        Resolved = await _context.DetectedAnomalies.CountAsync(a => a.IsResolved),
-                        Last7Days = await _context.DetectedAnomalies
-                            .CountAsync(a => a.DetectedAt >= DateTime.UtcNow.AddDays(-7)),
-                        BySeverity = await _context.DetectedAnomalies
-                            .Where(a => !a.IsResolved)
-                            .GroupBy(a => a.Severity)
-                            .Select(g => new { Severity = g.Key, Count = g.Count() })
-                            .ToListAsync(),
-                        DevicesAffected = await _context.DetectedAnomalies
-                            .Where(a => !a.IsResolved)
-                            .Select(a => a.DeviceId)
-                            .Distinct()
-                            .CountAsync()
-                    },
-                    LastAnalysis = await _context.EnergyAnalyses
-                        .OrderByDescending(a => a.AnalysisDate)
-                        .Select(a => new
-                        {
-                            a.Id,
-                            a.AnalysisDate,
-                            a.AnalysisType,
-                            a.Summary
-                        })
-                        .FirstOrDefaultAsync()
-                };
+        {
+            var analyses = await _analysisRepo.ListAllAsync();
+            var recommendations = await _recommendationRepo.ListAllAsync();
+            var anomalies = await _anomalyRepo.ListAllAsync();
 
-                return Ok(stats);
+            var stats = new
+            {
+                Analyses = new
+                {
+                    Total = analyses.Count(),
+                    Last30Days = analyses.Count(a => a.AnalysisDate >= DateTime.UtcNow.AddDays(-30)),
+                    ByType = analyses.GroupBy(a => a.AnalysisType)
+                                   .Select(g => new { Type = g.Key, Count = g.Count() })
+                },
+                Recommendations = new
+                {
+                    Total = recommendations.Count(),
+                    Active = recommendations.Count(r => !r.IsImplemented && (r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)),
+                    Implemented = recommendations.Count(r => r.IsImplemented),
+                    TotalPotentialSavings = Math.Round(recommendations.Where(r => !r.IsImplemented).Sum(r => (double)r.EstimatedSavingsKWh), 2)
+                },
+                Anomalies = new
+                {
+                    Total = anomalies.Count(),
+                    Unresolved = anomalies.Count(a => !a.IsResolved),
+                    Resolved = anomalies.Count(a => a.IsResolved),
+                    DevicesAffected = anomalies.Where(a => !a.IsResolved).Select(a => a.DeviceId).Distinct().Count()
+                }
+            };
+
+            return Ok(stats);
         }
 
 
@@ -481,135 +289,44 @@ namespace EnergyOptimizer.API.Controllers
         #region Recommendations Endpoints
         [HttpGet("recommendations")]
         public async Task<ActionResult<object>> GetRecommendations(
-        [FromQuery] bool? isImplemented = null,
-        [FromQuery] string? priority = null,
-        [FromQuery] string? category = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] bool? isImplemented = null)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+            var recommendations = await _recommendationRepo.ListAllAsync();
+            var query = recommendations.AsEnumerable();
+            if (isImplemented.HasValue)
+                query = query.Where(r => r.IsImplemented == isImplemented.Value);
 
-                var query = _context.EnergyRecommendations
-                    .Where(r => r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)
-                    .AsQueryable();
+            var result = query.OrderByDescending(r => r.Priority).ToList();
 
-                // Apply filters
-                if (isImplemented.HasValue)
-                {
-                    query = query.Where(r => r.IsImplemented == isImplemented.Value);
-                }
+            return Ok(result);
 
-                if (!string.IsNullOrEmpty(priority))
-                {
-                    query = query.Where(r => r.Priority == priority);
-                }
-
-                if (!string.IsNullOrEmpty(category))
-                {
-                    query = query.Where(r => r.Category == category);
-                }
-
-                // Get total count
-                var totalCount = await query.CountAsync();
-                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-                var recommendationsList = await query
-                    .OrderByDescending(r => r.Priority == "High" ? 1 : r.Priority == "Medium" ? 2 : 3)
-                    .ThenByDescending(r => r.CreatedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync(); 
-
-                var recommendations = recommendationsList.Select(r => new
-                {
-                    r.Id,
-                    r.Title,
-                    r.Description,
-                    r.Category,
-                    r.Priority,
-                    EstimatedSavingsKWh = (double)r.EstimatedSavingsKWh, 
-                    EstimatedSavingsPercent = (double)r.EstimatedSavingsPercent, 
-                    r.IsImplemented,
-                    r.CreatedAt
-                }).ToList();
-
-      
-                var allRecommendations = await _context.EnergyRecommendations
-                    .Where(r => r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)
-                    .ToListAsync(); 
-
-                var stats = new
-                {
-                    Total = allRecommendations.Count,
-                    Implemented = allRecommendations.Count(r => r.IsImplemented),
-                    Pending = allRecommendations.Count(r => !r.IsImplemented),
-                    HighPriority = allRecommendations.Count(r => !r.IsImplemented && r.Priority == "High"),
-                    TotalEstimatedSavings = (double)allRecommendations
-                        .Where(r => !r.IsImplemented)
-                        .Sum(r => r.EstimatedSavingsKWh) 
-                };
-
-                return Ok(new
-                {
-                    page,
-                    pageSize,
-                    totalCount,
-                    totalPages,
-                    statistics = stats,
-                    data = recommendations
-                });
         }
 
     
         [HttpPatch("recommendations/{id}/implement")]
         public async Task<ActionResult<object>> ImplementRecommendation(int id)
         {
-            var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
-                var recommendation = await context.EnergyRecommendations.FindAsync(id);
+            var rec = await _recommendationRepo.GetByIdAsync(id);
+            if (rec == null) return NotFound(new { error = "Not found" });
 
-                if (recommendation == null)
-                {
-                    return NotFound(new { error = $"Recommendation with ID {id} not found" });
-                }
+            rec.IsImplemented = true;
+            rec.ImplementedDate = DateTime.UtcNow;
 
-                if (recommendation.IsImplemented)
-                {
-                    return BadRequest(new { error = "Recommendation is already implemented" });
-                }
+            _recommendationRepo.Update(rec);
+            await _recommendationRepo.SaveChangesAsync();
 
-                recommendation.IsImplemented = true;
-                recommendation.ImplementedDate = DateTime.UtcNow;
-                await context.SaveChangesAsync();
-
-                _logger.LogInformation("Recommendation {Id} marked as implemented", id);
-
-                return Ok(new
-                {
-                    id = recommendation.Id,
-                    title = recommendation.Title,
-                    isImplemented = recommendation.IsImplemented,
-                    implementedDate = recommendation.ImplementedDate,
-                    message = "Recommendation marked as implemented successfully"
-                });
+            return Ok(new { message = "Marked as implemented" });
         }
 
         [HttpDelete("recommndations/{id}")]
         public async Task<ActionResult<object>> DeleteRecommendation(int id)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
-                var recommendation = await context.EnergyRecommendations.FindAsync(id);
-                if (recommendation == null)
-                {
-                    return NotFound(new { error = $"Recommendation with ID {id} not found" });
-                }
+            var rec = await _recommendationRepo.GetByIdAsync(id);
+            if (rec == null) return NotFound();
 
-                context.EnergyRecommendations.Remove(recommendation);
-                await context.SaveChangesAsync();
-                return Ok(new
-                {
-                    id,
-                    message = "Recommendation deleted successfully"
-                });
+            _recommendationRepo.Delete(rec);
+            await _recommendationRepo.SaveChangesAsync();
+            return Ok(new { message = "Deleted successfully" });
         }
         #endregion
 
@@ -620,146 +337,57 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] bool? isResolved = null,
         [FromQuery] string? severity = null,
         [FromQuery] int? deviceId = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
+            var anomaliesList = await _anomalyRepo.ListAllAsync();
+            var query = anomaliesList.AsEnumerable();
 
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
+            if (isResolved.HasValue)
+                query = query.Where(a => a.IsResolved == isResolved.Value);
 
-                var query = context.DetectedAnomalies
-                    .AsNoTracking()
-                    .Include(a => a.Device)
-                        .ThenInclude(d => d.Zone)
-                    .AsQueryable();
+            if (!string.IsNullOrEmpty(severity))
+                query = query.Where(a => a.Severity == severity);
 
-                // Apply filters
-                if (isResolved.HasValue)
-                {
-                    query = query.Where(a => a.IsResolved == isResolved.Value);
-                }
-                if (!string.IsNullOrEmpty(severity))
-                {
-                    query = query.Where(a => a.Severity == severity);
-                }
-                if (deviceId.HasValue)
-                {
-                    query = query.Where(a => a.DeviceId == deviceId.Value);
-                }
-                if (startDate.HasValue)
-                {
-                    query = query.Where(a => a.DetectedAt >= startDate.Value);
-                }
-                if (endDate.HasValue)
-                {
-                    query = query.Where(a => a.DetectedAt <= endDate.Value);
-                }
+            if (deviceId.HasValue)
+                query = query.Where(a => a.DeviceId == deviceId.Value);
 
-                var totalCount = await query.CountAsync();
+            var totalCount = query.Count();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                // Fetch to memory first
-                var anomaliesList = await query
-                    .OrderByDescending(a => a.Severity == "Critical" ? 1 : a.Severity == "High" ? 2 : a.Severity == "Medium" ? 3 : 4)
-                    .ThenByDescending(a => a.DetectedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync(); // Get from DB first
-
-                // in memory with explicit casts
-                var anomalies = anomaliesList.Select(a => new
-                {
+            var result = query
+                .OrderByDescending(a => a.DetectedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(a => new {
                     a.Id,
-                    Device = new
-                    {
-                        a.Device.Id,
-                        a.Device.Name,
-                        Zone = a.Device.Zone.Name ?? "Unknown"
-                    },
+                    a.DeviceId,
                     a.AnomalyTimestamp,
-                    ActualValue = (double)a.ActualValue,     
-                    ExpectedValue = (double)a.ExpectedValue,  
-                    Deviation = (double)a.Deviation,          
-                    DeviationPercent = a.ExpectedValue > 0
-                        ? Math.Round(((double)a.Deviation / (double)a.ExpectedValue) * 100, 2)
-                        : 0,
+                    ActualValue = (double)a.ActualValue,
+                    ExpectedValue = (double)a.ExpectedValue,
                     a.Severity,
                     a.Description,
                     a.IsResolved,
-                    a.ResolutionNotes,
-                    a.ResolvedAt,
-                    a.DetectedAt,
-                    a.PossibleCauses
-                }).ToList();
-
-                var unresolvedQuery = context.DetectedAnomalies.Where(a => !a.IsResolved);
-
-                var stats = new
-                {
-                    Total = totalCount,
-                    Unresolved = await unresolvedQuery.CountAsync(),
-                    Resolved = await query.CountAsync(a => a.IsResolved),
-                    Critical = await unresolvedQuery.CountAsync(a => a.Severity == "Critical"),
-                    High = await unresolvedQuery.CountAsync(a => a.Severity == "High"),
-                    Medium = await unresolvedQuery.CountAsync(a => a.Severity == "Medium"),
-                    DevicesAffected = await unresolvedQuery
-                            .Select(a => a.DeviceId)
-                            .Distinct()
-                            .CountAsync()
-                };
-
-                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-                return Ok(new
-                {
-                    page,
-                    pageSize,
-                    totalCount,
-                    totalPages,
-                    statistics = stats,
-                    data = anomalies
+                    a.DetectedAt
                 });
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalCount,
+                totalPages,
+                data = result
+            });
         }
         [HttpGet("anomalies/{id}")]
         public async Task<ActionResult<object>> GetAnomalyById(int id)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
-                var anomaly = await context.DetectedAnomalies
-                    .Include(a => a.Device)
-                        .ThenInclude(d => d.Zone)
-                        .Where(a => a.Id == id)
-                        .Select(a => new
-                        {
-                            a.Id,
-                            Device = new
-                            {
-                                a.Device.Id,
-                                a.Device.Name,
-                                Zone = new
-                                {
-                                    a.Device.Zone.Id,
-                                    a.Device.Zone.Name
-                                }
-                            },
-                            a.AnomalyTimestamp,
-                            a.ActualValue,
-                            a.ExpectedValue,
-                            a.Deviation,
-                            DeviationPercent = a.ExpectedValue > 0
-                            ? Math.Round((a.Deviation / a.ExpectedValue) * 100, 2)
-                            : 0,
-                            a.Severity,
-                            a.Description,
-                            a.IsResolved,
-                            a.ResolutionNotes
-                        })
-                    .FirstOrDefaultAsync();
+            var anomaly = await _anomalyRepo.GetByIdAsync(id);
 
-                if (anomaly == null)
-                {
-                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
-                }
+            if (anomaly == null)
+                return NotFound(new { error = $"Anomaly with ID {id} not found" });
 
-                return Ok(anomaly);
+            return Ok(anomaly);
         }
 
         [HttpPatch("anomalies/{id}/resolve")]
@@ -767,54 +395,28 @@ namespace EnergyOptimizer.API.Controllers
            int id,
            [FromBody] ResolveAnomalyRequest request)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
-                var anomaly = await context.DetectedAnomalies.FindAsync(id);
+            var anomaly = await _anomalyRepo.GetByIdAsync(id);
+            if (anomaly == null) return NotFound(new { error = "Anomaly not found" });
 
-                if (anomaly == null)
-                {
-                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
-                }
-                if (anomaly.IsResolved)
-                {
-                    return BadRequest(new { error = "Anomaly is already resolved" });
-                }
+            anomaly.IsResolved = true;
+            anomaly.ResolvedAt = DateTime.UtcNow;
+            anomaly.ResolutionNotes = request.ResolutionNotes;
 
-                anomaly.IsResolved = true;
-                anomaly.ResolvedAt = DateTime.UtcNow;
-                anomaly.ResolutionNotes = request.ResolutionNotes;
+            _anomalyRepo.Update(anomaly);
+            await _anomalyRepo.SaveChangesAsync();
 
-                await context.SaveChangesAsync();
-
-                _logger.LogInformation("Anomaly {Id} marked as resolved", id);
-
-                return Ok(new
-                {
-                    id = anomaly.Id,
-                    isResolved = anomaly.IsResolved,
-                    resolvedAt = anomaly.ResolvedAt,
-                    resolutionNotes = anomaly.ResolutionNotes,
-                    message = "Anomaly marked as resolved successfully"
-                });
+            return Ok(new { message = "Anomaly resolved successfully" });
         }
 
         [HttpDelete("anomalies/{id}")]
         public async Task<ActionResult<object>> DeleteAnomaly(int id)
         {
-                var context = HttpContext.RequestServices.GetRequiredService<EnergyDbContext>();
-                var anomaly = await context.DetectedAnomalies.FindAsync(id);
-                if (anomaly == null)
-                {
-                    return NotFound(new { error = $"Anomaly with ID {id} not found" });
-                }
+            var anomaly = await _anomalyRepo.GetByIdAsync(id);
+            if (anomaly == null) return NotFound();
 
-                context.DetectedAnomalies.Remove(anomaly);
-                await context.SaveChangesAsync();
-                return Ok(new
-                {
-                    id,
-                    message = "Anomaly deleted successfully"
-                });
-
+            _anomalyRepo.Delete(anomaly);
+            await _anomalyRepo.SaveChangesAsync();
+            return Ok(new { message = "Deleted successfully" });
         }
 
         #endregion

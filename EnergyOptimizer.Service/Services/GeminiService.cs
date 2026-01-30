@@ -1,6 +1,7 @@
 ﻿using EnergyOptimizer.API.DTOs.Gemini;
 using EnergyOptimizer.Service.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text;
@@ -29,7 +30,7 @@ namespace EnergyOptimizer.AI.Services
             _settings = settings.Value;
             _rateLimiter = new SemaphoreSlim(1, 1);
 
-            // ✅ Configure HttpClient
+            // Configure HttpClient
             _httpClient.Timeout = TimeSpan.FromSeconds(60);
         }
 

@@ -12,8 +12,6 @@ namespace EnergyOptimizer.Core.Specifications.DeviceSpec
         public DeviceWithDetailsSpec(int deviceId)
             : base(d => d.Id == deviceId)
         {
-            AddInclude(d => d.Name);
-            AddInclude(d => d.Zone);
             AddInclude(d => d.EnergyReadings);
         }
     }

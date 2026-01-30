@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
+using System.Text.Json;
 namespace EnergyOptimizer.API.Services
 {
 
@@ -14,15 +15,12 @@ namespace EnergyOptimizer.API.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AlertDetectionService> _logger;
-        private readonly IEnergyHubService _hubService;
         public AlertDetectionService(
              IServiceProvider serviceProvider,
-             ILogger<AlertDetectionService> logger,
-             IEnergyHubService hubService)
+             ILogger<AlertDetectionService> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _hubService = hubService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -249,47 +247,55 @@ namespace EnergyOptimizer.API.Services
         // Broadcast Alert via SignalR
         private async Task BroadcastAlert(IGenericRepository<Device> deviceRepo, Alert alert)
         {
-            try
+            using (var scope = _serviceProvider.CreateScope())
             {
-                var spec = new DeviceWithDetailsSpec(alert.DeviceId);
-                var device = await deviceRepo.GetEntityWithSpec(spec);
-
-                if (device == null)
-                    return;
-
-                var alertDto = new AlertDto
+                var hubService = scope.ServiceProvider.GetRequiredService<IEnergyHubService>();
+                try
                 {
-                    Id = alert.Id,
-                    DeviceName = device.Name,
-                    ZoneName = device.Zone.Name,
-                    AlertType = alert.Type.ToString(),
-                    Message = alert.Message,
-                    Severity = alert.Severity,
-                    SeverityLabel = alert.Severity switch
-                    {
-                        1 => "Info",
-                        2 => "Warning",
-                        3 => "Critical",
-                        _ => "Unknown"
-                    },
+                    var spec = new DeviceWithDetailsSpec(alert.DeviceId);
+                    var device = await deviceRepo.GetEntityWithSpec(spec);
 
-                    Icon = alert.Severity switch
+                    if (device == null || device.Zone == null) 
                     {
-                        1 => "🔵",
-                        2 => "🟡",
-                        3 => "🔴",
-                        _ => "⚪"
-                    },
-                    CreatedAt = alert.CreatedAt,
-                    IsRead = alert.IsRead
-                };
-                await _hubService.SendAlertNotification(System.Text.Json.JsonSerializer.Serialize(alertDto));
-                _logger.LogInformation("Broadcasted alert {AlertId} for device {DeviceName}", alert.Id, device.Name);
+                        _logger.LogWarning("Device or Zone not found for alert {AlertId}", alert.Id);
+                        return;
+                    }
+
+                    var alertDto = new AlertDto
+                    {
+                        Id = alert.Id,
+                        DeviceName = device.Name,
+                        ZoneName = device.Zone.Name ?? "General",
+                        AlertType = alert.Type.ToString(),
+                        Message = alert.Message,
+                        Severity = alert.Severity,
+                        SeverityLabel = alert.Severity switch
+                        {
+                            1 => "Info",
+                            2 => "Warning",
+                            3 => "Critical",
+                            _ => "Unknown"
+                        },
+
+                        Icon = alert.Severity switch
+                        {
+                            1 => "🔵",
+                            2 => "🟡",
+                            3 => "🔴",
+                            _ => "⚪"
+                        },
+                        CreatedAt = alert.CreatedAt,
+                        IsRead = alert.IsRead
+                    };
+                    await hubService.SendAlertNotification(JsonSerializer.Serialize(alertDto));
+                    _logger.LogInformation("Broadcasted alert {AlertId} for device {DeviceName}", alert.Id, device.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error broadcasting alert {AlertId}", alert.Id);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error broadcasting alert {AlertId}", alert.Id);
-            }
+              
         }
     }
 }

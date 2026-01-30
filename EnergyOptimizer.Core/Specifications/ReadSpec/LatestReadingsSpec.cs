@@ -12,7 +12,7 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
         public LatestReadingsSpec(int limit = 50)
         {
             AddInclude(r => r.Device);
-            AddInclude("Device.Zone");
+            AddInclude(r=> r.Device.Zone);
             ApplyOrderByDescending(r => r.Timestamp);
             ApplyPaging(0, limit);
         }

@@ -503,17 +503,46 @@
 
         // ===== Load Dashboard Data =====
         async function loadStatistics() {
-            try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/statistics`);
-                const data = await response.json();
-                displayStatistics(data);
-                displayCharts(data);
-            } catch (error) {
-                console.error('Error loading statistics:', error);
-                document.getElementById('statsGrid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load statistics</div></div>';
-            }
+            const response = await AuthHelper.fetchWithAuth('/api/AI/Statistics', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const stats = await response.json();
+
+            document.getElementById('totalAnalyses').innerText = stats.analyses.total;
+            document.getElementById('activeRecommendations').innerText = stats.recommendations.active;
+            document.getElementById('unresolvedAnomalies').innerText = stats.anomalies.unresolved;
+            document.getElementById('potentialSavings').innerText = stats.recommendations.totalPotentialSavings + " kWh";
         }
 
+        async function triggerAIAnalysis() {
+            try {
+                const response = await AuthHelper.fetchWithAuth('/api/AI/run-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                    }
+                });
+
+                if (response.ok) {
+                    alert('AI analysis has been successfully started');
+                    loadAIStatistics(); 
+                } else {
+                    const error = await response.json();
+                    alert('error: ' + error.message);
+                }
+            } catch (err) {
+                console.error('An error occurred while calling the API:', err);
+            }
+        }
+        async function triggerCleanup() {
+            if (confirm('Are you sure you want to clean the old data?')) {
+                const response = await AuthHelper.fetchWithAuth('/api/AI/cleanup', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (response.ok) alert('Data has been cleaned successfully!');
+            }
+        }
 
         function displayStatistics(data) {
             const statsGrid = document.getElementById('statsGrid');
@@ -595,6 +624,10 @@
                     }
                 }
             });
+            if (!data.analyses.byType || data.analyses.byType.length === 0) {
+                console.warn("No analysis data for charts");
+                return;
+            }
         }
 
         // ===== Load Recommendations =====
@@ -602,7 +635,7 @@
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
                 const data = await response.json();
-                displayRecommendations(data.data);
+                displayRecommendations(data);
             } catch (error) {
                 console.error('Error loading recommendations:', error);
             }
@@ -629,6 +662,23 @@
                         </div>
                     </div>
                 `).join('');
+        }
+        async function implementRecommendation(id) {
+            if (!confirm('Mark this recommendation as implemented?')) return;
+
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/${id}/implement`, {
+                    method: 'PATCH'
+                });
+
+                if (response.ok) {
+                    alert('Recommendation implemented!');
+                    loadRecommendations(); 
+                    loadStatistics();      
+                }
+            } catch (error) {
+                console.error('Error implementing recommendation:', error);
+            }
         }
 
         // ===== Load Anomalies =====

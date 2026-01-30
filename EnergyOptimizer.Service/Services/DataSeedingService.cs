@@ -2,6 +2,7 @@
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EnergyOptimizer.API.Services
 {

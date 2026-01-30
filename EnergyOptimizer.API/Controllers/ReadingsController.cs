@@ -46,17 +46,17 @@ namespace EnergyOptimizer.API.Controllers
                         r.Voltage,
                         r.Current,
                         r.Temperature,
-                        Device = new
+                        Device = r.Device != null ? new
                         {
                             r.Device.Id,
                             r.Device.Name,
                             Type = r.Device.Type.ToString()
-                        },
-                        Zone = new
+                        }: null,
+                        Zone = (r.Device != null && r.Device.Zone != null) ? new
                         {
                             r.Device.Zone.Id,
                             r.Device.Zone.Name
-                        }
+                        } : null
                     })
                 });
         }

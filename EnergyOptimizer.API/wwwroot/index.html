@@ -1412,15 +1412,19 @@
             displayDashboardUpdate(update);
         });
 
-        connection.on("ReceiveAlert", (alert) => {
-            log(`🚨 Alert: ${alert.message}`);
-            addAlert(alert);
+        connection.on("ReceiveAlert", (alertJson) => {
+            const alert = JSON.parse(alertJson);
 
-            const panel = document.getElementById("alertsPanel");
-            if (panel?.classList.contains('show')) {
-                const alertsBody = document.getElementById("alertsBody");
-                if (alertsBody) alertsBody.scrollTop = 0;
-            }
+            const alertList = document.getElementById('alertsList');
+            const alertItem = `
+        <div class="alert-item ${alert.SeverityLabel.toLowerCase()}">
+            <span>${alert.Icon}</span>
+            <strong>${alert.DeviceName}:</strong> ${alert.Message}
+            <small>${new Date(alert.CreatedAt).toLocaleTimeString()}</small>
+        </div>`;
+
+            alertList.insertAdjacentHTML('afterbegin', alertItem);
+            showToastNotification(alert.Message);
         });
 
         connection.on("DeviceStatusUpdated", (data) => {
