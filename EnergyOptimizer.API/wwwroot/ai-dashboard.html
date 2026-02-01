@@ -503,15 +503,21 @@
 
         // ===== Load Dashboard Data =====
         async function loadStatistics() {
-            const response = await AuthHelper.fetchWithAuth('/api/AI/Statistics', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            const stats = await response.json();
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
 
-            document.getElementById('totalAnalyses').innerText = stats.analyses.total;
-            document.getElementById('activeRecommendations').innerText = stats.recommendations.active;
-            document.getElementById('unresolvedAnomalies').innerText = stats.anomalies.unresolved;
-            document.getElementById('potentialSavings').innerText = stats.recommendations.totalPotentialSavings + " kWh";
+                if (response.ok) {
+                    const data = await response.json();
+                    displayStatistics(data);
+                    displayCharts(data);
+                } else if (response.status === 401) {
+                    AuthHelper.logout();
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                document.getElementById('statsGrid').innerHTML =
+                    '<div class="empty-state">⚠️ Failed to load statistics</div>';
+            }
         }
 
         async function triggerAIAnalysis() {
@@ -748,6 +754,13 @@
         function showAllAnomalies() {
             // TODO: Navigate to full anomalies page
             alert('Full anomalies page coming soon!');
+        }
+
+
+        function loadDashboard() {
+            loadStatistics();
+            loadRecommendations();
+            loadAnomalies();
         }
 
         // ===== Initialize =====

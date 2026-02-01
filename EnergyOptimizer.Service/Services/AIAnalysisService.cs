@@ -1,101 +1,186 @@
-﻿
-using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Service.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace EnergyOptimizer.API.Services
 {
     public class AIAnalysisService : IAIAnalysisService
     {
-
         private readonly IGenericRepository<Device> _deviceRepo;
         private readonly IGenericRepository<EnergyReading> _readingRepo;
-        private readonly IGenericRepository<Alert> _alertRepo; 
+        private readonly IGenericRepository<Alert> _alertRepo;
+        private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
+        private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
+        private readonly IGenericRepository<DetectedAnomaly> _anomalyRepo;
         private readonly ILogger<AIAnalysisService> _logger;
 
         public AIAnalysisService(
-             IGenericRepository<Device> deviceRepo,
-             IGenericRepository<EnergyReading> readingRepo,
-             IGenericRepository<Alert> alertRepo,
-             ILogger<AIAnalysisService> logger)
+            IGenericRepository<Device> deviceRepo,
+            IGenericRepository<EnergyReading> readingRepo,
+            IGenericRepository<Alert> alertRepo,
+            IGenericRepository<EnergyAnalysis> analysisRepo,
+            IGenericRepository<EnergyRecommendation> recommendationRepo,
+            IGenericRepository<DetectedAnomaly> anomalyRepo,
+            ILogger<AIAnalysisService> logger)
         {
             _deviceRepo = deviceRepo;
             _readingRepo = readingRepo;
             _alertRepo = alertRepo;
+            _analysisRepo = analysisRepo;
+            _recommendationRepo = recommendationRepo;
+            _anomalyRepo = anomalyRepo;
             _logger = logger;
         }
 
         public async Task RunGlobalAnalysisAsync(CancellationToken ct)
         {
             _logger.LogInformation("Starting AI Global Analysis...");
+
             await RunDailyAnalysis(ct);
             await DetectAnomalies(ct);
             await GenerateRecommendations(ct);
-            await _deviceRepo.SaveChangesAsync();
+
+            await _analysisRepo.SaveChangesAsync();
+            await _recommendationRepo.SaveChangesAsync();
+            await _anomalyRepo.SaveChangesAsync();
+            await _alertRepo.SaveChangesAsync();
+
+            _logger.LogInformation("AI Global Analysis completed successfully");
         }
 
         private async Task DetectAnomalies(CancellationToken cancellationToken)
         {
-            var deviceSpec = new ActiveDevicesWithZoneSpec();
-            var activeDevices = await _deviceRepo.ListAsync(deviceSpec);
+            var activeDevices = await _deviceRepo.ListAsync(new ActiveDevicesWithZoneSpec());
 
-            int anomaliesFound = 0;
-            foreach (var activeDevice in activeDevices)
+            foreach (var device in activeDevices)
             {
                 if (cancellationToken.IsCancellationRequested) break;
 
-                var readingSpec = new ReadingsByDeviceAndDateSpec(activeDevice.Id, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
-                var readings = await _readingRepo.ListAsync(readingSpec);
+                var readings = await _readingRepo.ListAsync(
+                    new ReadingsByDeviceAndDateSpec(
+                        device.Id,
+                        DateTime.UtcNow.AddDays(-7),
+                        DateTime.UtcNow));
 
-                if (readings.Any()) { 
-                    var avg = readings.Average(r => r.PowerConsumptionKW);
-                    var anomalySpec = new AnomalyReadingsSpec(activeDevice.Id, avg, 0.5);
+                if (!readings.Any()) continue;
 
-                    if (await _readingRepo.AnyAsync(anomalySpec))
+                double avg = readings.Average(r => r.PowerConsumptionKW);
+                double stdDev = CalculateStandardDeviation(
+                    readings.Select(r => r.PowerConsumptionKW));
+
+                double threshold = avg + (2 * stdDev);
+
+                var anomalies = readings
+                    .Where(r => r.PowerConsumptionKW > threshold)
+                    .ToList();
+
+                foreach (var r in anomalies)
+                {
+                    double deviationPercent =
+                        avg == 0 ? 0 : ((r.PowerConsumptionKW - avg) / avg) * 100;
+
+                    string severity =
+                        Math.Abs(deviationPercent) > 60 ? "Critical" : "High";
+
+                    var anomaly = new DetectedAnomaly
                     {
-                        await _alertRepo.AddAsync(new Alert
-                        {
-                            DeviceId = activeDevice.Id,
-                            Message = $"Unusual consumption detected for {activeDevice.Name}",
-                            CreatedAt = DateTime.UtcNow
-                        });
-                    }
+                        DeviceId = device.Id,
+                        AnomalyTimestamp = r.Timestamp,
+                        ActualValue = r.PowerConsumptionKW, 
+                        ExpectedValue = Math.Round(avg, 2),
+                        Deviation = Math.Abs(Math.Round(deviationPercent, 1)),
+                        Severity = severity,
+                        Description =
+                            $"Usage is {Math.Abs(Math.Round(deviationPercent, 1))}% away from average",
+                        DetectedAt = DateTime.UtcNow,
+                        IsResolved = false
+                    };
+
+                    await _anomalyRepo.AddAsync(anomaly);
+
+                    await _alertRepo.AddAsync(new Alert
+                    {
+                        DeviceId = device.Id,
+                        Type = Core.Enums.AlertType.Anomaly,
+                        Severity = severity == "Critical" ? 3 : 2,
+                        Message = $"AI Alert: {device.Name} anomaly detected",
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
             }
-       
         }
 
-        private async Task RunDailyAnalysis(CancellationToken cancellationToken)
+
+        private async Task RunDailyAnalysis(CancellationToken ct)
         {
-            var spec = new TodayReadingsSpec();
-            var todayData = await _readingRepo.ListAsync(spec);
+            var startDate = DateTime.UtcNow.AddDays(-7);
+            var readings = await _readingRepo.ListAsync(
+                new PaginatedReadingsSpec(startDate, DateTime.UtcNow, 1000));
+
+            if (!readings.Any()) return;
+
+            double totalConsumption =
+                readings.Sum(r => r.PowerConsumptionKW);
+
+            int deviceCount = readings
+                .Select(r => r.DeviceId)
+                .Distinct()
+                .Count();
+
+            var analysis = new EnergyAnalysis
+            {
+                AnalysisDate = DateTime.UtcNow,
+                AnalysisType = "Global",
+                PeriodStart = startDate,
+                PeriodEnd = DateTime.UtcNow,
+                Summary = $"Analysis completed for {deviceCount} devices.",
+                TotalConsumptionKWh = totalConsumption,
+                DevicesAnalyzed = deviceCount,
+                FullResponse = "{}"
+            };
+
+            await _analysisRepo.AddAsync(analysis);
         }
 
-        private async Task GenerateRecommendations(CancellationToken cancellationToken)
+
+        private async Task GenerateRecommendations(CancellationToken ct)
         {
-            var highPowerSpec = new HighPowerDevicesSpec(minPowerKW: 2.0);
-            var targetDevices = await _deviceRepo.ListAsync(highPowerSpec);
+            var devices = await _deviceRepo.ListAsync(
+                new HighPowerDevicesSpec(2.0));
 
-            _logger.LogInformation("Generating recommendations for last 30 days");
-
-            foreach (var device in targetDevices) { 
-                
-                await _alertRepo.AddAsync(new Alert
+            foreach (var device in devices)
+            {
+                await _recommendationRepo.AddAsync(new EnergyRecommendation
                 {
-                    DeviceId = device.Id,
-                    Message = $"Consider optimizing usage of {device.Name} to reduce energy consumption.",
-                    CreatedAt = DateTime.UtcNow
+                    Title = $"Optimize {device.Name}",
+                    Category = "Efficiency",
+                    Priority = "1",
+                    EstimatedSavingsKWh = 10.5,
+                    EstimatedSavingsPercent = 15.0,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddDays(30),
+                    IsImplemented = false,
+                    Description = $"Usage pattern optimization for {device.Name}.",
+                    ActionItems = "Review schedule; Check device health;"
                 });
             }
         }
+
+        private double CalculateStandardDeviation(IEnumerable<double> values)
+        {
+            var list = values.ToList();
+            if (!list.Any())
+                return 0;
+
+            double avg = list.Average();
+            double variance =
+                list.Sum(v => (v - avg) * (v - avg)) / list.Count;
+
+            return Math.Sqrt((double)variance);
+        }
     }
 }
-
-     
-    
-

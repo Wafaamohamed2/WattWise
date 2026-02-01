@@ -382,41 +382,88 @@
             category: ''
         };
 
-        // ✅ Load recommendations on page load
+        function getPriorityText(priority) {
+            if (typeof priority === 'string') return priority;
+
+            switch (priority) {
+                case 1: return 'High';
+                case 2: return 'Medium';
+                case 3: return 'Low';
+                default: return 'Unknown';
+            }
+        }
+        function getPriorityClass(priority) {
+            const text = getPriorityText(priority);
+            return text.toLowerCase(); 
+        }
         async function loadRecommendations() {
             try {
-                console.log('Loading recommendations with filters:', currentFilters);
+                const url = `${baseUrl}/api/AI/recommendations?isImplemented=false`;
+                console.log("Fetching from:", url);
 
-                const params = new URLSearchParams({
-                    page: 1,
-                    pageSize: 100,
-                    ...(currentFilters.isImplemented && { isImplemented: currentFilters.isImplemented }),
-                    ...(currentFilters.priority && { priority: currentFilters.priority }),
-                    ...(currentFilters.category && { category: currentFilters.category })
-                });
-
-                const url = `${baseUrl}/api/AI/recommendations?${params}`;
                 const response = await AuthHelper.fetchWithAuth(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const result = await response.json();
+                console.log("Raw Data Received:", result);
+
+                // ✅ التصحيح الجوهري: التعامل مع القائمة سواء جاءت مباشرة أو داخل كائن
+                const list = Array.isArray(result) ? result : (result.data || []);
+
+                if (list.length === 0) {
+                    document.getElementById('recommendationsList').innerHTML =
+                        '<div class="empty-state">No recommendations found. Please run analysis from Dashboard first.</div>';
+                    return;
                 }
 
-                const data = await response.json();
-                displayStatistics(data.statistics);
-                displayRecommendations(data.data);
-                populateCategories(data.data);
-
+                displayRecommendations(list);
+                updateTopStats(list); // تحديث البار العلوي بالأرقام الحقيقية
             } catch (error) {
-                console.error('Error loading recommendations:', error);
-                document.getElementById('recommendationsList').innerHTML = `
-                        <div class="error-message">
-                            <h3>⚠️ Failed to load recommendations</h3>
-                            <p>${error.message}</p>
-                            <p style="margin-top: 10px; font-size: 0.9em;">Check the console (F12) for more details.</p>
-                        </div>
-                    `;
+                console.error('Fetch Error:', error);
+                document.getElementById('recommendationsList').innerHTML =
+                    `<div class="error-message">⚠️ Failed to load data: ${error.message}</div>`;
             }
+        }
+
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+
+            container.innerHTML = recommendations.map(rec => {
+                // ✅ صمام أمان للـ Priority (يمنع انهيار الصفحة إذا كان رقماً)
+                const priorityLabel = rec.priority ? String(rec.priority) : "Medium";
+                const savings = rec.estimatedSavingsKWh || 0;
+
+                return `
+            <div class="recommendation-card">
+                <div class="rec-header">
+                    <div class="rec-title-section">
+                        <div class="rec-title">${rec.title || 'Optimization Tip'}</div>
+                        <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                    </div>
+                    <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
+                        ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
+                    </span>
+                </div>
+                <div class="rec-description">${rec.description || 'Analyze device usage to save energy.'}</div>
+                <div class="rec-savings">
+                    <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
+                </div>
+                <div class="rec-footer">
+                    <button onclick="implementRecommendation(${rec.id})" class="btn-implement" 
+                            style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        Mark as Implemented
+                    </button>
+                </div>
+            </div>`;
+            }).join('');
+        }
+
+        function updateTopStats(list) {
+            document.getElementById('totalCount').textContent = list.length;
+            document.getElementById('activeCount').textContent = list.filter(r => !r.isImplemented).length;
+            document.getElementById('highPriorityCount').textContent = list.filter(r => String(r.priority) === '1' || String(r.priority).toLowerCase() === 'high').length;
+            const totalSavings = list.reduce((sum, r) => sum + (r.estimatedSavingsKWh || 0), 0);
+            document.getElementById('savingsTotal').textContent = totalSavings.toFixed(1);
         }
 
         function displayStatistics(stats) {
@@ -433,77 +480,17 @@
             document.getElementById('highPriorityCount').textContent = stats.HighPriority || stats.highPriority || 0;
             document.getElementById('savingsTotal').textContent = (stats.TotalEstimatedSavings || stats.totalEstimatedSavings || 0).toFixed(1);
         }
-
-        function displayRecommendations(recommendations) {
-            const container = document.getElementById('recommendationsList');
-
-            if (!recommendations || recommendations.length === 0) {
-                container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">✅</div>
-                            <div>No recommendations found</div>
-                            <p style="margin-top: 10px;">Try adjusting your filters</p>
-                        </div>
-                    `;
-                return;
-            }
-
-            console.log(`Displaying ${recommendations.length} recommendations`);
-
-            container.innerHTML = recommendations.map(rec => `
-                    <div class="recommendation-card">
-                        <div class="rec-header">
-                            <div class="rec-title-section">
-                                <div class="rec-title">${rec.title}</div>
-                                <span class="rec-category">📁 ${rec.category}</span>
-                            </div>
-                            <span class="priority-badge priority-${rec.priority.toLowerCase()}">
-                                ${rec.priority}
-                            </span>
-                        </div>
-
-                        <div class="rec-description">${rec.description}</div>
-
-                        <div class="rec-savings">
-                            <div class="savings-item">
-                                <span>⚡</span>
-                                <span>${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
-                            </div>
-                            ${rec.estimatedSavingsPercent > 0 ? `
-                                <div class="savings-item">
-                                    <span>📊</span>
-                                    <span>${rec.estimatedSavingsPercent.toFixed(1)}% reduction</span>
-                                </div>
-                            ` : ''}
-                        </div>
-
-                        <div class="rec-footer">
-                            <div class="rec-meta">
-                                <span>📅 Created: ${new Date(rec.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div class="rec-actions">
-                                ${rec.isImplemented ? `
-                                    <div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: 0.85em; font-weight: 600;">
-                                        <span>✓</span>
-                                        <span>Implemented</span>
-                                    </div>
-                                ` : `
-                                    <button onclick="implementRecommendation(${rec.id})" style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 0.85em; cursor: pointer; font-weight: 600; background: #10b981; color: white; display: flex; align-items: center; gap: 6px; transition: all 0.3s;">
-                                        <span>✓</span>
-                                        <span>Mark as Implemented</span>
-                                    </button>
-                                `}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-        }
-
         function populateCategories(recommendations) {
             if (!recommendations || recommendations.length === 0) return;
 
             const categories = [...new Set(recommendations.map(r => r.category))];
             const select = document.getElementById('filterCategory');
+
+            if (!select) return;
+
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
 
             categories.forEach(cat => {
                 if (!Array.from(select.options).some(opt => opt.value === cat)) {
@@ -549,8 +536,18 @@
         }
 
         // ✅ Initialize
-        console.log('Recommendations page loaded');
-        loadRecommendations();
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Recommendations page loaded');
+
+            // Check authentication
+            if (!AuthHelper.checkAuth()) {
+                console.log('Not authenticated, redirecting to login');
+                return;
+            }
+
+            console.log('Loading recommendations...');
+            loadRecommendations();
+        });
     </script>
 </body>
 </html>

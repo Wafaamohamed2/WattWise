@@ -42,7 +42,5 @@ namespace EnergyOptimizer.API.Middleware
             }
         }
     }
-
-    // كلاس مساعد لتوحيد شكل الرد
     public record ApiResponse(int StatusCode, string Message, string Details = null);
 }

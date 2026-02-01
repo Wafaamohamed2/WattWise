@@ -1,10 +1,12 @@
 ﻿using EnergyOptimizer.API.Services;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace EnergyOptimizer.API.Controllers
@@ -23,6 +25,8 @@ namespace EnergyOptimizer.API.Controllers
         private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
         private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
         private readonly IGenericRepository<DetectedAnomaly> _anomalyRepo;
+        private readonly IGenericRepository<Device> _deviceRepo;
+
         public AIController(
              PatternDetectionService patternService,
              IGeminiService geminiService,
@@ -31,6 +35,7 @@ namespace EnergyOptimizer.API.Controllers
              IGenericRepository<EnergyAnalysis> analysisRepo,
              IGenericRepository<EnergyRecommendation> recommendationRepo,
              IGenericRepository<DetectedAnomaly> anomalyRepo,
+             IGenericRepository<Device> deviceRepo,
              ILogger<AIController> logger)
         {
             _patternService = patternService;
@@ -40,6 +45,7 @@ namespace EnergyOptimizer.API.Controllers
             _analysisRepo = analysisRepo;
             _recommendationRepo = recommendationRepo;
             _anomalyRepo = anomalyRepo;
+            _deviceRepo = deviceRepo;
             _logger = logger;
         }
 
@@ -275,6 +281,8 @@ namespace EnergyOptimizer.API.Controllers
                     Total = anomalies.Count(),
                     Unresolved = anomalies.Count(a => !a.IsResolved),
                     Resolved = anomalies.Count(a => a.IsResolved),
+                    Last7Days = anomalies.Count(a => a.DetectedAt >= DateTime.UtcNow.AddDays(-7)),
+                    bySeverity = anomalies.GroupBy(a => a.Severity).Select(g => new { severity = g.Key, count = g.Count() }).ToList(),
                     DevicesAffected = anomalies.Where(a => !a.IsResolved).Select(a => a.DeviceId).Distinct().Count()
                 }
             };
@@ -341,6 +349,7 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int pageSize = 20)
         {
             var anomaliesList = await _anomalyRepo.ListAllAsync();
+            var devices = await _deviceRepo.ListAllAsync();
             var query = anomaliesList.AsEnumerable();
 
             if (isResolved.HasValue)
@@ -359,25 +368,39 @@ namespace EnergyOptimizer.API.Controllers
                 .OrderByDescending(a => a.DetectedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(a => new {
-                    a.Id,
-                    a.DeviceId,
-                    a.AnomalyTimestamp,
-                    ActualValue = (double)a.ActualValue,
-                    ExpectedValue = (double)a.ExpectedValue,
-                    a.Severity,
-                    a.Description,
-                    a.IsResolved,
-                    a.DetectedAt
+                .Select(a => {
+                    var device = devices.FirstOrDefault(d => d.Id == a.DeviceId);
+                    var deviationPercent = a.ExpectedValue != 0
+                        ? ((a.ActualValue - a.ExpectedValue) / a.ExpectedValue) * 100
+                        : 0;
+
+                    return new
+                    {
+                        a.Id,
+                        a.DeviceId,
+                        a.AnomalyTimestamp,
+                        actualValue = (double)a.ActualValue,
+                        expectedValue = (double)a.ExpectedValue,
+                        a.Severity,
+                        a.Description,
+                        a.IsResolved,
+                        a.DetectedAt,
+                        device = device != null ? new
+                        {
+                            name = device.Name,
+                            zone = device.Zone?.Name ?? "Unknown"
+                        } : null,
+                        deviationPercent = Math.Round(deviationPercent, 1)
+                    };
                 });
-            return Ok(new
-            {
-                page,
-                pageSize,
-                totalCount,
-                totalPages,
-                data = result
-            });
+                return Ok(new
+                {
+                    page,
+                    pageSize,
+                    totalCount,
+                    totalPages,
+                    data = result
+                });
         }
         [HttpGet("anomalies/{id}")]
         public async Task<ActionResult<object>> GetAnomalyById(int id)
