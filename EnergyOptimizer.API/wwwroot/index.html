@@ -1118,6 +1118,101 @@
             }
         }
 
+        // Fetch dashboard statistics
+        async function fetchDashboardStats() {
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/overview`);
+                if (!response.ok) throw new Error('Failed to fetch stats');
+
+                const data = await response.json();
+
+                // Update dashboard statistics if elements exist
+                const totalConsumption = document.getElementById("totalConsumption");
+                const activeDevices = document.getElementById("activeDevices");
+                const totalReadings = document.getElementById("totalReadings");
+
+                if (totalConsumption) totalConsumption.textContent = `${data.todayTotalConsumption} kW`;
+                if (activeDevices) activeDevices.textContent = data.activeDevices;
+                if (totalReadings) totalReadings.textContent = data.totalReadingsToday;
+
+                // Load top consumers
+                loadTopConsumers();
+
+                // Load latest readings
+                loadLatestReadings();
+
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            }
+        }
+
+        // Load top consumers
+        async function loadTopConsumers() {
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/top-consumers?count=5`);
+                if (!response.ok) throw new Error('Failed to fetch top consumers');
+
+                const result = await response.json();
+                const topConsumersDiv = document.getElementById("topConsumers");
+
+                if (!topConsumersDiv) return;
+
+                if (!result.data || result.data.length === 0) {
+                    topConsumersDiv.innerHTML = `
+                        <div class="empty-state">
+                            <p>No data yet...</p>
+                        </div>`;
+                    return;
+                }
+
+                topConsumersDiv.innerHTML = result.data.map(device => `
+                    <div class="consumer-item">
+                        <div class="consumer-info">
+                            <strong>${device.deviceName}</strong>
+                            <span>${device.zoneName}</span>
+                        </div>
+                        <div class="consumer-consumption">
+                            ${device.todayConsumption.toFixed(2)} kW
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading top consumers:', error);
+                const topConsumersDiv = document.getElementById("topConsumers");
+                if (topConsumersDiv) {
+                    topConsumersDiv.innerHTML = `
+                        <div class="empty-state">
+                            <p>No data yet...</p>
+                        </div>`;
+                }
+            }
+        }
+
+        // Load latest readings
+        async function loadLatestReadings() {
+            try {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=10`);
+                if (!response.ok) throw new Error('Failed to fetch readings');
+
+                const result = await response.json();
+
+                if (result.data && result.data.length > 0) {
+                    displayLatestReadings(result.data.map(r => ({
+                        deviceName: r.device?.name || 'Unknown',
+                        zoneName: r.zone?.name || 'Unknown',
+                        powerConsumptionKW: r.powerConsumptionKW,
+                        temperature: r.temperature,
+                        voltage: r.voltage,
+                        current: r.current,
+                        timestamp: r.timestamp
+                    })));
+                }
+            } catch (error) {
+                console.error('Error loading latest readings:', error);
+            }
+        }
+
         function displayLatestReadings(readings) {
             const container = document.getElementById("readings");
             if (!container) return;

@@ -399,15 +399,11 @@
         async function loadRecommendations() {
             try {
                 const url = `${baseUrl}/api/AI/recommendations?isImplemented=false`;
-                console.log("Fetching from:", url);
-
                 const response = await AuthHelper.fetchWithAuth(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const result = await response.json();
-                console.log("Raw Data Received:", result);
 
-                // ✅ التصحيح الجوهري: التعامل مع القائمة سواء جاءت مباشرة أو داخل كائن
                 const list = Array.isArray(result) ? result : (result.data || []);
 
                 if (list.length === 0) {
@@ -417,7 +413,7 @@
                 }
 
                 displayRecommendations(list);
-                updateTopStats(list); // تحديث البار العلوي بالأرقام الحقيقية
+                updateTopStats(list); 
             } catch (error) {
                 console.error('Fetch Error:', error);
                 document.getElementById('recommendationsList').innerHTML =
@@ -429,7 +425,6 @@
             const container = document.getElementById('recommendationsList');
 
             container.innerHTML = recommendations.map(rec => {
-                // ✅ صمام أمان للـ Priority (يمنع انهيار الصفحة إذا كان رقماً)
                 const priorityLabel = rec.priority ? String(rec.priority) : "Medium";
                 const savings = rec.estimatedSavingsKWh || 0;
 

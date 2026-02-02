@@ -68,41 +68,41 @@ namespace EnergyOptimizer.API.Controllers
           [FromQuery] DateTime? startDate = null,
           [FromQuery] DateTime? endDate = null)
         {
-                var start = startDate ?? DateTime.UtcNow.AddDays(-30);
-                var end = endDate ?? DateTime.UtcNow;
+            var start = startDate ?? DateTime.UtcNow.AddDays(-30);
+            var end = endDate ?? DateTime.UtcNow;
 
-                if (start >= end)
+            if (start >= end)
+            {
+                return BadRequest(new { error = "Start date must be before end date" });
+            }
+
+            if ((end - start).TotalDays > 90)
+            {
+                return BadRequest(new { error = "Maximum analysis period is 90 days" });
+            }
+
+            var result = await _patternService.AnalyzeConsumptionPatterns(start, end);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
                 {
-                    return BadRequest(new { error = "Start date must be before end date" });
-                }
+                    success = false,
+                    error = result.ErrorMessage
+                });
+            }
+            var analysis = new EnergyAnalysis
+            {
+                AnalysisDate = DateTime.UtcNow,
+                AnalysisType = "Pattern",
+                PeriodStart = start,
+                PeriodEnd = end,
+                Summary = result.Summary,
+                FullResponse = JsonSerializer.Serialize(result)
+            };
 
-                if ((end - start).TotalDays > 90)
-                {
-                    return BadRequest(new { error = "Maximum analysis period is 90 days" });
-                }
-
-                var result = await _patternService.AnalyzeConsumptionPatterns(start, end);
-
-                if (!result.Success)
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        error = result.ErrorMessage
-                    });
-                }
-                var analysis = new EnergyAnalysis
-                {
-                    AnalysisDate = DateTime.UtcNow,
-                    AnalysisType = "Pattern",
-                    PeriodStart = start,
-                    PeriodEnd = end,
-                    Summary = result.Summary,
-                    FullResponse = JsonSerializer.Serialize(result)
-                };
-
-                await _analysisRepo.AddAsync(analysis);
-                await _analysisRepo.SaveChangesAsync();
+            await _analysisRepo.AddAsync(analysis);
+            await _analysisRepo.SaveChangesAsync();
 
             return Ok(new { success = true, analysis = result });
         }
@@ -114,32 +114,32 @@ namespace EnergyOptimizer.API.Controllers
             int deviceId,
             [FromQuery] int days = 7)
         {
-                if (days < 1 || days > 30)
+            if (days < 1 || days > 30)
+            {
+                return BadRequest(new { error = "Days must be between 1 and 30" });
+            }
+
+            _logger.LogInformation("Detecting anomalies for device {DeviceId}", deviceId);
+
+            var result = await _patternService.DetectDeviceAnomalies(deviceId, days);
+
+            return Ok(new
+            {
+                deviceId,
+                daysAnalyzed = days,
+                hasAnomalies = result.HasAnomalies,
+                anomaliesCount = result.Anomalies.Count,
+                anomalies = result.Anomalies.Select(a => new
                 {
-                    return BadRequest(new { error = "Days must be between 1 and 30" });
-                }
-
-                _logger.LogInformation("Detecting anomalies for device {DeviceId}", deviceId);
-
-                var result = await _patternService.DetectDeviceAnomalies(deviceId, days);
-
-                return Ok(new
-                {
-                    deviceId,
-                    daysAnalyzed = days,
-                    hasAnomalies = result.HasAnomalies,
-                    anomaliesCount = result.Anomalies.Count,
-                    anomalies = result.Anomalies.Select(a => new
-                    {
-                        timestamp = a.Timestamp,
-                        actualValue = a.ActualValue,
-                        expectedValue = a.ExpectedValue,
-                        deviation = a.Deviation,
-                        severity = a.Severity,
-                        description = a.Description
-                    }),
-                    analysis = result.Analysis
-                });
+                    timestamp = a.Timestamp,
+                    actualValue = a.ActualValue,
+                    expectedValue = a.ExpectedValue,
+                    deviation = a.Deviation,
+                    severity = a.Severity,
+                    description = a.Description
+                }),
+                analysis = result.Analysis
+            });
         }
 
 
@@ -149,46 +149,46 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)
         {
-                var start = startDate ?? DateTime.UtcNow.AddDays(-30);
-                var end = endDate ?? DateTime.UtcNow;
+            var start = startDate ?? DateTime.UtcNow.AddDays(-30);
+            var end = endDate ?? DateTime.UtcNow;
 
-                if (start >= end)
+            if (start >= end)
+            {
+                return BadRequest(new { error = "Start date must be before end date" });
+            }
+
+            var result = await _patternService.GenerateRecommendations(start, end);
+
+            // Save to DB
+            var analysis = new EnergyAnalysis
+            {
+                AnalysisDate = DateTime.UtcNow,
+                AnalysisType = "Recommendations",
+                Summary = $"Generated {result.Recommendations.Count} recommendations",
+                FullResponse = JsonSerializer.Serialize(result),
+                PeriodStart = start,
+                PeriodEnd = end,
+                TotalConsumptionKWh = 0,
+                DevicesAnalyzed = 0
+            };
+            await _analysisRepo.AddAsync(analysis);
+            await _analysisRepo.SaveChangesAsync();
+
+            foreach (var rec in result.Recommendations)
+            {
+                await _recommendationRepo.AddAsync(new EnergyRecommendation
                 {
-                    return BadRequest(new { error = "Start date must be before end date" });
-                }
+                    Title = rec.Title,
+                    Description = rec.Description,
+                    Category = rec.Category,
+                    Priority = rec.Priority,
+                    EstimatedSavingsKWh = rec.PotentialSavingsKWh,
+                    AnalysisId = analysis.Id
+                });
+            }
 
-                var result = await _patternService.GenerateRecommendations(start, end);
-
-                // Save to DB
-                var analysis = new EnergyAnalysis
-                {
-                    AnalysisDate = DateTime.UtcNow,
-                    AnalysisType = "Recommendations",
-                    Summary = $"Generated {result.Recommendations.Count} recommendations",
-                    FullResponse = JsonSerializer.Serialize(result),
-                    PeriodStart = start,
-                    PeriodEnd = end,
-                    TotalConsumptionKWh = 0,
-                    DevicesAnalyzed = 0
-                };
-                await _analysisRepo.AddAsync(analysis);
-                await _analysisRepo.SaveChangesAsync();
-
-                foreach (var rec in result.Recommendations)
-                {
-                    await _recommendationRepo.AddAsync(new EnergyRecommendation
-                    {
-                        Title = rec.Title,
-                        Description = rec.Description,
-                        Category = rec.Category,
-                        Priority = rec.Priority,
-                        EstimatedSavingsKWh = rec.PotentialSavingsKWh,
-                        AnalysisId = analysis.Id
-                    });
-                }
-
-                await _recommendationRepo.SaveChangesAsync();
-                return Ok(new { success = true, count = result.Recommendations.Count });
+            await _recommendationRepo.SaveChangesAsync();
+            return Ok(new { success = true, count = result.Recommendations.Count });
         }
 
 
@@ -197,20 +197,20 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<ActionResult<object>> PredictConsumption(
            [FromQuery] int days = 7)
         {
-                if (days < 1 || days > 30)
-                {
-                    return BadRequest(new { error = "Days must be between 1 and 30" });
-                }
+            if (days < 1 || days > 30)
+            {
+                return BadRequest(new { error = "Days must be between 1 and 30" });
+            }
 
-                var result = await _patternService.PredictConsumption(days);
+            var result = await _patternService.PredictConsumption(days);
 
-                return Ok(new
-                {
-                    predictionDate = result.PredictionDate.ToString("yyyy-MM-dd"),
-                    predictedConsumptionKWh = result.PredictedConsumptionKWh,
-                    confidenceScore = result.ConfidenceScore,
-                    explanation = result.Explanation
-                });
+            return Ok(new
+            {
+                predictionDate = result.PredictionDate.ToString("yyyy-MM-dd"),
+                predictedConsumptionKWh = result.PredictedConsumptionKWh,
+                confidenceScore = result.ConfidenceScore,
+                explanation = result.Explanation
+            });
         }
 
 
@@ -230,16 +230,56 @@ namespace EnergyOptimizer.API.Controllers
         // Endpoints for managing analysis history, recommendations, and anomalies
         [HttpGet("analysis-history")]
         public async Task<ActionResult<object>> GetAnalysisHistory(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? analysisType = null,
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null)
         {
-
             var analyses = await _analysisRepo.ListAllAsync();
-            var paginated = analyses.OrderByDescending(a => a.AnalysisDate)
-                                    .Skip((page - 1) * pageSize)
-                                    .Take(pageSize);
+            var query = analyses.AsEnumerable();
 
-            return Ok(new { totalCount = analyses.Count(), data = paginated });
+            // Apply filters
+            if (!string.IsNullOrEmpty(analysisType))
+                query = query.Where(a => a.AnalysisType == analysisType);
+
+            if (!string.IsNullOrEmpty(startDate) && DateTime.TryParse(startDate, out var start))
+                query = query.Where(a => a.AnalysisDate >= start);
+
+            if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var end))
+                query = query.Where(a => a.AnalysisDate <= end.AddDays(1));
+
+            var total = query.Count();
+            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+            var result = query
+                .OrderByDescending(a => a.AnalysisDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.AnalysisType,
+                    a.AnalysisDate,
+                    a.Summary,
+                    Period = new
+                    {
+                        Start = a.PeriodStart,
+                        End = a.PeriodEnd
+                    },
+                    a.TotalConsumptionKWh,
+                    a.DevicesAnalyzed
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalPages,
+                count = total,
+                data = result
+            });
         }
 
         // Get detailed analysis by ID
@@ -259,6 +299,7 @@ namespace EnergyOptimizer.API.Controllers
             var analyses = await _analysisRepo.ListAllAsync();
             var recommendations = await _recommendationRepo.ListAllAsync();
             var anomalies = await _anomalyRepo.ListAllAsync();
+            var devices = await _deviceRepo.ListAllAsync();
 
             var stats = new
             {
@@ -310,7 +351,7 @@ namespace EnergyOptimizer.API.Controllers
 
         }
 
-    
+
         [HttpPatch("recommendations/{id}/implement")]
         public async Task<ActionResult<object>> ImplementRecommendation(int id)
         {
@@ -364,6 +405,19 @@ namespace EnergyOptimizer.API.Controllers
             var totalCount = query.Count();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
+            // Calculate statistics from ALL anomalies (not filtered)
+            var allAnomalies = anomaliesList.AsEnumerable();
+            var statistics = new
+            {
+                critical = allAnomalies.Count(a => a.Severity?.ToLower() == "critical"),
+                high = allAnomalies.Count(a => a.Severity?.ToLower() == "high"),
+                medium = allAnomalies.Count(a => a.Severity?.ToLower() == "medium"),
+                low = allAnomalies.Count(a => a.Severity?.ToLower() == "low"),
+                unresolved = allAnomalies.Count(a => !a.IsResolved),
+                resolved = allAnomalies.Count(a => a.IsResolved),
+                devicesAffected = allAnomalies.Where(a => !a.IsResolved).Select(a => a.DeviceId).Distinct().Count()
+            };
+
             var result = query
                 .OrderByDescending(a => a.DetectedAt)
                 .Skip((page - 1) * pageSize)
@@ -393,14 +447,15 @@ namespace EnergyOptimizer.API.Controllers
                         deviationPercent = Math.Round(deviationPercent, 1)
                     };
                 });
-                return Ok(new
-                {
-                    page,
-                    pageSize,
-                    totalCount,
-                    totalPages,
-                    data = result
-                });
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalCount,
+                totalPages,
+                statistics,
+                data = result
+            });
         }
         [HttpGet("anomalies/{id}")]
         public async Task<ActionResult<object>> GetAnomalyById(int id)
@@ -449,28 +504,28 @@ namespace EnergyOptimizer.API.Controllers
         [HttpGet("test-connection")]
         public async Task<ActionResult<object>> TestConnection()
         {
-           _logger.LogInformation("Testing Gemini API connection");
+            _logger.LogInformation("Testing Gemini API connection");
 
-                var result = await _geminiService.AskQuestion(
-                    "Say 'Hello from Gemini!' if you can read this.",
-                    "This is a connection test");
+            var result = await _geminiService.AskQuestion(
+                "Say 'Hello from Gemini!' if you can read this.",
+                "This is a connection test");
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Connection successful",
-                    response = result
-                });
-            }
+            return Ok(new
+            {
+                success = true,
+                message = "Connection successful",
+                response = result
+            });
         }
-
-        public record class AskQuestionRequest(
-                  string Question,
-                  string? Context = null
-        );
-
-        public record class ResolveAnomalyRequest(
-            string ResolutionNotes
-        );
-
     }
+
+    public record class AskQuestionRequest(
+              string Question,
+              string? Context = null
+    );
+
+    public record class ResolveAnomalyRequest(
+        string ResolutionNotes
+    );
+
+}
