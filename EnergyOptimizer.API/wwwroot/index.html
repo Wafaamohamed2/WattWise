@@ -1118,7 +1118,6 @@
             }
         }
 
-        // Fetch dashboard statistics
         async function fetchDashboardStats() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/overview`);
@@ -1126,7 +1125,6 @@
 
                 const data = await response.json();
 
-                // Update dashboard statistics if elements exist
                 const totalConsumption = document.getElementById("totalConsumption");
                 const activeDevices = document.getElementById("activeDevices");
                 const totalReadings = document.getElementById("totalReadings");
@@ -1146,7 +1144,6 @@
             }
         }
 
-        // Load top consumers
         async function loadTopConsumers() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/top-consumers?count=5`);
@@ -1189,7 +1186,6 @@
             }
         }
 
-        // Load latest readings
         async function loadLatestReadings() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=10`);

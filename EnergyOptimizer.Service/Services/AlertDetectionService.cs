@@ -111,9 +111,9 @@ namespace EnergyOptimizer.API.Services
                 return null; // Not enough data
 
             var baseline = historicalReadings.Average(r => r.PowerConsumptionKW);
-            var threshold = baseline * 1.5; // 150% of baseline
+            var threshold = baseline * (decimal)1.5; // 150% of baseline
 
-            if (latestReading.PowerConsumptionKW > threshold && latestReading.PowerConsumptionKW > 0.5)
+            if (latestReading.PowerConsumptionKW > threshold && (double)latestReading.PowerConsumptionKW > 0.5)
             {
                 return new Alert
                 {
@@ -142,7 +142,7 @@ namespace EnergyOptimizer.API.Services
             // Check for sudden spike (200% increase in 1 minute)
             if (previousReading.PowerConsumptionKW > 0 &&
                 latestReading.PowerConsumptionKW > previousReading.PowerConsumptionKW * 2 &&
-                latestReading.PowerConsumptionKW > 1.0)
+                latestReading.PowerConsumptionKW > (decimal)1.0)
             {
                 return new Alert
                 {
@@ -168,7 +168,7 @@ namespace EnergyOptimizer.API.Services
             switch (device.Type)
             {
                 case DeviceType.TV:
-                    if (isNightTime && latestReading.PowerConsumptionKW > 0.1)
+                    if (isNightTime && (double) latestReading.PowerConsumptionKW > 0.1)
                     {
                         return new Alert
                         {
@@ -182,7 +182,7 @@ namespace EnergyOptimizer.API.Services
                     }
                     break;
                 case DeviceType.Lights:
-                    if (isNightTime && latestReading.PowerConsumptionKW > 0.05)
+                    if (isNightTime && (double)(double)latestReading.PowerConsumptionKW > 0.05)
                     {
                         return new Alert
                         {
@@ -199,7 +199,7 @@ namespace EnergyOptimizer.API.Services
                     // Washing machine running at night (energy saving tip)
                     if (hour >= 23 || hour <= 6)
                     {
-                        if (latestReading.PowerConsumptionKW > 0.5)
+                        if ((double)latestReading.PowerConsumptionKW > 0.5)
                         {
                             return new Alert
                             {

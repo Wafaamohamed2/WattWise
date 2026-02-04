@@ -14,8 +14,8 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
             DateTime endDate,
             int? deviceId = null,
             int? zoneId = null,
-            double? minPower = null,
-            double? maxPower = null,
+            decimal? minPower = null,
+            decimal? maxPower = null,
             int pageIndex = 0,
             int pageSize = 50)
             : base(r =>

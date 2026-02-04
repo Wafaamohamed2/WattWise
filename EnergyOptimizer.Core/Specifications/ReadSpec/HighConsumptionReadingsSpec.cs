@@ -9,7 +9,7 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
 {
     public class HighConsumptionReadingsSpec :BaseSpecifcation<EnergyReading>
     {
-        public HighConsumptionReadingsSpec(double threshold, DateTime since)
+        public HighConsumptionReadingsSpec(decimal threshold, DateTime since)
           : base(r => r.PowerConsumptionKW >= threshold &&
                       r.Timestamp >= since)
         {

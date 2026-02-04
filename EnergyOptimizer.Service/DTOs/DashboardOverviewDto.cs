@@ -7,8 +7,8 @@
         public int InactiveDevices { get; set; }
         public int TotalZones { get; set; }
         public double CurrentTotalConsumption { get; set; }
-        public double TodayTotalConsumption { get; set; }
-        public double AverageConsumptionPerHour { get; set; }
+        public decimal TodayTotalConsumption { get; set; }
+        public decimal AverageConsumptionPerHour { get; set; }
         public int TotalReadingsToday { get; set; }
         public DateTime LastReadingTime { get; set; }
 

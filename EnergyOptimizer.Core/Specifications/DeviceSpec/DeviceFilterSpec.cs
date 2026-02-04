@@ -14,8 +14,8 @@ namespace EnergyOptimizer.Core.Specifications.DeviceSpec
               bool? isActive = null,
               int? zoneId = null,
               DeviceType? deviceType = null,
-              double? minPower = null,
-              double? maxPower = null,
+              decimal? minPower = null,
+              decimal? maxPower = null,
               int pageIndex = 0,
               int pageSize = 20)
               : base(d =>

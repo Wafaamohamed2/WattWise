@@ -60,29 +60,29 @@ namespace EnergyOptimizer.API.Services
                 var devices = new List<Device>
                 {
                     // Air Conditioners
-                    new Device { Name = "AC - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.AirConditioner, RatedPowerKW = 1.8, IsActive = true },
-                    new Device { Name = "AC - Bedroom 2", ZoneId = zones[1].Id, Type = DeviceType.AirConditioner, RatedPowerKW = 1.5, IsActive = true },
-                    new Device { Name = "AC - Bedroom 3", ZoneId = zones[2].Id, Type = DeviceType.AirConditioner, RatedPowerKW = 1.5, IsActive = true },
-                    new Device { Name = "AC - Living Room", ZoneId = zones[3].Id, Type = DeviceType.AirConditioner, RatedPowerKW = 2.5, IsActive = true },
+                    new Device { Name = "AC - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.AirConditioner, RatedPowerKW =(decimal) 1.8, IsActive = true },
+                    new Device { Name = "AC - Bedroom 2", ZoneId = zones[1].Id, Type = DeviceType.AirConditioner, RatedPowerKW = (decimal) 1.5, IsActive = true },
+                    new Device { Name = "AC - Bedroom 3", ZoneId = zones[2].Id, Type = DeviceType.AirConditioner, RatedPowerKW =(decimal)  1.5, IsActive = true },
+                    new Device { Name = "AC - Living Room", ZoneId = zones[3].Id, Type = DeviceType.AirConditioner, RatedPowerKW = (decimal) 2.5, IsActive = true },
                     
                     // Kitchen
-                    new Device { Name = "Refrigerator", ZoneId = zones[4].Id, Type = DeviceType.Refrigerator, RatedPowerKW = 0.15, IsActive = true },
-                    new Device { Name = "Microwave", ZoneId = zones[4].Id, Type = DeviceType.Microwave, RatedPowerKW = 1.2, IsActive = true },
+                    new Device { Name = "Refrigerator", ZoneId = zones[4].Id, Type = DeviceType.Refrigerator, RatedPowerKW = (decimal) 0.15, IsActive = true },
+                    new Device { Name = "Microwave", ZoneId = zones[4].Id, Type = DeviceType.Microwave, RatedPowerKW =(decimal)  1.2, IsActive = true },
                     
                     // Water Heater & Washing Machine
-                    new Device { Name = "Water Heater", ZoneId = zones[5].Id, Type = DeviceType.WaterHeater, RatedPowerKW = 2.5, IsActive = true },
-                    new Device { Name = "Washing Machine", ZoneId = zones[5].Id, Type = DeviceType.WashingMachine, RatedPowerKW = 1.5, IsActive = true },
+                    new Device { Name = "Water Heater", ZoneId = zones[5].Id, Type = DeviceType.WaterHeater, RatedPowerKW = (decimal) 2.5, IsActive = true },
+                    new Device { Name = "Washing Machine", ZoneId = zones[5].Id, Type = DeviceType.WashingMachine, RatedPowerKW =(decimal)  1.5, IsActive = true },
                     
                     // TVs
-                    new Device { Name = "TV - Living Room", ZoneId = zones[3].Id, Type = DeviceType.TV, RatedPowerKW = 0.2, IsActive = true },
-                    new Device { Name = "TV - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.TV, RatedPowerKW = 0.15, IsActive = true },
+                    new Device { Name = "TV - Living Room", ZoneId = zones[3].Id, Type = DeviceType.TV, RatedPowerKW =(decimal)  0.2, IsActive = true },
+                    new Device { Name = "TV - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.TV, RatedPowerKW = (decimal) 0.15, IsActive = true },
                     
                     // Lights
-                    new Device { Name = "Lights - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.Lights, RatedPowerKW = 0.06, IsActive = true },
-                    new Device { Name = "Lights - Bedroom 2", ZoneId = zones[1].Id, Type = DeviceType.Lights, RatedPowerKW = 0.05, IsActive = true },
-                    new Device { Name = "Lights - Bedroom 3", ZoneId = zones[2].Id, Type = DeviceType.Lights, RatedPowerKW = 0.05, IsActive = true },
-                    new Device { Name = "Lights - Living Room", ZoneId = zones[3].Id, Type = DeviceType.Lights, RatedPowerKW = 0.1, IsActive = true },
-                    new Device { Name = "Lights - Kitchen", ZoneId = zones[4].Id, Type = DeviceType.Lights, RatedPowerKW = 0.04, IsActive = true }
+                    new Device { Name = "Lights - Master Bedroom", ZoneId = zones[0].Id, Type = DeviceType.Lights, RatedPowerKW =(decimal)  0.06, IsActive = true },
+                    new Device { Name = "Lights - Bedroom 2", ZoneId = zones[1].Id, Type = DeviceType.Lights, RatedPowerKW = (decimal) 0.05, IsActive = true },
+                    new Device { Name = "Lights - Bedroom 3", ZoneId = zones[2].Id, Type = DeviceType.Lights, RatedPowerKW = (decimal) 0.05, IsActive = true },
+                    new Device { Name = "Lights - Living Room", ZoneId = zones[3].Id, Type = DeviceType.Lights, RatedPowerKW =(decimal)  0.1, IsActive = true },
+                    new Device { Name = "Lights - Kitchen", ZoneId = zones[4].Id, Type = DeviceType.Lights, RatedPowerKW = (decimal) 0.04, IsActive = true }
                 };
 
                 await _context.Devices.AddRangeAsync(devices);

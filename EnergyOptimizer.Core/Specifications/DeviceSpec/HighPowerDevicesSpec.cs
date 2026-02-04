@@ -9,7 +9,7 @@ namespace EnergyOptimizer.Core.Specifications.DeviceSpec
 {
     public class HighPowerDevicesSpec : BaseSpecifcation<Device>
     {
-        public HighPowerDevicesSpec(double minPowerKW = 1.5)
+        public HighPowerDevicesSpec(decimal minPowerKW =(decimal) 1.5 )
            : base(d => d.RatedPowerKW >= minPowerKW && d.IsActive)
         {
             AddInclude(d => d.Zone);

@@ -68,11 +68,11 @@ namespace EnergyOptimizer.API.Services
 
                 if (!readings.Any()) continue;
 
-                double avg = readings.Average(r => r.PowerConsumptionKW);
-                double stdDev = CalculateStandardDeviation(
+                decimal avg = readings.Average(r => r.PowerConsumptionKW);
+                decimal stdDev = CalculateStandardDeviation(
                     readings.Select(r => r.PowerConsumptionKW));
 
-                double threshold = avg + (2 * stdDev);
+                decimal threshold = avg + (2 * stdDev);
 
                 var anomalies = readings
                     .Where(r => r.PowerConsumptionKW > threshold)
@@ -80,7 +80,7 @@ namespace EnergyOptimizer.API.Services
 
                 foreach (var r in anomalies)
                 {
-                    double deviationPercent =
+                    decimal deviationPercent =
                         avg == 0 ? 0 : ((r.PowerConsumptionKW - avg) / avg) * 100;
 
                     string severity =
@@ -90,9 +90,9 @@ namespace EnergyOptimizer.API.Services
                     {
                         DeviceId = device.Id,
                         AnomalyTimestamp = r.Timestamp,
-                        ActualValue = r.PowerConsumptionKW, 
-                        ExpectedValue = Math.Round(avg, 2),
-                        Deviation = Math.Abs(Math.Round(deviationPercent, 1)),
+                        ActualValue = (double)r.PowerConsumptionKW, 
+                        ExpectedValue = (double)Math.Round(avg, 2),
+                        Deviation = (double)Math.Abs(Math.Round(deviationPercent, 1)),
                         Severity = severity,
                         Description =
                             $"Usage is {Math.Abs(Math.Round(deviationPercent, 1))}% away from average",
@@ -124,7 +124,7 @@ namespace EnergyOptimizer.API.Services
             if (!readings.Any()) return;
 
             double totalConsumption =
-                readings.Sum(r => r.PowerConsumptionKW);
+                (double)readings.Sum(r => r.PowerConsumptionKW);
 
             int deviceCount = readings
                 .Select(r => r.DeviceId)
@@ -150,7 +150,7 @@ namespace EnergyOptimizer.API.Services
         private async Task GenerateRecommendations(CancellationToken ct)
         {
             var devices = await _deviceRepo.ListAsync(
-                new HighPowerDevicesSpec(2.0));
+                new HighPowerDevicesSpec((decimal)2.0));
 
             foreach (var device in devices)
             {
@@ -170,17 +170,17 @@ namespace EnergyOptimizer.API.Services
             }
         }
 
-        private double CalculateStandardDeviation(IEnumerable<double> values)
+        private decimal CalculateStandardDeviation(IEnumerable<decimal> values)
         {
             var list = values.ToList();
             if (!list.Any())
                 return 0;
 
-            double avg = list.Average();
-            double variance =
+            decimal avg = list.Average();
+            decimal variance =
                 list.Sum(v => (v - avg) * (v - avg)) / list.Count;
 
-            return Math.Sqrt((double)variance);
+            return (decimal)Math.Sqrt((double)variance);
         }
     }
 }

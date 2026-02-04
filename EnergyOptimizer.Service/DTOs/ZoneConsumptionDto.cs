@@ -6,8 +6,8 @@
         public string ZoneName { get; set; } = string.Empty;
         public string ZoneType { get; set; } = string.Empty;
         public int DeviceCount { get; set; }
-        public double TotalConsumption { get; set; }
-        public double AverageConsumption { get; set; }
-        public double Percentage { get; set; }
+        public decimal TotalConsumption { get; set; }
+        public decimal AverageConsumption { get; set; }
+        public decimal Percentage { get; set; }
     }
 }

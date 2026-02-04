@@ -235,7 +235,7 @@ namespace EnergyOptimizer.API.Services
                     DailyConsumptions = dailyData.Select(d => new DailyConsumption
                     {
                         Date = d.Date,
-                        ConsumptionKWh = d.Consumption,
+                        ConsumptionKWh = (double)d.Consumption,
                         Temperature = d.AvgTemp,
                         IsWeekend = d.Date.DayOfWeek == DayOfWeek.Friday ||
                                   d.Date.DayOfWeek == DayOfWeek.Saturday
@@ -289,7 +289,7 @@ namespace EnergyOptimizer.API.Services
                     .OrderByDescending(h => h.Avg)
                     .ToList();
 
-                var threshold = avgConsumption * 1.2;
+                var threshold = avgConsumption * (decimal)1.2;
                 var peakHours = hourlyAvg
                     .Where(h => h.Avg > threshold)
                     .Select(h => h.Hour)
@@ -300,8 +300,8 @@ namespace EnergyOptimizer.API.Services
                 {
                     DeviceName = device.Name,
                     DeviceType = device.Type.ToString(),
-                    AverageConsumptionKWh = Math.Round(avgConsumption, 4),
-                    PeakConsumptionKWh = Math.Round(peakConsumption, 4),
+                    AverageConsumptionKWh = (double)Math.Round(avgConsumption, 4),
+                    PeakConsumptionKWh = (double)Math.Round(peakConsumption, 4),
                     ActiveHours = deviceReadings.Select(r => r.Timestamp.Hour).Distinct().Count(),
                     PeakHours = peakHours
                 };
@@ -314,7 +314,7 @@ namespace EnergyOptimizer.API.Services
                 {
                     Timestamp = g.Key.Date.AddHours(g.Key.Hour),
                     Hour = g.Key.Hour,
-                    ConsumptionKWh = Math.Round(g.Sum(r => r.PowerConsumptionKW), 4)
+                    ConsumptionKWh = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW), 4)
                 })
                 .OrderBy(h => h.Timestamp)
                 .ToList();
@@ -325,7 +325,7 @@ namespace EnergyOptimizer.API.Services
                 EndDate = endDate,
                 DevicePatterns = devicePatterns,
                 HourlyData = hourlyData,
-                TotalConsumptionKWh = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2)
+                TotalConsumptionKWh = (double)Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2)
             };
         }
 
@@ -335,18 +335,18 @@ namespace EnergyOptimizer.API.Services
         {
             var consumptions = readings.Select(r => r.PowerConsumptionKW).ToList();
             var avg = consumptions.Average();
-            var variance = consumptions.Average(c => Math.Pow(c - avg, 2));
+            var variance = consumptions.Average(c => Math.Pow((double)(c - avg), 2));
             var stdDev = Math.Sqrt(variance);
 
             return new DeviceConsumptionData
             {
                 DeviceName = device.Name,
-                AverageConsumption = Math.Round(avg, 4),
+                AverageConsumption = (double)Math.Round(avg, 4),
                 StandardDeviation = Math.Round(stdDev, 4),
                 ConsumptionHistory = readings.Select(r => new ConsumptionPoint
                 {
                     Timestamp = r.Timestamp,
-                    ConsumptionKWh = Math.Round(r.PowerConsumptionKW, 4)
+                    ConsumptionKWh = (double)Math.Round(r.PowerConsumptionKW, 4)
                 }).ToList()
             };
         }
@@ -366,8 +366,8 @@ namespace EnergyOptimizer.API.Services
                 {
                     DeviceName = g.Key.Name,
                     DeviceType = g.Key.Type.ToString(),
-                    ConsumptionKWh = Math.Round(g.Sum(r => r.PowerConsumptionKW), 2),
-                    PercentageOfTotal = Math.Round(g.Sum(r => r.PowerConsumptionKW) / totalConsumption * 100, 1),
+                    ConsumptionKWh = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW), 2),
+                    PercentageOfTotal = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW) / totalConsumption * 100, 1),
                     DaysActive = g.Select(r => r.Timestamp.Date).Distinct().Count()
                 })
                 .OrderByDescending(d => d.ConsumptionKWh)
@@ -377,8 +377,8 @@ namespace EnergyOptimizer.API.Services
             {
                 PeriodStart = startDate,
                 PeriodEnd = endDate,
-                TotalConsumptionKWh = Math.Round(totalConsumption, 2),
-                AverageDailyConsumption = Math.Round(totalConsumption / totalDays, 2),
+                TotalConsumptionKWh = (double)Math.Round(totalConsumption, 2),
+                AverageDailyConsumption = (double)Math.Round(totalConsumption / totalDays, 2),
                 DeviceSummaries = deviceSummaries,
                 CurrentIssues = currentIssues
             };

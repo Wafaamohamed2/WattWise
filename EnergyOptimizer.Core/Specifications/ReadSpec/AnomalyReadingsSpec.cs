@@ -11,9 +11,9 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
     {
         public AnomalyReadingsSpec(
            int deviceId,
-           double avgConsumption,
-           double stdDeviation,
-           double thresholdMultiplier = 2.0)
+           decimal avgConsumption,
+           decimal stdDeviation,
+           decimal thresholdMultiplier = 2)
            : base(r => r.DeviceId == deviceId &&
                        (r.PowerConsumptionKW > avgConsumption + (stdDeviation * thresholdMultiplier) ||
                         r.PowerConsumptionKW < Math.Max(0, avgConsumption - (stdDeviation * thresholdMultiplier))))

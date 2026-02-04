@@ -14,7 +14,7 @@ namespace EnergyOptimizer.Core.Entities
 
         public DeviceType Type { get; set; }
 
-        public double RatedPowerKW { get; set; }
+        public decimal RatedPowerKW { get; set; }
 
         public bool IsActive { get; set; } = true;
 

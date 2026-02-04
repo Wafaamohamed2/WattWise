@@ -8,11 +8,11 @@
 
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public double PowerConsumptionKW { get; set; }
+        public decimal PowerConsumptionKW { get; set; }
 
-        public double Voltage { get; set; } = 220;
+        public decimal Voltage { get; set; } = 220;
 
-        public double Current { get; set; }
+        public decimal Current { get; set; }
 
         public double Temperature { get; set; }
 

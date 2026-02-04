@@ -75,7 +75,7 @@ namespace EnergyOptimizer.API.Services
 
             foreach (var device in activeDevices)
             {
-                double consumption = CalculateConsumption(device, hour, dayOfWeek);
+                decimal consumption = CalculateConsumption(device, hour, dayOfWeek);
 
                 //  Generate reading even if consumption is 0 (standby mode)
                 var reading = new EnergyReading
@@ -84,7 +84,7 @@ namespace EnergyOptimizer.API.Services
                     Timestamp = cairoTime,
                     PowerConsumptionKW = consumption,
                     Voltage = GenerateVoltage(blackout),
-                    Current = consumption > 0 ? consumption / 220.0 * 1000 : 0,
+                    Current = (consumption > 0 ? (consumption / 220.0m) * 1000m : 0m),
                     Temperature = GenerateTemperature(hour)
                 };
                 readings.Add(reading);
@@ -96,7 +96,7 @@ namespace EnergyOptimizer.API.Services
                     ZoneName = device.Zone?.Name ?? "Unknown Zone",
                     Timestamp = DateTime.UtcNow,
                     PowerConsumptionKW = Math.Round(consumption, 4),
-                    Current = Math.Round(reading.Current, 2),
+                    Current = (double)Math.Round(reading.Current, 2),
                     Voltage = Math.Round(reading.Voltage, 2),
                     Temperature = Math.Round(reading.Temperature, 2),
                     IsActive = device.IsActive
@@ -182,7 +182,7 @@ namespace EnergyOptimizer.API.Services
                 _logger.LogError(ex, "Error broadcasting dashboard update");
             }
         }
-        private double CalculateConsumption(Device device, int hour, DayOfWeek dayOfWeek)
+        private decimal CalculateConsumption(Device device, int hour, DayOfWeek dayOfWeek)
 
         {
             var baseConsumption = device.RatedPowerKW;
@@ -196,64 +196,64 @@ namespace EnergyOptimizer.API.Services
 
                     if ((hour >= 22 || hour <= 6))
                         // Night time usage
-                        return baseConsumption * (0.7 + random.NextDouble() * 0.3);
+                        return baseConsumption *(decimal) (0.7 + random.NextDouble() * 0.3);
 
                     else if (hour >= 13 && hour <= 17)
                         // Afternoon usage
-                        return baseConsumption * (0.9 + random.NextDouble() * 0.3);
+                        return baseConsumption *(decimal) (0.9 + random.NextDouble() * 0.3);
 
                     else
                         // Off or minimal
-                        return random.NextDouble() < 0.1 ? baseConsumption * 0.2 : 0;
+                        return random.NextDouble() < 0.1 ? baseConsumption * (decimal)0.2 : 0;
 
 
                 case DeviceType.Refrigerator:
                     // Fridge runs continuously with slight variations
-                    return baseConsumption * (0.15 + random.NextDouble() * 0.15);
+                    return baseConsumption * (decimal)(0.15 + random.NextDouble() * 0.15);
 
                 case DeviceType.WashingMachine:
                     // Washing machine used mainly in mornings and evenings
                     if ((hour >= 7 && hour <= 9) || (hour >= 18 && hour <= 20))
-                        return random.NextDouble() < 0.3 ? baseConsumption * (0.7 + random.NextDouble() * 0.3) : 0;
+                        return random.NextDouble() < 0.3 ? baseConsumption *(decimal) (0.7 + random.NextDouble() * 0.3) : 0;
                     return 0;
 
                 case DeviceType.WaterHeater:
                     // Water heater used in early mornings and evenings
                     if ((hour >= 5 && hour <= 8) || (hour >= 18 && hour <= 22))
-                        return baseConsumption * (0.6 + random.NextDouble() * 0.4);
-                    return baseConsumption * 0.1;
+                        return baseConsumption * (decimal)(0.6 + random.NextDouble() * 0.4);
+                    return baseConsumption * (decimal)0.1;
 
                 case DeviceType.Lights:
                     // Lights used mainly in evenings and nights
                     if (hour >= 18 && hour <= 23)
-                        return baseConsumption * (0.8 + random.NextDouble() * 0.2);
+                        return baseConsumption * (decimal)(0.8 + random.NextDouble() * 0.2);
                     else if (hour >= 6 && hour <= 8)
-                        return baseConsumption * (0.5 + random.NextDouble() * 0.3);
+                        return baseConsumption * (decimal)(0.5 + random.NextDouble() * 0.3);
                     return 0;
 
                 case DeviceType.TV:
                     // TV used mainly in evenings and weekends
                     if (hour >= 18 && hour <= 24)
-                        return baseConsumption * (0.7 + random.NextDouble() * 0.3);
+                        return baseConsumption * (decimal)(0.7 + random.NextDouble() * 0.3);
                     else if (isWeekend && hour >= 12 && hour <= 17)
-                        return baseConsumption * (0.6 + random.NextDouble() * 0.3);
+                        return baseConsumption * (decimal)(0.6 + random.NextDouble() * 0.3);
                     return 0;
 
                 case DeviceType.Microwave:
                     if ((hour >= 7 && hour <= 9) || (hour >= 12 && hour <= 14) || (hour >= 19 && hour <= 21))
-                        return random.NextDouble() < 0.15 ? baseConsumption * (0.5 + random.NextDouble() * 0.5) : 0;
+                        return random.NextDouble() < 0.15 ? baseConsumption * (decimal)(0.5 + random.NextDouble() * 0.5) : 0;
                     return 0;
 
                 default:
-                    return baseConsumption * random.NextDouble() * 0.5;
+                    return baseConsumption * (decimal) random.NextDouble() * (decimal)0.5;
             }
         }
 
-        private double GenerateVoltage(bool blackout)
+        private decimal GenerateVoltage(bool blackout)
         {
             // Egypt standard voltage is around 220V
-            if (blackout) return 180 + Random.Shared.NextDouble() * 10; 
-            return 220 + Random.Shared.NextDouble() * 20 - 10;
+            if (blackout) return 180 + (decimal)Random.Shared.NextDouble() * 10; 
+            return 220 + (decimal)Random.Shared.NextDouble() * 20 - 10;
         }
 
         private double GenerateTemperature(int hour)

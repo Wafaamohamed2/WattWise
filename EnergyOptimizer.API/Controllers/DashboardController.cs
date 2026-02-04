@@ -51,7 +51,7 @@ namespace EnergyOptimizer.API.Controllers
                 var totalReadingsToday = todayReadings.Count;
 
                 var hoursElapsed = (DateTime.UtcNow - today).TotalHours;
-                var avgConsumptionPerHour = hoursElapsed > 0 ? todayConsumption / hoursElapsed : 0;
+                var avgConsumptionPerHour = hoursElapsed > 0 ? todayConsumption / (decimal)hoursElapsed : 0;
 
                 var lastReading = await _context.EnergyReadings
                     .OrderByDescending(r => r.Timestamp)
@@ -63,7 +63,7 @@ namespace EnergyOptimizer.API.Controllers
                     ActiveDevices = activeDevices,
                     InactiveDevices = totalDevices - activeDevices,
                     TotalZones = totalZones,
-                    CurrentTotalConsumption = Math.Round(currentConsumption, 2),
+                    CurrentTotalConsumption = (double)Math.Round(currentConsumption, 2),
                     TodayTotalConsumption = Math.Round(todayConsumption, 2),
                     AverageConsumptionPerHour = Math.Round(avgConsumptionPerHour, 2),
                     TotalReadingsToday = totalReadingsToday,

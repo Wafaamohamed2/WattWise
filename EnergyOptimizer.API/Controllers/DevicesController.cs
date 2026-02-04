@@ -35,8 +35,8 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] bool? isActive = null,
         [FromQuery] int? zoneId = null,
         [FromQuery] DeviceType? deviceType = null,
-        [FromQuery] double? minPower = null,
-        [FromQuery] double? maxPower = null,
+        [FromQuery] decimal? minPower = null,
+        [FromQuery] decimal? maxPower = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
