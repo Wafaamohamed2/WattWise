@@ -1,4 +1,5 @@
-﻿using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -59,7 +60,7 @@ namespace EnergyOptimizer.API.Controllers
                 return Unauthorized(new AuthResponseDto(false, "Invalid email or password"));
 
             var token = GenerateJwtToken(user);
-            return Ok(new AuthResponseDto(true, "Login successful", token));
+            return Ok(new ApiResponse(200, "Login successful", new { Token = token, User = user }));
         }
 
         private string GenerateJwtToken(ApplicationUser user)

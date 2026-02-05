@@ -1,4 +1,5 @@
 ﻿using EnergyOptimizer.API.DTOs;
+using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -69,7 +70,7 @@ namespace EnergyOptimizer.API.Controllers
                     TotalReadingsToday = totalReadingsToday,
                     LastReadingTime = lastReading?.Timestamp ?? DateTime.UtcNow
                 };
-                return Ok(overview);
+            return Ok(new ApiResponse(200, "Dashboard overview retrieved", overview));
         }
 
         /// <summary>
@@ -78,87 +79,42 @@ namespace EnergyOptimizer.API.Controllers
         /// <param name="startDate">Start date in format: yyyy-MM-dd (e.g., 2025-01-14)</param>
         /// <param name="endDate">End date in format: yyyy-MM-dd (e.g., 2025-01-15)</param>
         [HttpGet("consumption-by-zone")]
-        public async Task<ActionResult<List<ZoneConsumptionDto>>> GetConsumptionByZone(
-            [FromQuery] string? startDate = null,
-            [FromQuery] string? endDate = null)
+        public async Task<ActionResult> GetConsumptionByZone([FromQuery] string? startDate = null, [FromQuery] string? endDate = null)
         {
-                DateTime start;
-                DateTime end;
+            if (!TryParseDates(startDate, endDate, out DateTime start, out DateTime end, out string error))
+                return BadRequest(new ApiResponse(400, error));
 
-                // Parse start date
-                if (!string.IsNullOrEmpty(startDate))
-                {
-                    if (!DateTime.TryParse(startDate, out start))
-                    {
-                        return BadRequest(new { error = "Invalid startDate format. Use yyyy-MM-dd (e.g., 2025-01-14)" });
-                    }
-                }
-                else
-                {
-                    start = DateTime.UtcNow.Date; // Default to today
-                }
+            var zoneData = await _context.Zones
+                .Include(z => z.Devices)
+                .ThenInclude(d => d.EnergyReadings.Where(r => r.Timestamp >= start && r.Timestamp <= end))
+                .ToListAsync();
 
-                // Parse end date
-                if (!string.IsNullOrEmpty(endDate))
-                {
-                    if (!DateTime.TryParse(endDate, out end))
-                    {
-                        return BadRequest(new { error = "Invalid endDate format. Use yyyy-MM-dd (e.g., 2025-01-15)" });
-                    }
-                    end = end.AddDays(1).AddSeconds(-1); // End of day
-                }
-                else
-                {
-                    end = DateTime.UtcNow; 
-                }
+            var zoneConsumption = zoneData.Select(z => new {
+                Zone = z,
+                Total = z.Devices.SelectMany(d => d.EnergyReadings).Sum(r => r.PowerConsumptionKW)
+            }).ToList();
 
-                // Validate date range
-                if (start > end)
-                {
-                    return BadRequest(new { error = "startDate cannot be after endDate" });
-                }
+            var grandTotal = zoneConsumption.Sum(z => z.Total);
 
-                var zoneConsumption = await _context.Zones
-                    .Include(z => z.Devices)
-                    .ThenInclude(d => d.EnergyReadings.Where(r => r.Timestamp >= start && r.Timestamp <= end))
-                    .Select(z => new
-                    {
-                        Zone = z,
-                        TotalConsumption = z.Devices
-                            .SelectMany(d => d.EnergyReadings)
-                            .Sum(r => r.PowerConsumptionKW)
-                    })
-                    .ToListAsync();
+            var result = zoneConsumption.Select(z => new ZoneConsumptionDto
+            {
+                ZoneId = z.Zone.Id,
+                ZoneName = z.Zone.Name,
+                ZoneType = z.Zone.Type.ToString(),
+                DeviceCount = z.Zone.Devices.Count,
+                TotalConsumption = Math.Round(z.Total, 2),
+                AverageConsumption = z.Zone.Devices.Count > 0 ? Math.Round(z.Total / z.Zone.Devices.Count, 2) : 0,
+                Percentage = grandTotal > 0 ? Math.Round((z.Total / grandTotal) * 100, 1) : 0
+            }).OrderByDescending(z => z.TotalConsumption).ToList();
 
-                var totalConsumption = zoneConsumption.Sum(z => z.TotalConsumption);
-
-                var result = zoneConsumption.Select(z => new ZoneConsumptionDto
-                {
-                    ZoneId = z.Zone.Id,
-                    ZoneName = z.Zone.Name,
-                    ZoneType = z.Zone.Type.ToString(),
-                    DeviceCount = z.Zone.Devices.Count,
-                    TotalConsumption = Math.Round(z.TotalConsumption, 2),
-                    AverageConsumption = z.Zone.Devices.Count > 0
-                        ? Math.Round(z.TotalConsumption / z.Zone.Devices.Count, 2)
-                        : 0,
-                    Percentage = totalConsumption > 0
-                        ? Math.Round((z.TotalConsumption / totalConsumption) * 100, 1)
-                        : 0
-                })
-                .OrderByDescending(z => z.TotalConsumption)
-                .ToList();
-
-                return Ok(new
-                {
-                    startDate = start.ToString("yyyy-MM-dd"),
-                    endDate = end.ToString("yyyy-MM-dd"),
-                    totalZones = result.Count,
-                    totalConsumption = Math.Round(totalConsumption, 2),
-                    data = result
-                });
+            return Ok(new ApiResponse(200, "Zone consumption statistics retrieved", new
+            {
+                startDate = start.ToString("yyyy-MM-dd"),
+                endDate = end.ToString("yyyy-MM-dd"),
+                totalConsumption = Math.Round(grandTotal, 2),
+                data = result
+            }));
         }
-
 
         /// <summary>
         /// Get consumption by device
@@ -166,155 +122,95 @@ namespace EnergyOptimizer.API.Controllers
         /// <param name="startDate">Start date in format: yyyy-MM-dd</param>
         /// <param name="endDate">End date in format: yyyy-MM-dd</param>
         [HttpGet("consumption-by-device")]
-        public async Task<ActionResult<List<DeviceConsumptionDto>>> GetConsumptionByDevice(
-            [FromQuery] string? startDate = null,
-            [FromQuery] string? endDate = null)
+        public async Task<ActionResult> GetConsumptionByDevice(
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null)
         {
-                DateTime start;
-                DateTime end;
+            if (!TryParseDates(startDate, endDate, out DateTime start, out DateTime end, out string error))
+            {
+                return BadRequest(new ApiResponse(400, error));
+            }
 
-                if (!string.IsNullOrEmpty(startDate))
+            var devices = await _context.Devices
+                .Include(d => d.Zone)
+                .Include(d => d.EnergyReadings.Where(r => r.Timestamp >= start && r.Timestamp <= end))
+                .ToListAsync();
+
+            var result = devices.Select(d =>
+            {
+                var readings = d.EnergyReadings.ToList();
+                var totalConsumption = readings.Sum(r => r.PowerConsumptionKW);
+                var latestReading = readings.OrderByDescending(r => r.Timestamp).FirstOrDefault();
+
+                return new DeviceConsumptionDto
                 {
-                    if (!DateTime.TryParse(startDate, out start))
-                    {
-                        return BadRequest(new { error = "Invalid startDate format. Use yyyy-MM-dd" });
-                    }
-                }
-                else
-                {
-                    start = DateTime.UtcNow.Date;
-                }
+                    DeviceId = d.Id,
+                    DeviceName = d.Name,
+                    DeviceType = d.Type.ToString(),
+                    ZoneName = d.Zone.Name,
+                    RatedPowerKW = d.RatedPowerKW,
+                    CurrentConsumption = latestReading?.PowerConsumptionKW ?? 0,
+                    TodayConsumption = Math.Round(totalConsumption, 2),
+                    AverageConsumption = readings.Count > 0
+                        ? Math.Round(totalConsumption / readings.Count, 4)
+                        : 0,
+                    ReadingsCount = readings.Count,
+                    LastReadingTime = latestReading?.Timestamp,
+                    IsActive = d.IsActive
+                };
+            })
+            .OrderByDescending(d => d.TodayConsumption)
+            .ToList();
 
-                if (!string.IsNullOrEmpty(endDate))
-                {
-                    if (!DateTime.TryParse(endDate, out end))
-                    {
-                        return BadRequest(new { error = "Invalid endDate format. Use yyyy-MM-dd" });
-                    }
-                    end = end.AddDays(1).AddSeconds(-1);
-                }
-                else
-                {
-                    end = DateTime.UtcNow;
-                }
+            var totalConsumptionAllDevices = result.Sum(d => d.TodayConsumption);
 
-                if (start > end)
-                {
-                    return BadRequest(new { error = "startDate cannot be after endDate" });
-                }
-
-                var devices = await _context.Devices
-                    .Include(d => d.Zone)
-                    .Include(d => d.EnergyReadings.Where(r => r.Timestamp >= start && r.Timestamp <= end))
-                    .ToListAsync();
-
-                var result = devices.Select(d =>
-                {
-                    var readings = d.EnergyReadings.ToList();
-                    var totalConsumption = readings.Sum(r => r.PowerConsumptionKW);
-                    var latestReading = readings.OrderByDescending(r => r.Timestamp).FirstOrDefault();
-
-                    return new DeviceConsumptionDto
-                    {
-                        DeviceId = d.Id,
-                        DeviceName = d.Name,
-                        DeviceType = d.Type.ToString(),
-                        ZoneName = d.Zone.Name,
-                        RatedPowerKW = d.RatedPowerKW,
-                        CurrentConsumption = latestReading?.PowerConsumptionKW ?? 0,
-                        TodayConsumption = Math.Round(totalConsumption, 2),
-                        AverageConsumption = readings.Count > 0
-                            ? Math.Round(totalConsumption / readings.Count, 4)
-                            : 0,
-                        ReadingsCount = readings.Count,
-                        LastReadingTime = latestReading?.Timestamp,
-                        IsActive = d.IsActive
-                    };
-                })
-                .OrderByDescending(d => d.TodayConsumption)
-                .ToList();
-
-                var totalConsumption = result.Sum(d => d.TodayConsumption);
-
-                return Ok(new
-                {
-                    startDate = start.ToString("yyyy-MM-dd"),
-                    endDate = end.ToString("yyyy-MM-dd"),
-                    totalDevices = result.Count,
-                    activeDevices = result.Count(d => d.IsActive),
-                    totalConsumption = Math.Round(totalConsumption, 2),
-                    data = result
-                });
+            return Ok(new ApiResponse(200, "Device consumption statistics retrieved successfully", new
+            {
+                startDate = start.ToString("yyyy-MM-dd"),
+                endDate = end.ToString("yyyy-MM-dd"),
+                totalDevices = result.Count,
+                activeDevices = result.Count(d => d.IsActive),
+                totalConsumption = Math.Round(totalConsumptionAllDevices, 2),
+                data = result
+            }));
         }
 
 
         [HttpGet("hourly-consumption")]
-        public async Task<ActionResult<List<HourlyConsumptionDto>>> GetHourlyConsumption(
-        [FromQuery] string? date = null)
+        public async Task<ActionResult> GetHourlyConsumption([FromQuery] string? date = null)
         {
-                DateTime targetDate;
+            if (!DateTime.TryParse(date, out DateTime targetDate)) targetDate = DateTime.UtcNow;
+            targetDate = targetDate.Date;
+            var nextDay = targetDate.AddDays(1);
 
-                if (!string.IsNullOrEmpty(date))
+            var readings = await _context.EnergyReadings
+                .Where(r => r.Timestamp >= targetDate && r.Timestamp < nextDay)
+                .ToListAsync();
+
+            var hourlyData = Enumerable.Range(0, 24).Select(hour => {
+                var hourReadings = readings.Where(r => r.Timestamp.Hour == hour).ToList();
+                return new HourlyConsumptionDto
                 {
-                    if (!DateTime.TryParse(date, out targetDate))
-                    {
-                        return BadRequest(new { error = "Invalid date format. Use yyyy-MM-dd (e.g., 2025-10-15)" });
-                    }
-                }
-                else
-                {
-                    targetDate = DateTime.UtcNow;
-                }
+                    Hour = hour,
+                    TimeLabel = $"{hour:D2}:00",
+                    TotalConsumption = Math.Round(hourReadings.Sum(r => r.PowerConsumptionKW), 2),
+                    ReadingsCount = hourReadings.Count,
+                    AverageConsumption = hourReadings.Count > 0 ? Math.Round(hourReadings.Average(r => r.PowerConsumptionKW), 4) : 0
+                };
+            }).ToList();
 
-                targetDate = targetDate.Date;
-                var nextDay = targetDate.AddDays(1);
+            var total = hourlyData.Sum(h => h.TotalConsumption);
+            var peak = hourlyData.OrderByDescending(h => h.TotalConsumption).FirstOrDefault();
 
-                _logger.LogInformation($"Getting hourly consumption from {targetDate} to {nextDay}");
-
-                var readings = await _context.EnergyReadings
-                    .Where(r => r.Timestamp >= targetDate && r.Timestamp < nextDay)
-                    .ToListAsync();
-
-                _logger.LogInformation($"Found {readings.Count} readings for date {targetDate:yyyy-MM-dd}");
-
-                var hourlyData = readings
-                    .GroupBy(r => r.Timestamp.Hour)
-                    .Select(g => new HourlyConsumptionDto
-                    {
-                        Hour = g.Key,
-                        TimeLabel = $"{g.Key:D2}:00",
-                        TotalConsumption = Math.Round(g.Sum(r => r.PowerConsumptionKW), 2),
-                        ReadingsCount = g.Count(),
-                        AverageConsumption = Math.Round(g.Average(r => r.PowerConsumptionKW), 4)
-                    })
-                    .OrderBy(h => h.Hour)
-                    .ToList();
-
-                var completeHours = Enumerable.Range(0, 24)
-                    .Select(hour => hourlyData.FirstOrDefault(h => h.Hour == hour) ?? new HourlyConsumptionDto
-                    {
-                        Hour = hour,
-                        TimeLabel = $"{hour:D2}:00",
-                        TotalConsumption = 0,
-                        ReadingsCount = 0,
-                        AverageConsumption = 0
-                    })
-                    .ToList();
-
-                var totalConsumption = completeHours.Sum(h => h.TotalConsumption);
-                var peakHourData = completeHours.Where(h => h.TotalConsumption > 0).OrderByDescending(h => h.TotalConsumption).FirstOrDefault();
-
-                return Ok(new
-                {
-                    date = targetDate.ToString("yyyy-MM-dd"),
-                    totalConsumption = Math.Round(totalConsumption, 2),
-                    peakHour = peakHourData?.TimeLabel ?? "N/A",
-                    peakConsumption = peakHourData?.TotalConsumption ?? 0,
-                    totalReadings = readings.Count,
-                    data = completeHours
-                });
+            return Ok(new ApiResponse(200, "Hourly consumption retrieved", new
+            {
+                date = targetDate.ToString("yyyy-MM-dd"),
+                totalConsumption = Math.Round(total, 2),
+                peakHour = peak?.TimeLabel,
+                peakConsumption = peak?.TotalConsumption,
+                data = hourlyData
+            }));
         }
-
 
         // Get consumption trend for last 24 hours
         [HttpGet("consumption-trend")]
@@ -338,7 +234,7 @@ namespace EnergyOptimizer.API.Controllers
                     .OrderBy(t => t.Timestamp)
                     .ToList();
 
-                return Ok(trend);
+            return Ok(new ApiResponse(200, $"Consumption trend for last {hours} hours", trend));
         }
 
         [HttpGet("top-consumers")]
@@ -346,69 +242,43 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int count = 5,
         [FromQuery] string? startDate = null)
         {
-                DateTime start;
 
-                if (!string.IsNullOrEmpty(startDate))
+            DateTime start = DateTime.TryParse(startDate, out var d) ? d.Date : DateTime.UtcNow.Date;
+            var end = DateTime.UtcNow;
+
+            var devices = await _context.Devices
+                .Include(d => d.Zone)
+                .Include(d => d.EnergyReadings.Where(r => r.Timestamp >= start && r.Timestamp <= end))
+                .ToListAsync();
+
+            var result = devices.Select(d => {
+                var total = d.EnergyReadings.Sum(r => r.PowerConsumptionKW);
+                return new DeviceConsumptionDto
                 {
-                    if (!DateTime.TryParse(startDate, out start))
-                    {
-                        return BadRequest(new { error = "Invalid startDate format. Use yyyy-MM-dd" });
-                    }
-                    start = start.Date; // Start of day
-                }
-                else
-                {
-                    start = DateTime.UtcNow.Date;
-                }
+                    DeviceId = d.Id,
+                    DeviceName = d.Name,
+                    ZoneName = d.Zone.Name,
+                    TodayConsumption = Math.Round(total, 2),
+                    IsActive = d.IsActive
+                };
+            }).Where(d => d.TodayConsumption > 0)
+              .OrderByDescending(d => d.TodayConsumption)
+              .Take(count).ToList();
 
-                var end = DateTime.UtcNow; 
-
-                var topDevices = await _context.Devices
-                    .Include(d => d.Zone)
-                    .Include(d => d.EnergyReadings)
-                    .ToListAsync();
-
-                var result = topDevices
-                    .Select(d =>
-                    {
-                        var readings = d.EnergyReadings
-                            .Where(r => r.Timestamp >= start && r.Timestamp <= end)
-                            .ToList();
-
-                        var totalConsumption = readings.Sum(r => r.PowerConsumptionKW);
-                        var latestReading = readings.OrderByDescending(r => r.Timestamp).FirstOrDefault();
-
-                        return new DeviceConsumptionDto
-                        {
-                            DeviceId = d.Id,
-                            DeviceName = d.Name,
-                            DeviceType = d.Type.ToString(),
-                            ZoneName = d.Zone.Name,
-                            RatedPowerKW = d.RatedPowerKW,
-                            CurrentConsumption = latestReading?.PowerConsumptionKW ?? 0,
-                            TodayConsumption = Math.Round(totalConsumption, 2),
-                            AverageConsumption = readings.Count > 0
-                                ? Math.Round(totalConsumption / readings.Count, 4)
-                                : 0,
-                            ReadingsCount = readings.Count,
-                            LastReadingTime = latestReading?.Timestamp,
-                            IsActive = d.IsActive
-                        };
-                    })
-                    .Where(d => d.TodayConsumption > 0) // Only show devices with consumption
-                    .OrderByDescending(d => d.TodayConsumption)
-                    .Take(count)
-                    .ToList();
-
-                return Ok(new
-                {
-                    startDate = start.ToString("yyyy-MM-dd"),
-                    endDate = end.ToString("yyyy-MM-dd HH:mm:ss"),
-                    count = result.Count,
-                    totalConsumption = Math.Round(result.Sum(d => d.TodayConsumption), 2),
-                    data = result
-                });
+            return Ok(new ApiResponse(200, $"Top {count} consumers retrieved", result));
         }
+
+        private bool TryParseDates(string? startStr, string? endStr, out DateTime start, out DateTime end, out string error)
+        {
+            error = "";
+            start = string.IsNullOrEmpty(startStr) ? DateTime.UtcNow.Date : (DateTime.TryParse(startStr, out var s) ? s : DateTime.MinValue);
+            end = string.IsNullOrEmpty(endStr) ? DateTime.UtcNow : (DateTime.TryParse(endStr, out var e) ? e.AddDays(1).AddSeconds(-1) : DateTime.MinValue);
+
+            if (start == DateTime.MinValue || end == DateTime.MinValue) { error = "Invalid date format."; return false; }
+            if (start > end) { error = "Start date cannot be after end date."; return false; }
+            return true;
+        }
+
     }
 }
 

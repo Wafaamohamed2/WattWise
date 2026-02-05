@@ -13,6 +13,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using EnergyOptimizer.Service.Services;
 using EnergyOptimizer.API.WebServices;
+using Microsoft.AspNetCore.Mvc;
+using EnergyOptimizer.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,20 @@ builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = actionContext =>
+    {
+        var errors = actionContext.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .SelectMany(x => x.Value.Errors)
+            .Select(x => x.ErrorMessage).ToArray();
+
+        return new BadRequestObjectResult(new ApiResponse(400, "Validation Failed", errors));
+    };
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -45,7 +61,7 @@ builder.Services.AddDbContext<EnergyDbContext>(options =>
 
 builder.Services.AddSignalR(options =>
 {
-    options.EnableDetailedErrors = true; 
+    options.EnableDetailedErrors = true;
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });

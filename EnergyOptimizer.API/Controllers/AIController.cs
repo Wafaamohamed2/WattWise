@@ -1,4 +1,5 @@
-﻿using EnergyOptimizer.API.Services;
+﻿using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
@@ -53,14 +54,14 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> RunAnalysis()
         {
             await _aiService.RunGlobalAnalysisAsync(default);
-            return Ok(new { message = "AI Analysis started successfully" });
+            return Ok(new ApiResponse(200, "AI Analysis started successfully"));
         }
 
         [HttpPost("cleanup")]
         public async Task<IActionResult> RunCleanup()
         {
             await _cleanupService.RunAllCleanupTasks(default);
-            return Ok(new { message = "Data cleanup completed successfully" });
+            return Ok(new ApiResponse(200, "Question answered successfully"));
         }
         #region Action Endpoints
         [HttpPost("analyze-patterns")]
@@ -73,23 +74,19 @@ namespace EnergyOptimizer.API.Controllers
 
             if (start >= end)
             {
-                return BadRequest(new { error = "Start date must be before end date" });
+                return BadRequest(new ApiResponse(400, "Start date must be before end date"));
             }
 
             if ((end - start).TotalDays > 90)
             {
-                return BadRequest(new { error = "Maximum analysis period is 90 days" });
+                return BadRequest(new ApiResponse(400, "Maximum analysis period is 90 days"));
             }
 
             var result = await _patternService.AnalyzeConsumptionPatterns(start, end);
 
             if (!result.Success)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    error = result.ErrorMessage
-                });
+                return BadRequest(new ApiResponse(400, result.ErrorMessage));
             }
             var analysis = new EnergyAnalysis
             {
@@ -104,7 +101,7 @@ namespace EnergyOptimizer.API.Controllers
             await _analysisRepo.AddAsync(analysis);
             await _analysisRepo.SaveChangesAsync();
 
-            return Ok(new { success = true, analysis = result });
+            return Ok(new ApiResponse(200, "Analysis completed successfully", result));
         }
 
 
@@ -116,14 +113,13 @@ namespace EnergyOptimizer.API.Controllers
         {
             if (days < 1 || days > 30)
             {
-                return BadRequest(new { error = "Days must be between 1 and 30" });
+                return BadRequest(new ApiResponse(400, "Days must be between 1 and 30"));
             }
-
             _logger.LogInformation("Detecting anomalies for device {DeviceId}", deviceId);
 
             var result = await _patternService.DetectDeviceAnomalies(deviceId, days);
 
-            return Ok(new
+            return Ok(new ApiResponse(200, "Anomaly detection completed successfully", new
             {
                 deviceId,
                 daysAnalyzed = days,
@@ -139,7 +135,7 @@ namespace EnergyOptimizer.API.Controllers
                     description = a.Description
                 }),
                 analysis = result.Analysis
-            });
+            }));
         }
 
 
@@ -154,7 +150,7 @@ namespace EnergyOptimizer.API.Controllers
 
             if (start >= end)
             {
-                return BadRequest(new { error = "Start date must be before end date" });
+                return BadRequest(new ApiResponse(400, "Start date must be before end date"));
             }
 
             var result = await _patternService.GenerateRecommendations(start, end);
@@ -188,7 +184,10 @@ namespace EnergyOptimizer.API.Controllers
             }
 
             await _recommendationRepo.SaveChangesAsync();
-            return Ok(new { success = true, count = result.Recommendations.Count });
+            return Ok(new ApiResponse(200, "Energy saving recommendations generated successfully", new
+            {
+                count = result.Recommendations.Count
+            }));
         }
 
 
@@ -199,18 +198,18 @@ namespace EnergyOptimizer.API.Controllers
         {
             if (days < 1 || days > 30)
             {
-                return BadRequest(new { error = "Days must be between 1 and 30" });
+                return BadRequest(new ApiResponse(400, "Days must be between 1 and 30"));
             }
 
             var result = await _patternService.PredictConsumption(days);
 
-            return Ok(new
+            return Ok(new ApiResponse(200, "Consumption prediction generated successfully", new
             {
                 predictionDate = result.PredictionDate.ToString("yyyy-MM-dd"),
                 predictedConsumptionKWh = result.PredictedConsumptionKWh,
                 confidenceScore = result.ConfidenceScore,
                 explanation = result.Explanation
-            });
+            }));
         }
 
 
@@ -221,8 +220,11 @@ namespace EnergyOptimizer.API.Controllers
             if (string.IsNullOrWhiteSpace(request.Question)) return BadRequest(new { error = "Question is required" });
 
             var answer = await _geminiService.AskQuestion(request.Question, request.Context ?? "Energy optimization system");
-            return Ok(new { question = request.Question, answer });
-
+            return Ok(new ApiResponse(200, "Question answered successfully", new
+            {
+                question = request.Question,
+                answer
+            }));
         }
         #endregion
 
@@ -272,14 +274,16 @@ namespace EnergyOptimizer.API.Controllers
                 })
                 .ToList();
 
-            return Ok(new
+            return Ok(new ApiResponse(200,
+            "Analysis history retrieved successfully",
+            new
             {
                 page,
                 pageSize,
                 totalPages,
                 count = total,
                 data = result
-            });
+            }));
         }
 
         // Get detailed analysis by ID
@@ -290,7 +294,7 @@ namespace EnergyOptimizer.API.Controllers
 
             if (analysis == null) return NotFound(new { error = $"Analysis {id} not found" });
 
-            return Ok(analysis);
+            return Ok(new ApiResponse(200, "Device analysis: ",analysis));
         }
 
         [HttpGet("Statistics")]
@@ -328,7 +332,7 @@ namespace EnergyOptimizer.API.Controllers
                 }
             };
 
-            return Ok(stats);
+            return Ok(new ApiResponse(200, "AI Statistics retrieved successfully", stats));
         }
 
 
@@ -347,8 +351,7 @@ namespace EnergyOptimizer.API.Controllers
 
             var result = query.OrderByDescending(r => r.Priority).ToList();
 
-            return Ok(result);
-
+            return Ok(new ApiResponse(200,"Recommendations retrieved successfully", result));
         }
 
 
@@ -356,7 +359,8 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<ActionResult<object>> ImplementRecommendation(int id)
         {
             var rec = await _recommendationRepo.GetByIdAsync(id);
-            if (rec == null) return NotFound(new { error = "Not found" });
+            if (rec == null) return NotFound(new ApiResponse(404, "not found"));
+
 
             rec.IsImplemented = true;
             rec.ImplementedDate = DateTime.UtcNow;
@@ -364,18 +368,19 @@ namespace EnergyOptimizer.API.Controllers
             _recommendationRepo.Update(rec);
             await _recommendationRepo.SaveChangesAsync();
 
-            return Ok(new { message = "Marked as implemented" });
+            return Ok(new ApiResponse(200, "Marked as implemented"));
         }
 
         [HttpDelete("recommndations/{id}")]
         public async Task<ActionResult<object>> DeleteRecommendation(int id)
         {
             var rec = await _recommendationRepo.GetByIdAsync(id);
-            if (rec == null) return NotFound();
+            if (rec == null) return NotFound(new ApiResponse(404, "not found"));
+
 
             _recommendationRepo.Delete(rec);
             await _recommendationRepo.SaveChangesAsync();
-            return Ok(new { message = "Deleted successfully" });
+            return Ok(new ApiResponse(200, "Deleted successfully"));
         }
         #endregion
 
@@ -447,7 +452,7 @@ namespace EnergyOptimizer.API.Controllers
                         deviationPercent = Math.Round(deviationPercent, 1)
                     };
                 });
-            return Ok(new
+            return Ok(new ApiResponse(200, "Anomalies retrieved successfully", new
             {
                 page,
                 pageSize,
@@ -455,17 +460,18 @@ namespace EnergyOptimizer.API.Controllers
                 totalPages,
                 statistics,
                 data = result
-            });
+            }));
         }
+
         [HttpGet("anomalies/{id}")]
         public async Task<ActionResult<object>> GetAnomalyById(int id)
         {
             var anomaly = await _anomalyRepo.GetByIdAsync(id);
 
             if (anomaly == null)
-                return NotFound(new { error = $"Anomaly with ID {id} not found" });
+                return NotFound(new ApiResponse(404, $"Anomaly with ID {id} not found"));
 
-            return Ok(anomaly);
+            return Ok(new ApiResponse(200, "Anomaly details retrieved successfully", anomaly));
         }
 
         [HttpPatch("anomalies/{id}/resolve")]
@@ -474,7 +480,8 @@ namespace EnergyOptimizer.API.Controllers
            [FromBody] ResolveAnomalyRequest request)
         {
             var anomaly = await _anomalyRepo.GetByIdAsync(id);
-            if (anomaly == null) return NotFound(new { error = "Anomaly not found" });
+            if (anomaly == null)
+                return NotFound(new ApiResponse(404, "Anomaly not found"));
 
             anomaly.IsResolved = true;
             anomaly.ResolvedAt = DateTime.UtcNow;
@@ -483,18 +490,19 @@ namespace EnergyOptimizer.API.Controllers
             _anomalyRepo.Update(anomaly);
             await _anomalyRepo.SaveChangesAsync();
 
-            return Ok(new { message = "Anomaly resolved successfully" });
+            return Ok(new ApiResponse(200, "Anomaly resolved successfully"));
         }
 
         [HttpDelete("anomalies/{id}")]
         public async Task<ActionResult<object>> DeleteAnomaly(int id)
         {
             var anomaly = await _anomalyRepo.GetByIdAsync(id);
-            if (anomaly == null) return NotFound();
+            if (anomaly == null)
+                return NotFound(new ApiResponse(404, "Anomaly not found"));
 
             _anomalyRepo.Delete(anomaly);
             await _anomalyRepo.SaveChangesAsync();
-            return Ok(new { message = "Deleted successfully" });
+            return Ok(new ApiResponse(200, "Deleted successfully"));
         }
 
         #endregion
@@ -510,12 +518,10 @@ namespace EnergyOptimizer.API.Controllers
                 "Say 'Hello from Gemini!' if you can read this.",
                 "This is a connection test");
 
-            return Ok(new
+            return Ok(new ApiResponse(200, "Connection successful", new
             {
-                success = true,
-                message = "Connection successful",
                 response = result
-            });
+            }));
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using EnergyOptimizer.API.DTOs;
+using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -81,25 +82,13 @@ namespace EnergyOptimizer.API.Controllers
                         IsRead = a.IsRead
                     })
                     .ToListAsync();
-                    return Ok(new
-                    {
-                       filters = new
-                       {
-                            startDate = start.ToString("yyyy-MM-dd"),
-                            endDate = end.ToString("yyyy-MM-dd"),
-                            isRead,
-                            severity,
-                            deviceId
-                       },
-                       pagination = new
-                       {
-                            currentPage = page,
-                            pageSize,
-                            totalAlerts,
-                            totalPages
-                       },
-                        data = alerts
-                    });
+
+            return Ok(new ApiResponse(200, "Alerts retrieved successfully", new
+            {
+                filters = new { startDate = start.ToString("yyyy-MM-dd"), endDate = end.ToString("yyyy-MM-dd"), isRead, severity, deviceId },
+                pagination = new { currentPage = page, pageSize, totalAlerts, totalPages },
+                data = alerts
+            }));
         }
 
         // Get unread alerts count
@@ -110,7 +99,7 @@ namespace EnergyOptimizer.API.Controllers
                     .Where(a => !a.IsRead)
                     .CountAsync();
 
-                return Ok(new { unreadCount = count });
+            return Ok(new ApiResponse(200, "Unread count retrieved", new { unreadCount = count }));
         }
 
         // Get alerts statistics
@@ -141,7 +130,7 @@ namespace EnergyOptimizer.API.Controllers
                     WarningAlerts = alerts.Count(a => a.Severity == 2),
                     InfoAlerts = alerts.Count(a => a.Severity == 1)
                 };
-                return StatusCode(200, statistics);
+            return Ok(new ApiResponse(200, "Statistics retrieved successfully", statistics));
         }
 
         // Get alert by ID
@@ -167,32 +156,25 @@ namespace EnergyOptimizer.API.Controllers
                    })
                    .FirstOrDefaultAsync();
 
-                if (alert == null)
-                    return NotFound(new { error = $"Alert with ID {id} not found" });
+            if (alert == null) return NotFound(new ApiResponse(404, $"Alert with ID {id} not found"));
 
-                return Ok(alert);
+            return Ok(new ApiResponse(200, "Alert retrieved successfully", alert));
         }
 
         // Mark alert as read
         [HttpPatch("{id}/read")]
         public async Task<ActionResult> MarkAsRead(int id)
         {
-                var alert = await _context.Alerts.FindAsync(id);
+            var alert = await _context.Alerts.FindAsync(id);
 
-                if (alert == null)
-                    return NotFound(new { error = $"Alert with ID {id} not found" });
+            if (alert == null) return NotFound(new ApiResponse(404, "Alert not found"));
 
-                alert.IsRead = true;
+            alert.IsRead = true;
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Alert {AlertId} marked as read", id);
 
-                return Ok(new
-                {
-                    id = alert.Id,
-                    isRead = alert.IsRead,
-                    message = "Alert marked as read"
-                });
+            return Ok(new ApiResponse(200, "Alert marked as read", new { id = alert.Id, isRead = alert.IsRead }));
         }
 
         // Mark all alerts as read
@@ -211,33 +193,23 @@ namespace EnergyOptimizer.API.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Marked {Count} alerts as read", unreadAlerts.Count);
-
-                return Ok(new
-                {
-                    count = unreadAlerts.Count,
-                    message = $"{unreadAlerts.Count} alerts marked as read"
-                });
+            return Ok(new ApiResponse(200, $"{unreadAlerts.Count} alerts marked as read",
+                new { count = unreadAlerts.Count }));
         }
 
         // Delete alert 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAlert(int id)
         {
-                var alert = await _context.Alerts.FindAsync(id);
+            var alert = await _context.Alerts.FindAsync(id);
+            if (alert == null) return NotFound(new ApiResponse(404, "Alert not found"));
 
-                if (alert == null)
-                    return NotFound(new { error = $"Alert with ID {id} not found" });
-
-                _context.Alerts.Remove(alert);
+            _context.Alerts.Remove(alert);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Alert {AlertId} deleted", id);
 
-                return Ok(new
-                {
-                    id,
-                    message = "Alert deleted successfully"
-                });
+            return Ok(new ApiResponse(200, "Alert deleted successfully"));
         }
 
         // Delete all read alerts
@@ -253,11 +225,7 @@ namespace EnergyOptimizer.API.Controllers
 
                 _logger.LogInformation("Deleted {Count} read alerts", readAlerts.Count);
 
-                return Ok(new
-                {
-                    count = readAlerts.Count,
-                    message = $"{readAlerts.Count} read alerts deleted"
-                });
+            return Ok(new ApiResponse(200, $"{readAlerts.Count} read alerts deleted", new { count = readAlerts.Count }));
         }
     }
 }

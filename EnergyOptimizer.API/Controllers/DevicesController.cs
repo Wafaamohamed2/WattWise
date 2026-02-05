@@ -1,14 +1,13 @@
 ﻿using EnergyOptimizer.API.DTOs;
 using EnergyOptimizer.API.Hubs;
+using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -43,51 +42,23 @@ namespace EnergyOptimizer.API.Controllers
                 var spec = new DeviceFilterSpec(isActive, zoneId, deviceType, minPower, maxPower, page - 1, pageSize);
                 var devices = await _deviceRepo.ListAsync(spec);
 
-                var countSpec = new DeviceFilterSpec(isActive, zoneId, deviceType, minPower, maxPower, 0, 0);
-                var totalCount = await _deviceRepo.CountAsync(countSpec);
-
-                var activeCountSpec = new DeviceFilterSpec(isActive: true, null, null, null, null, 0, 0);
-                var activeCount = await _deviceRepo.CountAsync(activeCountSpec);
-
-                var inactiveCountSpec = new DeviceFilterSpec(isActive: false, null, null, null, null, 0, 0);
-                var inactiveCount = await _deviceRepo.CountAsync(inactiveCountSpec);
-
-                return Ok(new
-                {
-                    count = totalCount,
-                    activeCount = activeCount,
-                    inactiveCount = inactiveCount,
-                    data = devices.Select(d => new
-                    {
-                        d.Id,
-                        DeviceId = d.Id,
-                        d.Name,
-                        Type = d.Type.ToString(),
-                        d.RatedPowerKW,
-                        d.IsActive,
-                        LastReading = d.EnergyReadings != null ? d.EnergyReadings
-                            .OrderByDescending(r => r.Timestamp)
-                            .Select(r => new {
-                                PowerKW = r.PowerConsumptionKW,
-                                r.Voltage,
-                                r.Current,
-                                r.Temperature,
-                                r.Timestamp
-                            }).FirstOrDefault() : null,
-
-                        Zone = d.Zone != null ? new
-                        {
-                            d.Zone.Id,
-                            d.Zone.Name,
-                            Type = d.Zone.Type.ToString(),
-                            Building = d.Zone.Building != null ? new
-                            {
-                                d.Zone.Building.Id,
-                                d.Zone.Building.Name
-                            } : null
-                        } : null 
-                    })
-                });
+                var totalCount = await _deviceRepo.CountAsync(new DeviceFilterSpec(isActive, zoneId, deviceType, minPower, maxPower, 0, 0));
+                var activeCount = await _deviceRepo.CountAsync(new DeviceFilterSpec(true, null, null, null, null, 0, 0));
+                var inactiveCount = await _deviceRepo.CountAsync(new DeviceFilterSpec(false, null, null, null, null, 0, 0));
+            return Ok(new ApiResponse(200, "Devices retrieved successfully", new
+            {
+                count = totalCount,
+                activeCount,
+                inactiveCount,
+                data = devices.Select(d => new {
+                    d.Id,
+                    d.Name,
+                    Type = d.Type.ToString(),
+                    d.RatedPowerKW,
+                    d.IsActive,
+                    Zone = d.Zone?.Name
+                })
+            }));
         }
 
         [HttpGet("{id}")]
@@ -98,42 +69,41 @@ namespace EnergyOptimizer.API.Controllers
                 var device = await _deviceRepo.GetEntityWithSpec(spec);
 
                 if (device == null)
-                    return NotFound(new { error = "Device not found" });
-                
-              return Ok(new
-              {
-                  device.Id,
-                  device.Name,
-                  Type = device.Type.ToString(),
-                  device.IsActive,
-                  Zone = new
-                  {
-                      device.Zone.Id,
-                      device.Zone.Name,
-                      Type = device.Zone.Type.ToString(),
-                      device.Zone.Area,
-                      Building = new
-                      {
-                          device.Zone.Building.Id,
-                          device.Zone.Building.Name
-                      },
-                  },
-                  Statistics = new
-                  {
-                      TotalReadings = device.EnergyReadings.Count,
-                      LastReading = device.EnergyReadings
-                            .OrderByDescending(r => r.Timestamp)
-                            .Select(r => new
-                            {
-                                r.Timestamp,
-                                r.PowerConsumptionKW
-                            })
-                            .FirstOrDefault(),
-                      TodayConsumption = device.EnergyReadings
-                            .Where(r => r.Timestamp >= DateTime.UtcNow.Date)
-                            .Sum(r => r.PowerConsumptionKW)
-                  }
-              } );
+                    return NotFound(new ApiResponse(404, "Device not found"));
+            return Ok(new ApiResponse(200, "Device details retrieved successfully", new
+            {
+                device.Id,
+                device.Name,
+                Type = device.Type.ToString(),
+                device.IsActive,
+                Zone = new
+                {
+                    device.Zone.Id,
+                    device.Zone.Name,
+                    Type = device.Zone.Type.ToString(),
+                    device.Zone.Area,
+                    Building = new
+                    {
+                        device.Zone.Building.Id,
+                        device.Zone.Building.Name
+                    },
+                },
+                Statistics = new
+                {
+                    TotalReadings = device.EnergyReadings.Count,
+                    LastReading = device.EnergyReadings
+               .OrderByDescending(r => r.Timestamp)
+               .Select(r => new
+               {
+                   r.Timestamp,
+                   r.PowerConsumptionKW
+               })
+               .FirstOrDefault(),
+                    TodayConsumption = device.EnergyReadings
+               .Where(r => r.Timestamp >= DateTime.UtcNow.Date)
+               .Sum(r => r.PowerConsumptionKW)
+                }
+            }));
         }
 
         [HttpGet("zone/{zoneId}")]
@@ -142,26 +112,28 @@ namespace EnergyOptimizer.API.Controllers
             
                 var zone = await _zoneRepo.GetByIdAsync(zoneId);
                 if (zone == null)
-                    return NotFound(new { error = $"Zone with ID {zoneId} not found" });
+                    return NotFound(new ApiResponse ( 404,  $"Zone with ID {zoneId} not found" ));
 
                 var spec = new DevicesByZoneSpec(zoneId);
                 var devices = await _deviceRepo.ListAsync(spec);
 
-                return Ok(new
-                {
-                    zoneId,
-                    zoneName = zone.Name,
-                    deviceCount = devices.Count,
-                    data = devices.Select(d => new
-                    {
-                        d.Id,
-                        d.Name,
-                        Type = d.Type.ToString(),
-                        d.RatedPowerKW,
-                        d.IsActive,
-                        d.InstallationDate
-                    })
-                });
+                return Ok(new ApiResponse(200, "Devices retrieved successfully",
+                    new {
+
+                       zoneId,
+                       zoneName = zone.Name,
+                       deviceCount = devices.Count,
+                       data = devices.Select(d => new
+                       {
+                           d.Id,
+                           d.Name,
+                           Type = d.Type.ToString(),
+                           d.RatedPowerKW,
+                           d.IsActive,
+                           d.InstallationDate
+                       })
+                       
+                }));
         }
 
         [HttpPost]
@@ -169,9 +141,8 @@ namespace EnergyOptimizer.API.Controllers
         {
                 var zone = await _zoneRepo.GetByIdAsync(dto.ZoneId);
                 if (zone == null)
-                    return BadRequest(new { error = $"Zone with ID {dto.ZoneId} does not exist" });
-
-                var newDevice = new Device
+                    return BadRequest(new ApiResponse(400, $"Zone with ID {dto.ZoneId} does not exist"));
+            var newDevice = new Device
                 {
                     Name = dto.Name,
                     ZoneId = dto.ZoneId,
@@ -181,18 +152,11 @@ namespace EnergyOptimizer.API.Controllers
                     InstallationDate = dto.InstallationDate ?? DateTime.UtcNow
                 };
 
-                _deviceRepo.AddAsync(newDevice);
+                await _deviceRepo.AddAsync(newDevice);
                 await _deviceRepo.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetDeviceById), new { id = newDevice.Id }, new
-                {
-                    newDevice.Id,
-                    newDevice.Name,
-                    Type = newDevice.Type.ToString(),
-                    newDevice.RatedPowerKW,
-                    newDevice.IsActive,
-                    message = "Device created successfully"
-                });
+            return CreatedAtAction(nameof(GetDeviceById), new { id = newDevice.Id },
+                new ApiResponse(201, "Device created successfully"));
         }
 
         [HttpPut("{id}")]
@@ -200,9 +164,9 @@ namespace EnergyOptimizer.API.Controllers
         {
                 var device = await _deviceRepo.GetByIdAsync(id);
                 if (device == null)
-                    return NotFound(new { error = "Device not found" });
+                    return NotFound(new ApiResponse(404, "Device not found"));
 
-                if (dto.ZoneId.HasValue)
+            if (dto.ZoneId.HasValue)
                 {
                     var zone = await _zoneRepo.GetByIdAsync(dto.ZoneId.Value);
                     if (zone == null)
@@ -218,15 +182,7 @@ namespace EnergyOptimizer.API.Controllers
                 _deviceRepo.Update(device);
                 await _deviceRepo.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    device.Id,
-                    device.Name,
-                    Type = device.Type.ToString(),
-                    device.RatedPowerKW,
-                    device.IsActive,
-                    message = "Device updated successfully"
-                });
+            return Ok(new ApiResponse(200, "Device updated successfully"));
         }
 
         [HttpDelete("{id}")]
@@ -234,9 +190,8 @@ namespace EnergyOptimizer.API.Controllers
         {
                 var device = await _deviceRepo.GetByIdAsync(id);
                 if (device == null)
-                    return NotFound(new { error = $"Device with ID {id} not found" });
-
-                device.IsActive = !device.IsActive;
+                      return NotFound(new ApiResponse(404, "Device not found"));
+            device.IsActive = !device.IsActive;
                 _deviceRepo.Update(device);
                 await _deviceRepo.SaveChangesAsync();
 
@@ -246,13 +201,7 @@ namespace EnergyOptimizer.API.Controllers
                     device.Id,
                     device.IsActive ? "Active" : "Inactive");
 
-                return Ok(new
-                {
-                    device.Id,
-                    device.Name,
-                    isActive = device.IsActive,
-                    message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
-                });
+            return Ok(new ApiResponse(200, "Device deleted successfully"));
         }
 
         //  Toggle device status (Active/Inactive) + notify clients via SignalR
@@ -263,9 +212,9 @@ namespace EnergyOptimizer.API.Controllers
                 var device = await _deviceRepo.GetEntityWithSpec(spec);
 
                 if (device == null)
-                    return NotFound(new { error = "Device not found" });
+                    return NotFound(new ApiResponse(404, "Device not found"));
 
-                device.IsActive = !device.IsActive;
+            device.IsActive = !device.IsActive;
                 _deviceRepo.Update(device);
                 await _deviceRepo.SaveChangesAsync();
 
@@ -281,14 +230,7 @@ namespace EnergyOptimizer.API.Controllers
                     LastReading = lastReading
                 });
 
-                return Ok(new
-                {
-                    id = device.Id,
-                    name = device.Name,
-                    isActive = device.IsActive,
-                    lastReading = lastReading,
-                    message = $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"
-                });
+            return Ok(new ApiResponse(200, $"Device {(device.IsActive ? "activated" : "deactivated")} successfully"));
         }
     }
 }

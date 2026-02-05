@@ -32,8 +32,8 @@ namespace EnergyOptimizer.API.Middleware
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
                 var response = _env.IsDevelopment()
-                    ? new ApiResponse(context.Response.StatusCode, ex.Message, ex.StackTrace?.ToString())
-                    : new ApiResponse(context.Response.StatusCode, "An internal server error occurred.");
+                   ? new ApiResponse(500, ex.Message, ex.StackTrace?.ToString())
+                   : new ApiResponse(500, "An internal server error occurred. Please try again later.");
 
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var json = JsonSerializer.Serialize(response, options);
@@ -42,5 +42,5 @@ namespace EnergyOptimizer.API.Middleware
             }
         }
     }
-    public record ApiResponse(int StatusCode, string Message, string Details = null);
+    public record ApiResponse(int StatusCode, string Message, object Details = null);
 }
