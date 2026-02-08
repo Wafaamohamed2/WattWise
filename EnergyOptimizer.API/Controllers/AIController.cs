@@ -3,11 +3,10 @@ using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Service.Services.Abstract;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace EnergyOptimizer.API.Controllers

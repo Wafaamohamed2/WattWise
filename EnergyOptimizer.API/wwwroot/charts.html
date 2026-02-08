@@ -539,9 +539,10 @@
                 }
 
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=1000`);
-                const data = await response.json();
+                const result = await response.json();
 
-                const filteredData = data.data.filter(reading => {
+                const actualReadings = result.details?.data || [];
+                const filteredData = actualReadings.filter(reading => {
                     const readingDate = new Date(reading.timestamp).toISOString().split('T')[0];
                     return readingDate >= startDate && readingDate <= endDate;
                 });
@@ -555,11 +556,12 @@
         }
 
         function updateStatistics(data) {
-            const totalConsumption = data.reduce((sum, r) => sum + r.powerConsumptionKW, 0);
+            const totalConsumption = data.reduce((sum, r) => sum + (r.powerConsumptionKW || 0), 0);
             const days = [...new Set(data.map(r => new Date(r.timestamp).toDateString()))].length || 1;
             const avgDaily = totalConsumption / days;
-            const peakPower = Math.max(...data.map(r => r.powerConsumptionKW));
-            const activeDevices = [...new Set(data.map(r => r.device.id))].length;
+            const consumptionValues = data.map(r => r.powerConsumptionKW || 0);
+            const peakPower = Math.max(...consumptionValues);
+            const activeDevices = [...new Set(data.map(r => r.device?.id || r.deviceId))].filter(id => id).length;
 
             document.getElementById('totalConsumption').textContent = totalConsumption.toFixed(2);
             document.getElementById('avgDaily').textContent = avgDaily.toFixed(2);
@@ -573,6 +575,7 @@
         }
 
         function createCharts(data) {
+            if (!data || data.length === 0) return;
             createConsumptionChart(data);
             createDeviceChart(data);
             createHourlyChart(data);
@@ -702,8 +705,8 @@
 
             const zoneData = {};
             data.forEach(reading => {
-                const zone = reading.zone.name;
-                zoneData[zone] = (zoneData[zone] || 0) + reading.powerConsumptionKW;
+                const zoneName = reading.zone?.name || reading.device?.zone?.name || 'Unknown';
+                zoneData[zoneName] = (zoneData[zoneName] || 0) + reading.powerConsumptionKW;
             });
 
             if (charts.zone) charts.zone.destroy();
@@ -769,28 +772,39 @@
         }
 
         function populateFilters(data) {
-            const devices = [...new Set(data.map(r => ({ id: r.device.id, name: r.device.name })))];
-            const zones = [...new Set(data.map(r => ({ id: r.zone.id, name: r.zone.name })))];
+            const devicesMap = new Map();
+            const zonesMap = new Map();
+
+            data.forEach(reading => {
+                if (reading.device?.id && reading.device?.name) {
+                    devicesMap.set(reading.device.id, reading.device.name);
+                }
+
+                if (reading.zone?.id && reading.zone?.name) {
+                    zonesMap.set(reading.zone.id, reading.zone.name);
+                } else if (reading.device?.zone?.id && reading.device?.zone?.name) {
+                    zonesMap.set(reading.device.zone.id, reading.device.zone.name);
+                }
+            });
 
             const deviceSelect = document.getElementById('deviceFilter');
             const zoneSelect = document.getElementById('zoneFilter');
 
-            devices.forEach(device => {
-                if (!Array.from(deviceSelect.options).some(opt => opt.value == device.id)) {
-                    const option = document.createElement('option');
-                    option.value = device.id;
-                    option.textContent = device.name;
-                    deviceSelect.appendChild(option);
-                }
+            deviceSelect.innerHTML = '<option value="">All Devices</option>';
+            zoneSelect.innerHTML = '<option value="">All Zones</option>';
+
+            devicesMap.forEach((name, id) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = name;
+                deviceSelect.appendChild(option);
             });
 
-            zones.forEach(zone => {
-                if (!Array.from(zoneSelect.options).some(opt => opt.value == zone.id)) {
-                    const option = document.createElement('option');
-                    option.value = zone.id;
-                    option.textContent = zone.name;
-                    zoneSelect.appendChild(option);
-                }
+            zonesMap.forEach((name, id) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = name;
+                zoneSelect.appendChild(option);
             });
         }
 

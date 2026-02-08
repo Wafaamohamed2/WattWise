@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Infrastructure.Data;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Service.Services.Abstract;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

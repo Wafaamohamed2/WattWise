@@ -56,11 +56,11 @@
                 });
 
                 const result = await response.json();
+                console.log("API Response:", result);
 
-                if (response.ok && result.token && result.details.token) {
-
+                if (response.ok && result.details && result.details.token) {
                     // save token to localStorage
-                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('token', result.details.token);
                     // save user details to localStorage
                     localStorage.setItem('user', JSON.stringify(result.details.user));
                     // redirect to main page

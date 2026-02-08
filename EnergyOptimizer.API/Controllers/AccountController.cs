@@ -31,7 +31,7 @@ namespace EnergyOptimizer.API.Controllers
 
             var user = new ApplicationUser
             {
-                UserName = model.Email, // مهم جداً - Identity يحتاج UserName
+                UserName = model.Email, 
                 Email = model.Email,
                 FullName = model.FullName,
                 CreatedAt = DateTime.UtcNow,

@@ -5,8 +5,8 @@ using AnomalyEntity = EnergyOptimizer.Core.Entities.AI_Analysis.DetectedAnomaly;
 using AnomalyDto = EnergyOptimizer.API.DTOs.Gemini.DetectedAnomaly;
 using EnergyOptimizer.API.DTOs.Gemini;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Service.Services;
 using Microsoft.Extensions.Logging;
+using EnergyOptimizer.Service.Services.Abstract;
 
 namespace EnergyOptimizer.API.Services
 {

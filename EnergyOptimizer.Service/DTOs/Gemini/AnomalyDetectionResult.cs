@@ -1,6 +1,4 @@
-﻿using EnergyOptimizer.AI.Services;
-
-namespace EnergyOptimizer.API.DTOs.Gemini
+﻿namespace EnergyOptimizer.API.DTOs.Gemini
 {
     public class AnomalyDetectionResult
     {

@@ -1,5 +1,4 @@
-﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -508,8 +507,11 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    displayStatistics(data);
-                    displayCharts(data);
+                    console.log('Statistics API Response:', data);
+
+                    const details = data.details || data || {};
+                    displayStatistics(details);
+                    displayCharts(details);
                 } else if (response.status === 401) {
                     AuthHelper.logout();
                 }
@@ -525,13 +527,13 @@
                 const response = await AuthHelper.fetchWithAuth('/api/AI/run-analysis', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
                 if (response.ok) {
                     alert('AI analysis has been successfully started');
-                    loadAIStatistics(); 
+                    loadAIStatistics();
                 } else {
                     const error = await response.json();
                     alert('error: ' + error.message);
@@ -554,36 +556,36 @@
             const statsGrid = document.getElementById('statsGrid');
 
             statsGrid.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-value">${data.analyses.total}</div>
-                        <div class="stat-label">Total Analyses</div>
-                        <div class="stat-change positive">↑ ${data.analyses.last30Days} in last 30 days</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">💡</div>
-                        <div class="stat-value">${data.recommendations.active}</div>
-                        <div class="stat-label">Active Recommendations</div>
-                        <div class="stat-change">${data.recommendations.implemented} implemented</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">⚡</div>
-                        <div class="stat-value">${data.recommendations.totalPotentialSavings.toFixed(1)}</div>
-                        <div class="stat-label">Potential Savings (kWh)</div>
-                        <div class="stat-change positive">💰 Cost savings available</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">🚨</div>
-                        <div class="stat-value">${data.anomalies.unresolved}</div>
-                        <div class="stat-label">Unresolved Anomalies</div>
-                        <div class="stat-change ${data.anomalies.last7Days > 0 ? 'negative' : 'positive'}">
-                            ${data.anomalies.last7Days > 0 ? '↑' : '✓'} ${data.anomalies.last7Days} in last 7 days
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">${data.analyses.total}</div>
+                            <div class="stat-label">Total Analyses</div>
+                            <div class="stat-change positive">↑ ${data.analyses.last30Days} in last 30 days</div>
                         </div>
-                    </div>
-                `;
+
+                        <div class="stat-card">
+                            <div class="stat-icon">💡</div>
+                            <div class="stat-value">${data.recommendations.active}</div>
+                            <div class="stat-label">Active Recommendations</div>
+                            <div class="stat-change">${data.recommendations.implemented} implemented</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-value">${data.recommendations.totalPotentialSavings.toFixed(1)}</div>
+                            <div class="stat-label">Potential Savings (kWh)</div>
+                            <div class="stat-change positive">💰 Cost savings available</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">🚨</div>
+                            <div class="stat-value">${data.anomalies.unresolved}</div>
+                            <div class="stat-label">Unresolved Anomalies</div>
+                            <div class="stat-change ${data.anomalies.last7Days > 0 ? 'negative' : 'positive'}">
+                                ${data.anomalies.last7Days > 0 ? '↑' : '✓'} ${data.anomalies.last7Days} in last 7 days
+                            </div>
+                        </div>
+                    `;
         }
 
         function displayCharts(data) {
@@ -640,8 +642,13 @@
         async function loadRecommendations() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
-                const data = await response.json();
-                displayRecommendations(data);
+                const result = await response.json();
+                console.log('Recommendations API Response:', result);
+
+                // Fix: Backend returns data in result.details
+                const details = result.details || result || {};
+                const items = details.data || details || [];
+                displayRecommendations(items);
             } catch (error) {
                 console.error('Error loading recommendations:', error);
             }
@@ -656,18 +663,18 @@
             }
 
             container.innerHTML = recommendations.map(rec => `
-                    <div class="item">
-                        <div class="item-header">
-                            <div class="item-title">${rec.title}</div>
-                            <span class="item-badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>
+                        <div class="item">
+                            <div class="item-header">
+                                <div class="item-title">${rec.title}</div>
+                                <span class="item-badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>
+                            </div>
+                            <div class="item-description">${rec.description}</div>
+                            <div class="item-meta">
+                                <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
+                                <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
-                        <div class="item-description">${rec.description}</div>
-                        <div class="item-meta">
-                            <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
-                            <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `).join('');
+                    `).join('');
         }
         async function implementRecommendation(id) {
             if (!confirm('Mark this recommendation as implemented?')) return;
@@ -679,8 +686,8 @@
 
                 if (response.ok) {
                     alert('Recommendation implemented!');
-                    loadRecommendations(); 
-                    loadStatistics();      
+                    loadRecommendations();
+                    loadStatistics();
                 }
             } catch (error) {
                 console.error('Error implementing recommendation:', error);
@@ -691,8 +698,13 @@
         async function loadAnomalies() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5&isResolved=false`);
-                const data = await response.json();
-                displayAnomalies(data.data);
+                const result = await response.json();
+                console.log('Anomalies API Response:', result);
+
+                // Fix: Backend returns data in result.details
+                const details = result.details || result || {};
+                const items = details.data || [];
+                displayAnomalies(items);
             } catch (error) {
                 console.error('Error loading anomalies:', error);
             }
@@ -707,19 +719,19 @@
             }
 
             container.innerHTML = anomalies.map(anomaly => `
-                    <div class="item">
-                        <div class="item-header">
-                            <div class="item-title">${anomaly.device.name}</div>
-                            <span class="item-badge badge-${anomaly.severity.toLowerCase()}">${anomaly.severity}</span>
+                        <div class="item">
+                            <div class="item-header">
+                                <div class="item-title">${anomaly.device.name}</div>
+                                <span class="item-badge badge-${anomaly.severity.toLowerCase()}">${anomaly.severity}</span>
+                            </div>
+                            <div class="item-description">${anomaly.description}</div>
+                            <div class="item-meta">
+                                <span>📍 ${anomaly.device.zone}</span>
+                                <span>⚠️ ${anomaly.deviationPercent.toFixed(1)}% deviation</span>
+                                <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
-                        <div class="item-description">${anomaly.description}</div>
-                        <div class="item-meta">
-                            <span>📍 ${anomaly.device.zone}</span>
-                            <span>⚠️ ${anomaly.deviationPercent.toFixed(1)}% deviation</span>
-                            <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `).join('');
+                    `).join('');
         }
 
         // ===== Actions =====

@@ -7,9 +7,9 @@ using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Service.Services.Abstract;
 
-namespace EnergyOptimizer.API.Services
+namespace EnergyOptimizer.Service.Services.Implementation
 {
     public class DataCleanupService : IDataCleanupService
     {
@@ -61,7 +61,7 @@ namespace EnergyOptimizer.API.Services
             var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
 
             var spec = new CleanupSpecification<Alert>(a =>
-                  a.Type == Core.Enums.AlertType.Anomaly &&
+                  a.Type == AlertType.Anomaly &&
                   a.IsRead &&
                   a.CreatedAt < cutoffDate);
 
@@ -97,9 +97,9 @@ namespace EnergyOptimizer.API.Services
         }
 
 
-    
+
 
     }
 
-    
+
 }

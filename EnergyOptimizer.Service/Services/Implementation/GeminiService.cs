@@ -1,5 +1,5 @@
 ﻿using EnergyOptimizer.API.DTOs.Gemini;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Service.Services.Abstract;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace EnergyOptimizer.AI.Services
+namespace EnergyOptimizer.Service.Services.Implementation
 {
     public class GeminiService : IGeminiService
     {

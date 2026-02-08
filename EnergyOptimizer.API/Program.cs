@@ -3,7 +3,6 @@ using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.API.Services;
-using EnergyOptimizer.AI.Services;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure.Repositories;
 using EnergyOptimizer.Core.Entities;
@@ -11,10 +10,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using EnergyOptimizer.Service.Services;
 using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Service.Services.Abstract;
+using EnergyOptimizer.Service.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 

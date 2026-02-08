@@ -404,16 +404,19 @@
 
                 const result = await response.json();
 
-                const list = Array.isArray(result) ? result : (result.data || []);
+                let list = [];
+                if (result.details) {
+                    list = result.details.data || result.details || [];
+                }
 
                 if (list.length === 0) {
                     document.getElementById('recommendationsList').innerHTML =
-                        '<div class="empty-state">No recommendations found. Please run analysis from Dashboard first.</div>';
+                        '<div class="empty-state">No recommendations found.</div>';
                     return;
                 }
 
                 displayRecommendations(list);
-                updateTopStats(list); 
+                updateTopStats(list);
             } catch (error) {
                 console.error('Fetch Error:', error);
                 document.getElementById('recommendationsList').innerHTML =

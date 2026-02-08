@@ -3,10 +3,10 @@ using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Service.Services.Abstract;
 using Microsoft.Extensions.Logging;
 
-namespace EnergyOptimizer.API.Services
+namespace EnergyOptimizer.Service.Services.Implementation
 {
     public class AIAnalysisService : IAIAnalysisService
     {
@@ -72,7 +72,7 @@ namespace EnergyOptimizer.API.Services
                 decimal stdDev = CalculateStandardDeviation(
                     readings.Select(r => r.PowerConsumptionKW));
 
-                decimal threshold = avg + (2 * stdDev);
+                decimal threshold = avg + 2 * stdDev;
 
                 var anomalies = readings
                     .Where(r => r.PowerConsumptionKW > threshold)
@@ -81,7 +81,7 @@ namespace EnergyOptimizer.API.Services
                 foreach (var r in anomalies)
                 {
                     decimal deviationPercent =
-                        avg == 0 ? 0 : ((r.PowerConsumptionKW - avg) / avg) * 100;
+                        avg == 0 ? 0 : (r.PowerConsumptionKW - avg) / avg * 100;
 
                     string severity =
                         Math.Abs(deviationPercent) > 60 ? "Critical" : "High";
@@ -90,7 +90,7 @@ namespace EnergyOptimizer.API.Services
                     {
                         DeviceId = device.Id,
                         AnomalyTimestamp = r.Timestamp,
-                        ActualValue = (double)r.PowerConsumptionKW, 
+                        ActualValue = (double)r.PowerConsumptionKW,
                         ExpectedValue = (double)Math.Round(avg, 2),
                         Deviation = (double)Math.Abs(Math.Round(deviationPercent, 1)),
                         Severity = severity,

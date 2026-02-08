@@ -1,4 +1,4 @@
-﻿namespace EnergyOptimizer.Service.Services
+﻿namespace EnergyOptimizer.Service.Services.Abstract
 {
     public interface IAIAnalysisService
     {
