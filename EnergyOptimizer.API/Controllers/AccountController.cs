@@ -1,5 +1,5 @@
-﻿using EnergyOptimizer.API.Middleware;
-using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

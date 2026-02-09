@@ -1,7 +1,10 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 
-namespace EnergyOptimizer.API.Middleware
+namespace EnergyOptimizer.Core.Features.AI.Commands.Middleware
 {
     public class ExceptionMiddleware
     {
@@ -20,13 +23,13 @@ namespace EnergyOptimizer.API.Middleware
         {
             try
             {
-                await _next(context); 
+                await _next(context);
             }
             catch (Exception ex)
             {
                 // for logging the exception details
                 _logger.LogError(ex, "Unhandled Exception: {Message}", ex.Message);
-                
+
                 // preparing the error response
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

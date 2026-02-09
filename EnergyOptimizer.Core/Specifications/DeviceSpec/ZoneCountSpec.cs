@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace EnergyOptimizer.Core.Specifications.DeviceSpec
 {
-    public class CountActiveDevicesSpec : BaseSpecifcation<Device>
+    public class ZoneCountSpec : BaseSpecifcation<Zone>
     {
-        public CountActiveDevicesSpec(bool? isActive = null)
-        : base(x => !isActive.HasValue || x.IsActive == isActive.Value)
+        public ZoneCountSpec() : base() 
         {
         }
-
     }
 }

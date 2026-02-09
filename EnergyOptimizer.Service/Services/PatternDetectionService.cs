@@ -7,11 +7,12 @@ using EnergyOptimizer.API.DTOs.Gemini;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Service.Services.Abstract;
+using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.API.Services
 {
     // Service to detect energy consumption patterns and prepare data for AI analysis
-    public class PatternDetectionService
+    public class PatternDetectionService : IPatternDetectionService
     {
         private readonly EnergyDbContext _context;
         private readonly IGeminiService _geminiService;

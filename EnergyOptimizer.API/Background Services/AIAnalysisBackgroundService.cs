@@ -1,9 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Infrastructure.Data;
-using EnergyOptimizer.Service.Services.Abstract;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
+﻿using EnergyOptimizer.Service.Services.Abstract;
 namespace EnergyOptimizer.API.Services
 {
     public class AIAnalysisBackgroundService : BackgroundService

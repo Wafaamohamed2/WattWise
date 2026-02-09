@@ -12,9 +12,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
+using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,11 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
+// Add MediatR and register handlers from the Core assembly
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
+});
+
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();
@@ -114,7 +120,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 // Register Pattern Detection Service
-builder.Services.AddScoped<PatternDetectionService>();
+builder.Services.AddScoped<IPatternDetectionService, PatternDetectionService>();
 
 // Register AI Analysis and Data Cleanup Services
 builder.Services.AddScoped<IAIAnalysisService, AIAnalysisService>();
@@ -136,7 +142,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // add custom exception middleware
-app.UseMiddleware<EnergyOptimizer.API.Middleware.ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

@@ -1,8 +1,7 @@
 ﻿using EnergyOptimizer.API.DTOs;
-using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

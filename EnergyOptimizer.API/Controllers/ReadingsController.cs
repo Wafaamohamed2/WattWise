@@ -1,13 +1,10 @@
-﻿using EnergyOptimizer.API.Middleware;
-using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {

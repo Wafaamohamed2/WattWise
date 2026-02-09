@@ -1,8 +1,8 @@
 ﻿using EnergyOptimizer.API.DTOs;
 using EnergyOptimizer.API.Hubs;
-using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using Microsoft.AspNetCore.Authorization;

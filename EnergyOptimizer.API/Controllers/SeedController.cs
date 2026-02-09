@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.API.Services;
 using Microsoft.AspNetCore.Authorization;
-using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
