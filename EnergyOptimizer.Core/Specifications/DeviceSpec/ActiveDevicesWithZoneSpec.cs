@@ -5,7 +5,7 @@ namespace EnergyOptimizer.Core.Specifications.DeviceSpec
 {
     public class ActiveDevicesWithZoneSpec : BaseSpecifcation<Device>
     {
-        public ActiveDevicesWithZoneSpec()
+        public ActiveDevicesWithZoneSpec(bool? isActive)
             : base(d => d.IsActive)
         {
             AddInclude(d => d.Zone);

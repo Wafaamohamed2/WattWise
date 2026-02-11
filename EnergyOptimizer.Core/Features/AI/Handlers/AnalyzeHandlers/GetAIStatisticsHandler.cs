@@ -1,9 +1,9 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
+using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 {

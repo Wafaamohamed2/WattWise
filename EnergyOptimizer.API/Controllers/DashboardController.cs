@@ -1,11 +1,10 @@
-﻿using EnergyOptimizer.API.DTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries;
-using EnergyOptimizer.Infrastructure.Data;
+﻿using EnergyOptimizer.Core.DTOs.DashboardDTOs;
+using EnergyOptimizer.Core.DTOs.DeviceDTOs;
+using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
+using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -15,12 +14,9 @@ namespace EnergyOptimizer.API.Controllers
     public class DashboardController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<DashboardController> _logger;
-
-        public DashboardController(IMediator mediator, ILogger<DashboardController> logger)
+        public DashboardController(IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger;
         }
 
         /// Get dashboard overview statistics

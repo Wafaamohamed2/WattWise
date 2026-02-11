@@ -1,8 +1,5 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using EnergyOptimizer.Core.Specifications.ReadSpec;
+﻿using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,38 +10,19 @@ namespace EnergyOptimizer.API.Controllers
     [ApiController]
     public class ReadingsController : ControllerBase
     {
-        private readonly IGenericRepository<EnergyReading> _readingsRepo;
-        private readonly IGenericRepository<Device> _deviceRepo;
-        private readonly ILogger<ReadingsController> _logger;
+        private readonly IMediator _mediator;
 
-        public ReadingsController(IGenericRepository<EnergyReading> readingsRepo,
-            IGenericRepository<Device> deviceRepo, ILogger<ReadingsController> logger)
+        public ReadingsController(IMediator mediator, ILogger<ReadingsController> logger)
         {
-            _readingsRepo = readingsRepo;
-            _deviceRepo = deviceRepo;
-            _logger = logger;
+            _mediator = mediator;
         }
 
 
         [HttpGet("latest")]
-        public async Task<ActionResult<IEnumerable<object>>> GetLatestReadings([FromQuery] int limit = 50)
+        public async Task<ActionResult<IEnumerable<object>>> GetLatestReadings([FromQuery] int limit = 10)
         {
-                var spec = new LatestReadingsSpec(limit);
-                var readings = await _readingsRepo.ListAsync(spec);
-
-
-            var result = readings.Select(r => new {
-                r.Id,
-                r.Timestamp,
-                r.PowerConsumptionKW,
-                r.Voltage,
-                r.Current,
-                r.Temperature,
-                Device = r.Device != null ? new { r.Device.Id, r.Device.Name, Type = r.Device.Type.ToString() } : null,
-                Zone = r.Device?.Zone != null ? new { r.Device.Zone.Id, r.Device.Zone.Name } : null
-            });
-
-            return Ok(new ApiResponse(200, $"Latest {readings.Count} readings retrieved", new { count = readings.Count, data = result }));
+            var result = await _mediator.Send(new GetLatestReadingsQuery(limit));
+            return Ok(result);
         }
 
 
@@ -56,31 +34,8 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? endDate = null,
             [FromQuery] int limit = 100)
         {
-            var device = await _deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(deviceId));
-            if (device == null) return NotFound(new ApiResponse(404, $"Device with ID {deviceId} not found"));
-
-            if (!TryParseDates(startDate, endDate, out DateTime start, out DateTime end, out string error))
-                return BadRequest(new ApiResponse(400, error));
-
-            var spec = new PaginatedReadingsSpec(start, end, deviceId: deviceId, pageSize: limit);
-            var readings = await _readingsRepo.ListAsync(spec);
-
-            var stats = new
-            {
-                TotalReadings = readings.Count,
-                TotalConsumption = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2),
-                AverageConsumption = readings.Any() ? Math.Round(readings.Average(r => r.PowerConsumptionKW), 4) : 0,
-                MaxConsumption = readings.Any() ? Math.Round(readings.Max(r => r.PowerConsumptionKW), 4) : 0
-            };
-
-            return Ok(new ApiResponse(200, "Device readings retrieved successfully", new
-            {
-                device = new { device.Id, device.Name, Type = device.Type.ToString(), Zone = device.Zone?.Name },
-                startDate = start.ToString("yyyy-MM-dd"),
-                endDate = end.ToString("yyyy-MM-dd"),
-                statistics = stats,
-                data = readings.Select(r => new { r.Id, r.Timestamp, r.PowerConsumptionKW, r.Voltage, r.Current, r.Temperature })
-            }));
+            var result = await _mediator.Send(new GetDeviceReadingsQuery(deviceId, startDate, endDate, limit));
+            return Ok(result);
         }
 
 
@@ -92,38 +47,10 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? startDate = null,
             [FromQuery] int days = 7)
         {
-            var device = await _deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(deviceId));
-            if (device == null) return NotFound(new ApiResponse(404, "Device not found"));
 
-            DateTime start = DateTime.TryParse(startDate, out var d) ? d.Date : DateTime.UtcNow.AddDays(-days).Date;
-            var end = DateTime.UtcNow;
-
-            var readings = await _readingsRepo.ListAsync(new ReadingsByDeviceAndDateSpec(deviceId, start, end));
-
-            if (!readings.Any())
-                return Ok(new ApiResponse(200, "No readings found for this period", new { device = new { device.Id, device.Name } }));
-
-            var dailyStats = readings.GroupBy(r => r.Timestamp.Date).Select(g => new {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                TotalConsumption = Math.Round(g.Sum(r => r.PowerConsumptionKW), 2),
-                AverageConsumption = Math.Round(g.Average(r => r.PowerConsumptionKW), 4),
-                ReadingsCount = g.Count()
-            }).OrderBy(d => d.Date).ToList();
-
-            var overallStats = new
-            {
-                TotalReadings = readings.Count,
-                TotalConsumption = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2),
-                AverageConsumption = Math.Round(readings.Average(r => r.PowerConsumptionKW), 4),
-                AverageVoltage = Math.Round(readings.Average(r => r.Voltage), 2)
-            };
-
-            return Ok(new ApiResponse(200, "Device statistics calculated", new
-            {
-                device = new { device.Id, device.Name, device.RatedPowerKW, Zone = device.Zone?.Name },
-                overall = overallStats,
-                dailyStats
-            }));
+            var start = DateTime.TryParse(startDate, out var d) ? d : DateTime.UtcNow.AddDays(-days);
+            var result = await _mediator.Send(new GetDeviceStatisticsQuery(deviceId, start , DateTime.UtcNow));
+            return Ok(result);
         }
 
        
@@ -134,20 +61,12 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] string? endDate = null,
             [FromQuery] int? deviceId = null)
         {
-            if (!TryParseDates(startDate, endDate, out DateTime start, out DateTime end, out _))
-            {
-                start = DateTime.UtcNow.AddDays(-7).Date;
-                end = DateTime.UtcNow;
-            }
+            var result = await _mediator.Send(new ExportReadingsQuery(deviceId,startDate, endDate));
+            var exportData = result.Details as dynamic;
 
-            var readings = await _readingsRepo.ListAsync(new PaginatedReadingsSpec(start, end, deviceId: deviceId, pageSize: int.MaxValue));
+            if (exportData == null) return BadRequest(result);
 
-            var csv = new System.Text.StringBuilder();
-            csv.AppendLine("Timestamp,Device,DeviceType,Zone,PowerKW,Voltage,Current");
-            foreach (var r in readings)
-                csv.AppendLine($"{r.Timestamp},{r.Device.Name},{r.Device.Type},{r.Device.Zone?.Name},{r.PowerConsumptionKW},{r.Voltage},{r.Current}");
-
-            return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"readings_{DateTime.UtcNow:yyyyMMdd}.csv");
+            return File(exportData.Content, "text/csv", exportData.FileName);
         }
 
         // Helper to parse dates

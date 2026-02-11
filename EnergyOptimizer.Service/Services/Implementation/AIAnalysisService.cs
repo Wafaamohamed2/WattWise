@@ -54,7 +54,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
         private async Task DetectAnomalies(CancellationToken cancellationToken)
         {
-            var activeDevices = await _deviceRepo.ListAsync(new ActiveDevicesWithZoneSpec());
+            var activeDevices = await _deviceRepo.ListAsync(new ActiveDevicesWithZoneSpec(true));
 
             foreach (var device in activeDevices)
             {

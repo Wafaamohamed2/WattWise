@@ -1,5 +1,6 @@
-﻿using EnergyOptimizer.API.DTOs;
-using EnergyOptimizer.API.Hubs;
+﻿using EnergyOptimizer.API.Hubs;
+using EnergyOptimizer.Core.DTOs.DashboardDTOs;
+using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Infrastructure.Data;

@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
 using System;

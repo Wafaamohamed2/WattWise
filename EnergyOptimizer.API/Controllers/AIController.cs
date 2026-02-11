@@ -1,6 +1,10 @@
 ﻿using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
 using EnergyOptimizer.Core.Features.AI.Queries;
+using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
+using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
+using EnergyOptimizer.Core.Features.AI.Queries.Reco;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +16,11 @@ namespace EnergyOptimizer.API.Controllers
     [ApiController]
     public class AIController : ControllerBase
     {
-        private readonly IMediator _mediator;
-        private readonly ILogger<AIController> _logger;
-    
+        private readonly IMediator _mediator;    
 
-        public AIController(
-             IMediator mediator,
-             ILogger<AIController> logger)
+        public AIController( IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger;
         }
 
         [HttpPost("run-analysis")]

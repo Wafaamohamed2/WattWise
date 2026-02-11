@@ -1,0 +1,17 @@
+﻿namespace EnergyOptimizer.Core.DTOs.DeviceDTOs
+{
+    public class DeviceConsumptionDto
+    {
+        public int DeviceId { get; set; }
+        public string DeviceName { get; set; } = string.Empty;
+        public string DeviceType { get; set; } = string.Empty;
+        public string ZoneName { get; set; } = string.Empty;
+        public decimal RatedPowerKW { get; set; }
+        public decimal CurrentConsumption { get; set; }
+        public decimal TodayConsumption { get; set; }
+        public decimal AverageConsumption { get; set; }
+        public int ReadingsCount { get; set; }
+        public DateTime? LastReadingTime { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

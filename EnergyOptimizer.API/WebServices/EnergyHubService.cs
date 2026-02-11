@@ -16,5 +16,19 @@ namespace EnergyOptimizer.API.WebServices
         {
             await _hubContext.Clients.All.SendAsync("ReceiveAlert", message);
         }
+        public async Task NotifyDeviceStatusChanged(int deviceId, bool isActive)
+        {
+            await _hubContext.Clients.All.SendAsync("DeviceStatusUpdated", new
+            {
+                DeviceId = deviceId,
+                IsActive = isActive
+            });
+        }
+
+        public async Task NotifyNewReading(object readingData)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveReading", readingData);
+        }
+        
     }
 }

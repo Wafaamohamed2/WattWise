@@ -1,13 +1,13 @@
-﻿using EnergyOptimizer.API.DTOs;
-using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using EnergyOptimizer.Core.Specifications.ReadSpec;
 using System.Text.Json;
+using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.Specifications.AlertSpec;
 namespace EnergyOptimizer.API.Services
 {
 
