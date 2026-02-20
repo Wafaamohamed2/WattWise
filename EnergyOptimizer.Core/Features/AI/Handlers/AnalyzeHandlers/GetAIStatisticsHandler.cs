@@ -1,49 +1,74 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
-using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 {
     public class GetAIStatisticsHandler : IRequestHandler<GetAIStatisticsQuery, ApiResponse>
     {
         private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
-        private readonly IGenericRepository<EnergyRecommendation> _recRepo;
+        private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
         private readonly IGenericRepository<DetectedAnomaly> _anomalyRepo;
-        private readonly IGenericRepository<Device> _deviceRepo;
 
-        public GetAIStatisticsHandler(IGenericRepository<EnergyAnalysis> analysisRepo, IGenericRepository<EnergyRecommendation> recRepo,
-            IGenericRepository<DetectedAnomaly> anomalyRepo, IGenericRepository<Device> deviceRepo)
+        public GetAIStatisticsHandler(
+            IGenericRepository<EnergyAnalysis> analysisRepo,
+            IGenericRepository<EnergyRecommendation> recommendationRepo,
+            IGenericRepository<DetectedAnomaly> anomalyRepo)
         {
-            _analysisRepo = analysisRepo; _recRepo = recRepo; _anomalyRepo = anomalyRepo; _deviceRepo = deviceRepo;
+            _analysisRepo = analysisRepo;
+            _recommendationRepo = recommendationRepo;
+            _anomalyRepo = anomalyRepo;
         }
 
         public async Task<ApiResponse> Handle(GetAIStatisticsQuery request, CancellationToken ct)
         {
-            var analyses = await _analysisRepo.ListAllAsync();
-            var recommendations = await _recRepo.ListAllAsync();
-            var anomalies = await _anomalyRepo.ListAllAsync();
+            var today = DateTime.UtcNow;
+            var thirtyDaysAgo = today.AddDays(-30);
+            var sevenDaysAgo = today.AddDays(-7);
+
+            // Analyses
+            var allAnalyses = await _analysisRepo.ListAllAsync();
+            int totalCount = allAnalyses.Count;
+            int count30 = allAnalyses.Count(a => a.AnalysisDate >= thirtyDaysAgo);
+
+            // Recommendations
+            var allRecs = await _recommendationRepo.ListAllAsync();
+            int activeRecs = allRecs.Count(r => !r.IsImplemented);
+            int doneRecs = allRecs.Count(r => r.IsImplemented);
+            double totalSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+
+            // Anomalies
+            var allAnomalies = await _anomalyRepo.ListAllAsync();
+            int pendingAnoms = allAnomalies.Count(a => !a.IsResolved);
+            int recentAnoms = allAnomalies.Count(a => a.DetectedAt >= sevenDaysAgo);
 
             var stats = new
             {
-                Analyses = new { Total = analyses.Count(), Last30Days = analyses.Count(a => a.AnalysisDate >= DateTime.UtcNow.AddDays(-30)) },
-                Recommendations = new
+                analyses = new
                 {
-                    Total = recommendations.Count(),
-                    Active = recommendations.Count(r => !r.IsImplemented && (r.ExpiresAt == null || r.ExpiresAt > DateTime.UtcNow)),
-                    TotalPotentialSavings = Math.Round(recommendations.Where(r => !r.IsImplemented).Sum(r => (double)r.EstimatedSavingsKWh), 2)
+                    total = totalCount,
+                    last30Days = count30,
+                    byType = allAnalyses.GroupBy(a => a.AnalysisType)
+                                         .Select(g => new { type = g.Key, count = g.Count() })
                 },
-                Anomalies = new
+                recommendations = new
                 {
-                    Total = anomalies.Count(),
-                    Unresolved = anomalies.Count(a => !a.IsResolved),
-                    bySeverity = anomalies.GroupBy(a => a.Severity).Select(g => new { severity = g.Key, count = g.Count() })
+                    active = activeRecs,
+                    implemented = doneRecs,
+                    totalPotentialSavings = totalSavings
+                },
+                anomalies = new
+                {
+                    unresolved = pendingAnoms,
+                    last7Days = recentAnoms,
+                    bySeverity = allAnomalies.GroupBy(a => a.Severity)
+                                              .Select(g => new { severity = g.Key, count = g.Count() })
                 }
             };
 
-            return new ApiResponse(200, "AI Statistics retrieved successfully", stats);
+            return new ApiResponse(200, "Statistics retrieved successfully", stats);
         }
     }
 }

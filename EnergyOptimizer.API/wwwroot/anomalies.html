@@ -789,19 +789,11 @@
                 if (startDate) params.append('startDate', startDate);
                 if (endDate) params.append('endDate', endDate);
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?${params}`, {
-                    cache: "no-cache"
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies`);
                 const result = await response.json();
-                console.log('Anomalies API Response:', result);
-
-                // Fix: Backend returns data in result.details
-                const details = result.details || result || {};
+                if (result.details && result.details.data) {
+                    displayAnomalies(result.details.data); 
+                }
 
                 displayStatistics(details.statistics || {});
                 displayAnomalies(details.data || []);

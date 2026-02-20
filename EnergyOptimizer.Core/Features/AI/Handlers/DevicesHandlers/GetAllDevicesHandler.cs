@@ -1,20 +1,14 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
 {
     public class GetAllDevicesHandler : IRequestHandler<GetAllDevicesQuery, ApiResponse>
     {
-
         private readonly IGenericRepository<Device> _deviceRepo;
 
         public GetAllDevicesHandler(IGenericRepository<Device> deviceRepo)

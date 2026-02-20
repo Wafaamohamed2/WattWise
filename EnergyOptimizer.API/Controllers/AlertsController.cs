@@ -15,71 +15,59 @@ namespace EnergyOptimizer.API.Controllers
         private readonly IMediator _mediator;
         public AlertsController(IMediator mediator) => _mediator = mediator;
 
-        // Get all alerts with filters
         [HttpGet]
-        public async Task<ActionResult<object>> GetAlerts(
-            [FromQuery] GetAlertsQuery query)
+        public async Task<IActionResult> GetAlerts([FromQuery] GetAlertsQuery query)
         {
-            var alerts = await _mediator.Send(query);
-            return Ok(alerts);
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
-        // Get unread alerts count
         [HttpGet("unread-count")]
-        public async Task<ActionResult<object>> GetUnreadCount()
+        public async Task<IActionResult> GetUnreadCount()
         {
-                var result = await _mediator.Send(new GetUnreadAlertsCountQuery());
-                return Ok(result);
+            var result = await _mediator.Send(new GetUnreadAlertsCountQuery());
+            return Ok(result);
         }
 
-        // Get alerts statistics
         [HttpGet("statistics")]
-        public async Task<ActionResult<AlertStatistics>> GetStatistics(
+        public async Task<IActionResult> GetStatistics(
            [FromQuery] string? startDate = null,
            [FromQuery] int days = 7)
         {
-             var result = await _mediator.Send(new GetAlertStatisticsQuery(startDate, days));
+            var result = await _mediator.Send(new GetAlertStatisticsQuery(startDate, days));
             return Ok(result);
         }
 
-        // Get alert by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<AlertDto>> GetAlert(int id)
+        public async Task<IActionResult> GetAlert(int id)
         {
             var result = await _mediator.Send(new GetAlertByIdQuery(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
-        // Mark alert as read
         [HttpPatch("{id}/read")]
-        public async Task<ActionResult> MarkAsRead(int id)
+        public async Task<IActionResult> MarkAsRead(int id)
         {
-            var result = await _mediator.Send(new MarkAlertAsReadCommand (id) );
-            if (result.StatusCode == 404) return NotFound(result);
+            var result = await _mediator.Send(new MarkAlertAsReadCommand(id));
             return Ok(result);
         }
 
-        // Mark all alerts as read
         [HttpPost("all-read")]
-        public async Task<ActionResult> MarkAllAsRead()
+        public async Task<IActionResult> MarkAllAsRead()
         {
             var result = await _mediator.Send(new MarkAllAlertsAsReadCommand());
             return Ok(result);
         }
 
-        // Delete alert 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteAlert(int id)
+        public async Task<IActionResult> DeleteAlert(int id)
         {
             var result = await _mediator.Send(new DeleteAlertCommand(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
-        // Delete all read alerts
         [HttpDelete("clear-read")]
-        public async Task<ActionResult> ClearReadAlerts()
+        public async Task<IActionResult> ClearReadAlerts()
         {
             var result = await _mediator.Send(new ClearReadAlertsCommand());
             return Ok(result);

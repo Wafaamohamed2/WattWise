@@ -1,10 +1,10 @@
-﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+﻿using MediatR;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
-using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EnergyOptimizer.Core.Exceptions;
+using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -27,16 +29,18 @@ namespace EnergyOptimizer.Core.Features.AI.Commands.Middleware
             }
             catch (Exception ex)
             {
-                // for logging the exception details
-                _logger.LogError(ex, "Unhandled Exception: {Message}", ex.Message);
+                _logger.LogError(ex, "Exception: {Message}", ex.Message);
 
-                // preparing the error response
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
+                var statusCode = ex is BaseException baseEx
+                    ? baseEx.StatusCode
+                    : (int)HttpStatusCode.InternalServerError;
+
+                context.Response.StatusCode = statusCode;
                 var response = _env.IsDevelopment()
-                   ? new ApiResponse(500, ex.Message, ex.StackTrace?.ToString())
-                   : new ApiResponse(500, "An internal server error occurred. Please try again later.");
+                   ? new ApiResponse(statusCode, ex.Message, ex.StackTrace?.ToString())
+                   : new ApiResponse(statusCode, statusCode == 500 ? "Internal Server Error" : ex.Message);
 
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var json = JsonSerializer.Serialize(response, options);
@@ -44,6 +48,6 @@ namespace EnergyOptimizer.Core.Features.AI.Commands.Middleware
                 await context.Response.WriteAsync(json);
             }
         }
+        public record ApiResponse(int StatusCode, string Message, object? Details = null);
     }
-    public record ApiResponse(int StatusCode, string Message, object Details = null);
 }

@@ -92,9 +92,9 @@ namespace EnergyOptimizer.API.Services
                 await alertRepo.SaveChangesAsync();
 
                 // Broadcast each alert
-                foreach (var alert in alertsToCreate)
+                foreach (var alertItem in alertsToCreate)
                 {
-                    await BroadcastAlert(deviceRepo, alert);
+                    await BroadcastAlert(alertItem);
                 }
 
                 _logger.LogInformation("Created {Count} new alerts", alertsToCreate.Count);
@@ -245,58 +245,41 @@ namespace EnergyOptimizer.API.Services
         }
 
         // Broadcast Alert via SignalR
-        private async Task BroadcastAlert(IGenericRepository<Device> deviceRepo, Alert alert)
+        private async Task BroadcastAlert(Alert alert)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var hubService = scope.ServiceProvider.GetRequiredService<IEnergyHubService>();
+                var deviceRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Device>>();
+
                 try
                 {
-                    var spec = new DeviceWithDetailsSpec(alert.DeviceId);
-                    var device = await deviceRepo.GetEntityWithSpec(spec);
+                    var device = await deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(alert.DeviceId));
 
-                    if (device == null || device.Zone == null) 
-                    {
-                        _logger.LogWarning("Device or Zone not found for alert {AlertId}", alert.Id);
-                        return;
-                    }
+                    if (device == null) return;
 
                     var alertDto = new AlertDto
                     {
                         Id = alert.Id,
                         DeviceName = device.Name,
-                        ZoneName = device.Zone.Name ?? "General",
+                        ZoneName = device.Zone?.Name ?? "General",
                         AlertType = alert.Type.ToString(),
                         Message = alert.Message,
                         Severity = alert.Severity,
-                        SeverityLabel = alert.Severity switch
-                        {
-                            1 => "Info",
-                            2 => "Warning",
-                            3 => "Critical",
-                            _ => "Unknown"
-                        },
-
-                        Icon = alert.Severity switch
-                        {
-                            1 => "🔵",
-                            2 => "🟡",
-                            3 => "🔴",
-                            _ => "⚪"
-                        },
                         CreatedAt = alert.CreatedAt,
                         IsRead = alert.IsRead
                     };
+
                     await hubService.SendAlertNotification(JsonSerializer.Serialize(alertDto));
-                    _logger.LogInformation("Broadcasted alert {AlertId} for device {DeviceName}", alert.Id, device.Name);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error broadcasting alert {AlertId}", alert.Id);
                 }
             }
-              
         }
+
     }
-}
+ }
+
 

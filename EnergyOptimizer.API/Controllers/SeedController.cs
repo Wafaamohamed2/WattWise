@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.API.Services;
 using Microsoft.AspNetCore.Authorization;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Exceptions; 
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -11,12 +12,11 @@ namespace EnergyOptimizer.API.Controllers
     public class SeedController : ControllerBase
     {
         private readonly DataSeedingService _seedingService;
-        private readonly ILogger<SeedController> _logger;
         private readonly IWebHostEnvironment _env;
-        public SeedController(DataSeedingService seedingService, ILogger<SeedController> logger, IWebHostEnvironment env)
+
+        public SeedController(DataSeedingService seedingService, IWebHostEnvironment env)
         {
             _seedingService = seedingService;
-            _logger = logger;
             _env = env;
         }
 
@@ -25,10 +25,11 @@ namespace EnergyOptimizer.API.Controllers
         {
             if (_env.IsProduction())
             {
-                return BadRequest(new ApiResponse(400, "Seeding is not allowed in Production environment!"));
+                throw new BadRequestException("Seeding is not allowed in Production environment!");
             }
 
             await _seedingService.SeedAsync();
+
             return Ok(new ApiResponse(200, "Data seeded successfully!"));
         }
     }

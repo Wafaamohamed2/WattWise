@@ -1,9 +1,10 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Exceptions; 
+using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
 {
@@ -23,7 +24,8 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
             var spec = new DeviceWithDetailsSpec(request.Id);
             var device = await _deviceRepo.GetEntityWithSpec(spec);
 
-            if (device == null) return new ApiResponse(404, "Device not found");
+            if (device == null)
+                throw new NotFoundException($"Device with ID {request.Id} not found");
 
             device.IsActive = !device.IsActive;
             _deviceRepo.Update(device);

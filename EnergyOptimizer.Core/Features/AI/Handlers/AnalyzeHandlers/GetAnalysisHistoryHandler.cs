@@ -1,8 +1,8 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 {
@@ -35,9 +35,23 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             var data = query.OrderByDescending(a => a.AnalysisDate)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(a => new { a.Id, a.AnalysisType, a.AnalysisDate, a.Summary, a.TotalConsumptionKWh, a.DevicesAnalyzed });
+                .Select(a => new {
+                    a.Id,
+                    a.AnalysisType,
+                    a.AnalysisDate,
+                    a.Summary,
+                    a.TotalConsumptionKWh,
+                    a.DevicesAnalyzed
+                });
 
-            return new ApiResponse(200, "Analysis history retrieved", new { request.Page, request.PageSize, totalPages, count = total, data });
+            return new ApiResponse(200, "Analysis history retrieved", new
+            {
+                request.Page,
+                request.PageSize,
+                totalPages,
+                count = total,
+                data
+            });
         }
     }
 }

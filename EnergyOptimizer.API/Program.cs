@@ -14,8 +14,8 @@ using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
-using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +35,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -93,9 +98,8 @@ builder.Services.AddAuthentication(options => {
 
 // Add MediatR and register handlers from the Core assembly
 builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
+    cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 });
-
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();

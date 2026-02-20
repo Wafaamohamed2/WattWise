@@ -1,5 +1,4 @@
 ﻿using EnergyOptimizer.Core.Features.AI.Commands;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
@@ -8,6 +7,8 @@ using EnergyOptimizer.Core.Features.AI.Queries.Reco;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EnergyOptimizer.Core.Exceptions;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -16,9 +17,9 @@ namespace EnergyOptimizer.API.Controllers
     [ApiController]
     public class AIController : ControllerBase
     {
-        private readonly IMediator _mediator;    
+        private readonly IMediator _mediator;
 
-        public AIController( IMediator mediator)
+        public AIController(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -39,68 +40,51 @@ namespace EnergyOptimizer.API.Controllers
 
         #region Action Endpoints
         [HttpPost("analyze-patterns")]
-        public async Task<ActionResult<object>> AnalyzePatterns(
+        public async Task<IActionResult> AnalyzePatterns(
           [FromQuery] DateTime? startDate = null,
           [FromQuery] DateTime? endDate = null)
         {
             var result = await _mediator.Send(new AnalyzePatternsQuery(startDate, endDate));
-
-            if (result.StatusCode == 400) return BadRequest(result);
             return Ok(result);
         }
 
-
-        // Detect anomalies for a specific device
         [HttpPost("detect-anomalies/{deviceId}")]
-        public async Task<ActionResult<object>> DetectAnomalies(
+        public async Task<IActionResult> DetectAnomalies(
             int deviceId,
             [FromQuery] int days = 7)
         {
-            if (days < 1 || days > 30) return BadRequest(new ApiResponse(400, "Days must be between 1 and 30"));
+            if (days < 1 || days > 30)
+                throw new BadRequestException("Days must be between 1 and 30");
+
             var result = await _mediator.Send(new DetectDeviceAnomaliesCommand(deviceId, days));
-
-            if (result.StatusCode == 400) return BadRequest(result);
             return Ok(result);
-
         }
 
-
-        // Generate energy-saving recommendations
         [HttpPost("generate-recommendations")]
-        public async Task<ActionResult<object>> GenerateRecommendations(
+        public async Task<IActionResult> GenerateRecommendations(
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)
         {
             var result = await _mediator.Send(new GenerateRecommendationsCommand(startDate, endDate));
-
-            if (result.StatusCode == 400) return BadRequest(result);
             return Ok(result);
-
         }
 
-
-        // Predict future consumption
         [HttpPost("predict-consumption")]
-        public async Task<ActionResult<object>> PredictConsumption(
+        public async Task<IActionResult> PredictConsumption(
            [FromQuery] int days = 7)
         {
             if (days < 1 || days > 30)
-            {
-                return BadRequest(new ApiResponse(400, "Days must be between 1 and 30"));
-            }
+                throw new BadRequestException("Days must be between 1 and 30");
 
             var result = await _mediator.Send(new PredictConsumptionQuery(days));
-
-            if (result.StatusCode == 400) return BadRequest(result);
             return Ok(result);
         }
 
-
-        // Ask a question to the AI system about energy optimization
         [HttpPost("ask")]
-        public async Task<ActionResult<object>> AskQuestion([FromBody] AskQuestionRequest request)
+        public async Task<IActionResult> AskQuestion([FromBody] AskQuestionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Question)) return BadRequest(new { error = "Question is required" });
+            if (string.IsNullOrWhiteSpace(request.Question))
+                throw new BadRequestException("Question is required");
 
             var answer = await _mediator.Send(new AskAIQuestionQuery(request.Question, request.Context));
             return Ok(answer);
@@ -108,110 +92,93 @@ namespace EnergyOptimizer.API.Controllers
         #endregion
 
         #region Analysis Endpoints
-        // Endpoints for managing analysis history, recommendations, and anomalies
         [HttpGet("analysis-history")]
-        public async Task<ActionResult<object>> GetAnalysisHistory(
+        public async Task<IActionResult> GetAnalysisHistory(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? analysisType = null,
         [FromQuery] string? startDate = null,
         [FromQuery] string? endDate = null)
         {
-            var analyses = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, null, null));
-
-            return Ok(analyses);
+            var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, null, null));
+            return Ok(result);
         }
 
-        // Get detailed analysis by ID
         [HttpGet("analysis/{id}")]
-        public async Task<ActionResult<object>> GetAnalysisById(int id)
+        public async Task<IActionResult> GetAnalysisById(int id)
         {
             var result = await _mediator.Send(new GetAnalysisByIdQuery(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
         [HttpGet("Statistics")]
-        public async Task<ActionResult<object>> GetAIStatistics()
+        public async Task<IActionResult> GetAIStatistics()
         {
-             var statistics = await  _mediator.Send(new GetAIStatisticsQuery());
-             return Ok(statistics);
-            
+            var result = await _mediator.Send(new GetAIStatisticsQuery());
+            return Ok(result);
         }
         #endregion
 
-
         #region Recommendations Endpoints
         [HttpGet("recommendations")]
-        public async Task<ActionResult<object>> GetRecommendations(
+        public async Task<IActionResult> GetRecommendations(
         [FromQuery] bool? isImplemented = null)
         {
-
             var result = await _mediator.Send(new GetRecommendationsQuery(isImplemented));
             return Ok(result);
-
         }
 
-
         [HttpPatch("recommendations/{id}/implement")]
-        public async Task<ActionResult<object>> ImplementRecommendation(int id)
+        public async Task<IActionResult> ImplementRecommendation(int id)
         {
             var result = await _mediator.Send(new ImplementRecommendationCommand(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
         [HttpDelete("recommndations/{id}")]
-        public async Task<ActionResult<object>> DeleteRecommendation(int id)
+        public async Task<IActionResult> DeleteRecommendation(int id)
         {
             var result = await _mediator.Send(new DeleteRecommendationCommand(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
         #endregion
 
-
         #region Anomalies Endpoints
         [HttpGet("anomalies")]
-        public async Task<ActionResult<object>> GetAnomalies(
+        public async Task<IActionResult> GetAnomalies(
         [FromQuery] bool? isResolved = null,
         [FromQuery] string? severity = null,
         [FromQuery] int? deviceId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
         {
-            var anomaliesList = await _mediator.Send(new GetAnomaliesQuery(isResolved, severity, deviceId, page, pageSize));
-            return Ok(anomaliesList);
+            var result = await _mediator.Send(new GetAnomaliesQuery(isResolved, severity, deviceId, page, pageSize));
+            return Ok(result);
         }
 
         [HttpGet("anomalies/{id}")]
-        public async Task<ActionResult<object>> GetAnomalyById(int id)
+        public async Task<IActionResult> GetAnomalyById(int id)
         {
             var result = await _mediator.Send(new GetAnomalyByIdQuery(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
         [HttpPatch("anomalies/{id}/resolve")]
-        public async Task<ActionResult<object>> ResolveAnomaly(
+        public async Task<IActionResult> ResolveAnomaly(
            int id,
            [FromBody] ResolveAnomalyRequest request)
         {
             var result = await _mediator.Send(new ResolveAnomalyCommand(id, request.ResolutionNotes));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
 
         [HttpDelete("anomalies/{id}")]
-        public async Task<ActionResult<object>> DeleteAnomaly(int id)
+        public async Task<IActionResult> DeleteAnomaly(int id)
         {
             var result = await _mediator.Send(new DeleteAnomalyCommand(id));
-            if (result.StatusCode == 404) return NotFound(result);
             return Ok(result);
         }
-
         #endregion
-
     }
 
     public record class AskQuestionRequest(
@@ -222,5 +189,4 @@ namespace EnergyOptimizer.API.Controllers
     public record class ResolveAnomalyRequest(
         string ResolutionNotes
     );
-
 }

@@ -1,8 +1,8 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
 using EnergyOptimizer.Core.Features.AI.Queries.Reco;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 {
@@ -24,6 +24,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
                 query = query.Where(r => r.IsImplemented == request.IsImplemented.Value);
 
             var result = query.OrderByDescending(r => r.Priority).ToList();
+
             return new ApiResponse(200, "Recommendations retrieved successfully", result);
         }
     }

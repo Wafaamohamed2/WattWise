@@ -1,7 +1,7 @@
-﻿using EnergyOptimizer.Core.Features.AI.Commands;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using MediatR;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
+using EnergyOptimizer.Core.Features.AI.Commands;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 {

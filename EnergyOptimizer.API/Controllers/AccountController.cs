@@ -1,5 +1,5 @@
 ﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Exceptions; 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using static EnergyOptimizer.API.DTOs.AuthDto;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -26,12 +27,13 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
+
             if (!ModelState.IsValid)
-                return BadRequest(new AuthResponseDto(false, "Invalid input data"));
+                throw new BadRequestException("Invalid input data");
 
             var user = new ApplicationUser
             {
-                UserName = model.Email, 
+                UserName = model.Email,
                 Email = model.Email,
                 FullName = model.FullName,
                 CreatedAt = DateTime.UtcNow,
@@ -39,11 +41,14 @@ namespace EnergyOptimizer.API.Controllers
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
-            
-            if (!result.Succeeded)
-                return BadRequest(new AuthResponseDto(false, string.Join(", ", result.Errors.Select(e => e.Description))));
 
-            return Ok(new AuthResponseDto(true, "User registered successfully!"));
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new BadRequestException(errors);
+            }
+
+            return Ok(new ApiResponse(200, "User registered successfully!"));
         }
 
         [HttpPost("login")]
@@ -51,16 +56,21 @@ namespace EnergyOptimizer.API.Controllers
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
 
-            if (!ModelState.IsValid)
-                return BadRequest(new AuthResponseDto(false, "Invalid input data"));
+            if (user == null)
+                throw new BadRequestException("Invalid email or password");
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-            
+
             if (!isPasswordValid)
-                return Unauthorized(new AuthResponseDto(false, "Invalid email or password"));
+                throw new UnauthorizedException("Invalid email or password");
 
             var token = GenerateJwtToken(user);
-            return Ok(new ApiResponse(200, "Login successful", new { Token = token, User = user }));
+
+            return Ok(new ApiResponse(200, "Login successful", new
+            {
+                Token = token,
+                User = new { user.Id, user.FullName, user.Email }
+            }));
         }
 
         private string GenerateJwtToken(ApplicationUser user)

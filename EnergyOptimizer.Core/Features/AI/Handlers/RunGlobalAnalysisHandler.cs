@@ -1,11 +1,11 @@
-﻿using EnergyOptimizer.Core.Features.AI.Commands;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using MediatR;
+using EnergyOptimizer.Core.Features.AI.Commands;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 using EnergyOptimizer.Service.Services.Abstract;
-
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers
 {
-    public class RunGlobalAnalysisHandler
+    public class RunGlobalAnalysisHandler : IRequestHandler<RunGlobalAnalysisCommand, ApiResponse>
     {
         private readonly IAIAnalysisService _aiService;
 

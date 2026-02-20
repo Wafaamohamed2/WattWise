@@ -1,9 +1,11 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Exceptions; 
 using MediatR;
 using System.Text.Json;
+using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
@@ -18,18 +20,19 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             _patternService = patternService;
             _analysisRepo = analysisRepo;
         }
+
         public async Task<ApiResponse> Handle(AnalyzePatternsQuery request, CancellationToken ct)
         {
             var start = request.StartDate ?? DateTime.UtcNow.AddDays(-30);
             var end = request.EndDate ?? DateTime.UtcNow;
 
             if (start >= end)
-                return new ApiResponse(400, "Start date must be before end date");
+                throw new BadRequestException("Start date must be before end date");
 
             var result = await _patternService.AnalyzeConsumptionPatterns(start, end);
 
             if (!result.Success)
-                return new ApiResponse(400, result.ErrorMessage);
+                throw new BadRequestException(result.ErrorMessage);
 
             var analysis = new EnergyAnalysis
             {
@@ -47,5 +50,4 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             return new ApiResponse(200, "Analysis completed successfully", result);
         }
     }
-
 }

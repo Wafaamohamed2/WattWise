@@ -1,11 +1,9 @@
 ﻿using EnergyOptimizer.Core.DTOs.DeviceDTOs;
 using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -16,63 +14,58 @@ namespace EnergyOptimizer.API.Controllers
     {
         private readonly IMediator _mediator;
 
-        public DevicesController( IMediator mediator)
+        public DevicesController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetAllDevices(
-        [FromQuery] GetAllDevicesQuery query)
+        public async Task<IActionResult> GetAllDevices([FromQuery] GetAllDevicesQuery query)
         {
-            var devices = await _mediator.Send(query);
-            return Ok(devices);
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<object>> GetDeviceById(int id)
+        public async Task<IActionResult> GetDeviceById(int id)
         {
             var result = await _mediator.Send(new GetDeviceByIdQuery(id));
-            return result == null ? NotFound(new ApiResponse(404, "Not found")) : Ok(result);
-
+            return Ok(result);
         }
 
         [HttpGet("zone/{zoneId}")]
-        public async Task<ActionResult<IEnumerable<object>>> GetDevicesByZone(int zoneId)
+        public async Task<IActionResult> GetDevicesByZone(int zoneId)
         {
-            var devices = await _mediator.Send(new GetDevicesByZoneQuery(zoneId));
-            return Ok(devices);            
+            var result = await _mediator.Send(new GetDevicesByZoneQuery(zoneId));
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<object>> CreateDevice([FromBody] CreateDeviceDto dto)
+        public async Task<IActionResult> CreateDevice([FromBody] CreateDeviceDto dto)
         {
-              var newDevice = await _mediator.Send(new CreateDeviceCommand(dto));
-            return Ok(newDevice);
-             
+            var result = await _mediator.Send(new CreateDeviceCommand(dto));
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<object>> UpdateDevice(int id, [FromBody] UpdateDeviceDto dto)
+        public async Task<IActionResult> UpdateDevice(int id, [FromBody] UpdateDeviceDto dto)
         {
-            var updatedDevice = await _mediator.Send(new UpdateDeviceCommand(dto));
-            return Ok(updatedDevice);
+            var result = await _mediator.Send(new UpdateDeviceCommand(dto));
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> DeleteDevice(int id)
+        public async Task<IActionResult> DeleteDevice(int id)
         {
-             var result = await _mediator.Send(new DeleteDeviceCommand(id));
-             return Ok(result);
+            var result = await _mediator.Send(new DeleteDeviceCommand(id));
+            return Ok(result);
         }
 
-        //  Toggle device status (Active/Inactive) + notify clients via SignalR
         [HttpPatch("{id}/toggle")]
-        public async Task<ActionResult> ToggleDevice(int id)
+        public async Task<IActionResult> ToggleDevice(int id)
         {
-            var ToggleDevice = await _mediator.Send(new ToggleDeviceCommand(id));
-            if (ToggleDevice.StatusCode == 404) return NotFound(ToggleDevice);
-            return Ok(ToggleDevice);
+            var result = await _mediator.Send(new ToggleDeviceCommand(id));
+            return Ok(result);
         }
     }
 }

@@ -1,11 +1,10 @@
-﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+﻿using MediatR;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
-using MediatR;
-
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
@@ -31,13 +30,13 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
             var spec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end);
 
             var totalAlerts = await _alertRepo.CountAsync(spec);
-            var alerts = await _alertRepo.ListAsync(spec); 
+            var alerts = await _alertRepo.ListAsync(spec);
 
             var data = alerts.Select(a => new AlertDto
             {
                 Id = a.Id,
-                DeviceName = a.Device?.Name,
-                ZoneName = a.Device?.Zone?.Name,
+                DeviceName = a.Device?.Name ?? "Unknown",
+                ZoneName = a.Device?.Zone?.Name ?? "Unknown",
                 AlertType = a.Type.ToString(),
                 Message = a.Message,
                 Severity = a.Severity,

@@ -1,8 +1,8 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
+using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
 {
@@ -13,15 +13,13 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
 
         public async Task<ApiResponse> Handle(GetConsumptionByZoneQuery request, CancellationToken ct)
         {
-
             if (!DateTime.TryParse(request.StartDate, out var start)) start = DateTime.UtcNow.Date;
             if (!DateTime.TryParse(request.EndDate, out var end)) end = DateTime.UtcNow;
 
             var zones = await _zoneRepo.ListAllAsync();
 
 
-
-            return new ApiResponse(200, "Zone consumption statistics retrieved", new { /* البيانات */ });
+            return new ApiResponse(200, "Zone consumption statistics retrieved", new { zonesCount = zones.Count });
         }
     }
 }

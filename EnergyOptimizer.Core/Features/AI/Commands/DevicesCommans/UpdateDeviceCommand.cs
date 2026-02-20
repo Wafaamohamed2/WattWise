@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.Core.DTOs.DeviceDTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans
 {

@@ -1,9 +1,8 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Commands.ReadingsCommans;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
-
+using EnergyOptimizer.Core.Features.AI.Commands.ReadingsCommans;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers
 {

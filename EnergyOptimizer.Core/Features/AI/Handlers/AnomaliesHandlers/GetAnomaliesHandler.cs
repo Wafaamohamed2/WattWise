@@ -1,9 +1,9 @@
 ﻿using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 {
@@ -58,7 +58,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
                         device = device != null ? new { name = device.Name, zone = device.Zone?.Name ?? "Unknown" } : null,
                         deviationPercent = a.ExpectedValue != 0 ? Math.Round((a.ActualValue - a.ExpectedValue) / a.ExpectedValue * 100, 1) : 0
                     };
-                });
+                }).ToList();
 
             return new ApiResponse(200, "Anomalies retrieved successfully", new
             {

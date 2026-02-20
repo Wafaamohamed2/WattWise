@@ -1,10 +1,10 @@
-﻿using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
+﻿using MediatR;
+using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
 {

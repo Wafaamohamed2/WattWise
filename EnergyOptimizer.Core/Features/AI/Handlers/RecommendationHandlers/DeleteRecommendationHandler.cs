@@ -1,9 +1,9 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
+using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
-
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 {
@@ -19,10 +19,13 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
         public async Task<ApiResponse> Handle(DeleteRecommendationCommand request, CancellationToken ct)
         {
             var rec = await _recommendationRepo.GetByIdAsync(request.Id);
-            if (rec == null) return new ApiResponse(404, "Recommendation not found");
+
+            if (rec == null)
+                throw new NotFoundException($"Recommendation with ID {request.Id} not found");
 
             _recommendationRepo.Delete(rec);
             await _recommendationRepo.SaveChangesAsync();
+
             return new ApiResponse(200, "Deleted successfully");
         }
     }

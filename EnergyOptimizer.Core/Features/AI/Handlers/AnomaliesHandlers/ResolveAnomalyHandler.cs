@@ -1,8 +1,9 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Exceptions; 
 using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 {
@@ -15,7 +16,9 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
         public async Task<ApiResponse> Handle(ResolveAnomalyCommand request, CancellationToken ct)
         {
             var anomaly = await _anomalyRepo.GetByIdAsync(request.Id);
-            if (anomaly == null) return new ApiResponse(404, "Anomaly not found");
+
+            if (anomaly == null)
+                throw new NotFoundException($"Anomaly with ID {request.Id} not found");
 
             anomaly.IsResolved = true;
             anomaly.ResolvedAt = DateTime.UtcNow;

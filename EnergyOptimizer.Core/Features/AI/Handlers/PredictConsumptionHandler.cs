@@ -1,7 +1,8 @@
-﻿using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries;
+﻿using MediatR;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
+using EnergyOptimizer.Core.Features.AI.Queries;
+using EnergyOptimizer.Core.Exceptions; 
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers
 {
@@ -19,7 +20,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers
             var result = await _patternService.PredictConsumption(request.Days);
 
             if (result.ConfidenceScore == 0)
-                return new ApiResponse(400, result.Explanation);
+                throw new BadRequestException(result.Explanation);
 
             return new ApiResponse(200, "Consumption prediction generated successfully", new
             {

@@ -1,11 +1,11 @@
-﻿using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
+﻿using MediatR;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Exceptions;
+using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using MediatR;
-
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
 {
@@ -23,9 +23,14 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
         public async Task<ApiResponse> Handle(GetDeviceStatisticsQuery request, CancellationToken ct)
         {
             var device = await _deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(request.DeviceId));
-            if (device == null) return new ApiResponse(404, "Device not found");
 
-            var readings = await _readingRepo.ListAsync(new ReadingsByDeviceAndDateSpec(request.DeviceId, request.StartDate, request.EndDate));
+            if (device == null)
+                throw new NotFoundException($"Device with ID {request.DeviceId} not found");
+
+            DateTime start = request.StartDate ?? DateTime.UtcNow.AddDays(-request.Days);
+            DateTime end = DateTime.UtcNow;
+
+            var readings = await _readingRepo.ListAsync(new ReadingsByDeviceAndDateSpec(request.DeviceId, start, end));
 
             if (!readings.Any())
                 return new ApiResponse(200, "No readings found", new { device = new { device.Id, device.Name } });

@@ -1,10 +1,11 @@
 ﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
 using MediatR;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
@@ -20,7 +21,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 
             var alert = (await _alertRepo.ListAsync(spec)).FirstOrDefault(a => a.Id == request.Id);
 
-            if (alert == null) return new ApiResponse(404, $"Alert with ID {request.Id} not found");
+            if (alert == null) throw new NotFoundException($"Alert with ID {request.Id} not found");
 
             var dto = new AlertDto
             {

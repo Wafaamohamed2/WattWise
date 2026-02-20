@@ -1,14 +1,10 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
-using EnergyOptimizer.Core.Interfaces;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MediatR;
 using System.Text.Json;
-using System.Threading.Tasks;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Exceptions; 
+using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
+using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 {
@@ -34,7 +30,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
             var end = request.EndDate ?? DateTime.UtcNow;
 
             if (start >= end)
-                return new ApiResponse(400, "Start date must be before end date");
+                throw new BadRequestException("Start date must be before end date");
 
             var result = await _patternService.GenerateRecommendations(start, end);
 
