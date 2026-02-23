@@ -8,7 +8,7 @@ using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddl
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
-    public class MarkAllAlertsAsReadHandler : IRequest<ApiResponse>
+    public class MarkAllAlertsAsReadHandler : IRequestHandler<MarkAllAlertsAsReadCommand ,ApiResponse>
     {
         private readonly IGenericRepository<Alert> _alertRepo;
 

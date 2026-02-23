@@ -1,4 +1,5 @@
-﻿using EnergyOptimizer.Core.Entities;
+﻿using AutoMapper;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions; 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,13 @@ namespace EnergyOptimizer.API.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public AccountController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public AccountController(UserManager<ApplicationUser> userManager, IConfiguration configuration , IMapper mapper)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -31,14 +34,7 @@ namespace EnergyOptimizer.API.Controllers
             if (!ModelState.IsValid)
                 throw new BadRequestException("Invalid input data");
 
-            var user = new ApplicationUser
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                FullName = model.FullName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var user = _mapper.Map<ApplicationUser>(model);
 
             var result = await _userManager.CreateAsync(user, model.Password);
 

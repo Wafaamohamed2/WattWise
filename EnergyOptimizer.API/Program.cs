@@ -16,6 +16,7 @@ using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.API.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,6 +126,9 @@ builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 // Register Pattern Detection Service
 builder.Services.AddScoped<IPatternDetectionService, PatternDetectionService>();
+
+// Add AutoMapper 
+builder.Services.AddAutoMapper(typeof(MappingProfiles));
 
 // Register AI Analysis and Data Cleanup Services
 builder.Services.AddScoped<IAIAnalysisService, AIAnalysisService>();
