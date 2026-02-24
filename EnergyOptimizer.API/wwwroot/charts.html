@@ -522,6 +522,10 @@
         }
 
         async function loadData() {
+            ['totalConsumption', 'avgDaily', 'peakPower', 'activeDevices'].forEach(id => {
+                document.getElementById(id).textContent = '...';
+            });
+
             try {
                 const period = document.getElementById('timePeriod').value;
                 let startDate, endDate;
@@ -538,21 +542,63 @@
                     startDate = new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
                 }
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=1000`);
-                const result = await response.json();
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=5000&startDate=${startDate}&endDate=${endDate}`);
 
-                const actualReadings = result.details?.data || [];
+                if (!response) return; 
+
+                const result = await response.json();
+                console.log('[Charts] API raw response:', result); 
+
+                let actualReadings =
+                    result.data
+                    ?? result.details?.data
+                    ?? result.details
+                    ?? result.items
+                    ?? (Array.isArray(result) ? result : null);
+
+                if (!actualReadings || !Array.isArray(actualReadings)) {
+                    console.error('[Charts] Could not find readings array in response. Keys:', Object.keys(result));
+                    showChartsError('Unexpected response format from server. Check console for details.');
+                    return;
+                }
+
+                console.log(`[Charts] Found ${actualReadings.length} readings before date filter`);
+
                 const filteredData = actualReadings.filter(reading => {
+                    if (!reading?.timestamp) return false;
                     const readingDate = new Date(reading.timestamp).toISOString().split('T')[0];
                     return readingDate >= startDate && readingDate <= endDate;
                 });
 
+                console.log(`[Charts] ${filteredData.length} readings after date filter`);
+
+                if (filteredData.length === 0) {
+                    showChartsError('No data found for the selected period.');
+                    ['totalConsumption', 'avgDaily', 'peakPower', 'activeDevices'].forEach(id => {
+                        document.getElementById(id).textContent = '0';
+                    });
+                    return;
+                }
+
                 updateStatistics(filteredData);
                 createCharts(filteredData);
                 populateFilters(filteredData);
+
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('[Charts] Error loading data:', error);
+                showChartsError('Failed to load data: ' + error.message);
             }
+        }
+
+        function showChartsError(message) {
+            document.querySelectorAll('.chart-container canvas').forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '14px Segoe UI';
+                ctx.fillStyle = '#9ca3af';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚠️ ' + message, canvas.width / 2, canvas.height / 2);
+            });
         }
 
         function updateStatistics(data) {
@@ -560,7 +606,7 @@
             const days = [...new Set(data.map(r => new Date(r.timestamp).toDateString()))].length || 1;
             const avgDaily = totalConsumption / days;
             const consumptionValues = data.map(r => r.powerConsumptionKW || 0);
-            const peakPower = Math.max(...consumptionValues);
+            const peakPower = consumptionValues.length > 0 ? Math.max(...consumptionValues) : 0;
             const activeDevices = [...new Set(data.map(r => r.device?.id || r.deviceId))].filter(id => id).length;
 
             document.getElementById('totalConsumption').textContent = totalConsumption.toFixed(2);
@@ -627,7 +673,7 @@
 
             const deviceData = {};
             data.forEach(reading => {
-                const device = reading.device.name;
+                const device = reading.device?.name || reading.deviceName || 'Unknown';
                 deviceData[device] = (deviceData[device] || 0) + reading.powerConsumptionKW;
             });
 
@@ -740,7 +786,7 @@
 
             const typeData = {};
             data.forEach(reading => {
-                const type = reading.device.type;
+                const type = reading.device?.type || reading.deviceType || 'Unknown';
                 typeData[type] = (typeData[type] || 0) + reading.powerConsumptionKW;
             });
 
@@ -819,7 +865,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (AuthHelper.checkAuth()) {
-                loadData(); 
+                loadData();
             }
         });
     </script>

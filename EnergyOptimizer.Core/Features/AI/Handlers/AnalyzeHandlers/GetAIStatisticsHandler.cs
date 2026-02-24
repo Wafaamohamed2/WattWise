@@ -37,7 +37,8 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             var allRecs = await _recommendationRepo.ListAllAsync();
             int activeRecs = allRecs.Count(r => !r.IsImplemented);
             int doneRecs = allRecs.Count(r => r.IsImplemented);
-            double totalSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+            double realizedSavings = allRecs.Where(r => r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+            double potentialSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
 
             // Anomalies
             var allAnomalies = await _anomalyRepo.ListAllAsync();
@@ -57,14 +58,18 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
                 {
                     active = activeRecs,
                     implemented = doneRecs,
-                    totalPotentialSavings = totalSavings
+                    totalRealizedSavings = realizedSavings,
+                    totalPotentialSavings = potentialSavings
                 },
                 anomalies = new
                 {
-                    unresolved = pendingAnoms,
-                    last7Days = recentAnoms,
-                    bySeverity = allAnomalies.GroupBy(a => a.Severity)
-                                              .Select(g => new { severity = g.Key, count = g.Count() })
+                    total = allAnomalies.Count,
+                    unresolved = allAnomalies.Count(a => !a.IsResolved),
+                    criticalSeverityCount = allAnomalies.Count(a => a.Severity == "Critical"),
+                    highSeverityCount = allAnomalies.Count(a => a.Severity == "High"),
+                    mediumSeverityCount = allAnomalies.Count(a => a.Severity == "Medium"),
+                    lowSeverityCount = allAnomalies.Count(a => a.Severity == "Low"),
+
                 }
             };
 

@@ -72,7 +72,11 @@ namespace EnergyOptimizer.API.Controllers
         private string GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
+            var jwtKey = jwtSettings["Key"]
+                ?? throw new InvalidOperationException("JWT Key is not configured.");
+            if (jwtKey.Length < 32)
+                throw new InvalidOperationException("JWT Key must be at least 32 characters.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)); 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
@@ -90,7 +94,7 @@ namespace EnergyOptimizer.API.Controllers
                 audience: jwtSettings["Audience"],
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["DurationInMinutes"]!)),
+                expires: DateTime.UtcNow.AddMinutes(double.TryParse(jwtSettings["DurationInMinutes"], out var duration) ? duration : 60),
                 signingCredentials: creds
             );
 

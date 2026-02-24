@@ -4,5 +4,5 @@ using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddl
 
 namespace EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans
 {
-    public record UpdateDeviceCommand(UpdateDeviceDto Dto) : IRequest<ApiResponse>;
+    public record UpdateDeviceCommand(int id ,UpdateDeviceDto Dto) : IRequest<ApiResponse>;
 }

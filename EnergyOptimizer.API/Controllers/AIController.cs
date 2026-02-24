@@ -8,7 +8,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.Core.Exceptions;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -135,7 +134,7 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("recommndations/{id}")]
+        [HttpDelete("recommendations/{id}")]
         public async Task<IActionResult> DeleteRecommendation(int id)
         {
             var result = await _mediator.Send(new DeleteRecommendationCommand(id));

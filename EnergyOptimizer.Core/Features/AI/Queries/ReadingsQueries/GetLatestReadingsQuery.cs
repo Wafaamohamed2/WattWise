@@ -3,5 +3,6 @@ using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddl
 
 namespace EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries
 {
-   public record GetLatestReadingsQuery(int Limit) :IRequest<ApiResponse>;
+public record GetLatestReadingsQuery(int Limit, string? StartDate = null, string? EndDate = null) 
+    : IRequest<ApiResponse>;
 }

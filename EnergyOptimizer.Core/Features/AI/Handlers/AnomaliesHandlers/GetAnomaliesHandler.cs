@@ -20,55 +20,32 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 
         public async Task<ApiResponse> Handle(GetAnomaliesQuery request, CancellationToken ct)
         {
-            var anomaliesList = await _anomalyRepo.ListAllAsync();
-            var devices = await _deviceRepo.ListAllAsync();
-            var query = anomaliesList.AsEnumerable();
+            var anomalies = await _anomalyRepo.ListAllAsync();
 
-            if (request.IsResolved.HasValue) query = query.Where(a => a.IsResolved == request.IsResolved.Value);
-            if (!string.IsNullOrEmpty(request.Severity)) query = query.Where(a => a.Severity == request.Severity);
-            if (request.DeviceId.HasValue) query = query.Where(a => a.DeviceId == request.DeviceId.Value);
+            var query = anomalies.AsQueryable();
 
-            var totalCount = query.Count();
-            var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+            if (request.IsResolved.HasValue)
+                query = query.Where(a => a.IsResolved == request.IsResolved.Value);
 
-            var statistics = new
-            {
-                critical = anomaliesList.Count(a => a.Severity?.ToLower() == "critical"),
-                unresolved = anomaliesList.Count(a => !a.IsResolved),
-                devicesAffected = anomaliesList.Where(a => !a.IsResolved).Select(a => a.DeviceId).Distinct().Count()
-            };
+            if (!string.IsNullOrEmpty(request.Severity))
+                query = query.Where(a => a.Severity == request.Severity);
 
-            var result = query.OrderByDescending(a => a.DetectedAt)
+            var totalItems = query.Count();
+            var items = query
+                .OrderByDescending(a => a.DetectedAt)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(a =>
-                {
-                    var device = devices.FirstOrDefault(d => d.Id == a.DeviceId);
-                    return new
-                    {
-                        a.Id,
-                        a.DeviceId,
-                        a.AnomalyTimestamp,
-                        a.ActualValue,
-                        a.ExpectedValue,
-                        a.Severity,
-                        a.Description,
-                        a.IsResolved,
-                        a.DetectedAt,
-                        device = device != null ? new { name = device.Name, zone = device.Zone?.Name ?? "Unknown" } : null,
-                        deviationPercent = a.ExpectedValue != 0 ? Math.Round((a.ActualValue - a.ExpectedValue) / a.ExpectedValue * 100, 1) : 0
-                    };
-                }).ToList();
+                .ToList();
 
-            return new ApiResponse(200, "Anomalies retrieved successfully", new
+            var responseData = new
             {
-                request.Page,
-                request.PageSize,
-                totalCount,
-                totalPages,
-                statistics,
-                data = result
-            });
+                items = items,
+                totalItems = totalItems,
+                page = request.Page,
+                totalPages = (int)Math.Ceiling(totalItems / (double)request.PageSize)
+            };
+
+            return new ApiResponse(200, "Anomalies retrieved", responseData);
         }
     }
 }

@@ -19,9 +19,12 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpGet("latest")]
-        public async Task<IActionResult> GetLatestReadings([FromQuery] int limit = 10)
+        public async Task<IActionResult> GetLatestReadings(
+           [FromQuery] int limit = 10,
+           [FromQuery] string? startDate = null,
+           [FromQuery] string? endDate = null)
         {
-            var result = await _mediator.Send(new GetLatestReadingsQuery(limit));
+            var result = await _mediator.Send(new GetLatestReadingsQuery(limit, startDate, endDate));
             return Ok(result);
         }
 

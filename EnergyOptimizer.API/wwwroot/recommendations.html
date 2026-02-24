@@ -394,31 +394,70 @@
         }
         function getPriorityClass(priority) {
             const text = getPriorityText(priority);
-            return text.toLowerCase(); 
+            return text.toLowerCase();
         }
         async function loadRecommendations() {
             try {
-                const url = `${baseUrl}/api/AI/recommendations?isImplemented=false`;
-                const response = await AuthHelper.fetchWithAuth(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const status = currentFilters.isImplemented;
+                let url = `${baseUrl}/api/AI/recommendations?pageSize=100`;
+                if (status === 'false') url += '&isImplemented=false';
+                else if (status === 'true') url += '&isImplemented=true';
 
-                const result = await response.json();
+                const [listResponse, statsResponse] = await Promise.all([
+                    AuthHelper.fetchWithAuth(url),
+                    AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/statistics`)
+                ]);
 
-                let list = [];
-                if (result.details) {
-                    list = result.details.data || result.details || [];
+                if (!listResponse || !listResponse.ok) throw new Error(`HTTP error! status: ${listResponse?.status}`);
+                const listResult = await listResponse.json();
+                console.log('[Recs] List response:', listResult);
+
+                let list = listResult.details?.data
+                    ?? listResult.details
+                    ?? listResult.data
+                    ?? (Array.isArray(listResult) ? listResult : []);
+
+                if (statsResponse && statsResponse.ok) {
+                    const statsResult = await statsResponse.json();
+                    console.log('[Recs] Stats response:', statsResult);
+                    const stats = statsResult.data ?? statsResult.details ?? statsResult;
+                    displayStatistics(stats);
+                } else {
+                    console.warn('[Recs] Stats endpoint unavailable, calculating from list');
+                    const allResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=1000`);
+                    if (allResponse && allResponse.ok) {
+                        const allResult = await allResponse.json();
+                        const allList = allResult.details?.data ?? allResult.details ?? allResult.data ?? [];
+                        displayStatistics({
+                            total: allList.length,
+                            pending: allList.filter(r => !r.isImplemented).length,
+                            implemented: allList.filter(r => r.isImplemented).length,
+                            highPriority: allList.filter(r => String(r.priority) === '1' || String(r.priority).toLowerCase() === 'high' || String(r.priority).toLowerCase() === 'critical').length,
+                            totalEstimatedSavings: allList.reduce((s, r) => s + (r.estimatedSavingsKWh || 0), 0)
+                        });
+                    }
                 }
 
-                if (list.length === 0) {
+                let filtered = list;
+                if (currentFilters.priority) {
+                    filtered = filtered.filter(r => String(r.priority).toLowerCase() === currentFilters.priority.toLowerCase());
+                }
+                if (currentFilters.category) {
+                    filtered = filtered.filter(r => r.category === currentFilters.category);
+                }
+
+                populateCategories(list);
+
+                if (filtered.length === 0) {
                     document.getElementById('recommendationsList').innerHTML =
-                        '<div class="empty-state">No recommendations found.</div>';
+                        '<div class="empty-state">No recommendations found for the selected filters.</div>';
                     return;
                 }
 
-                displayRecommendations(list);
-                updateTopStats(list);
+                displayRecommendations(filtered);
+
             } catch (error) {
-                console.error('Fetch Error:', error);
+                console.error('[Recs] Fetch Error:', error);
                 document.getElementById('recommendationsList').innerHTML =
                     `<div class="error-message">⚠️ Failed to load data: ${error.message}</div>`;
             }
@@ -432,27 +471,27 @@
                 const savings = rec.estimatedSavingsKWh || 0;
 
                 return `
-            <div class="recommendation-card">
-                <div class="rec-header">
-                    <div class="rec-title-section">
-                        <div class="rec-title">${rec.title || 'Optimization Tip'}</div>
-                        <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                <div class="recommendation-card">
+                    <div class="rec-header">
+                        <div class="rec-title-section">
+                            <div class="rec-title">${rec.title || 'Optimization Tip'}</div>
+                            <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                        </div>
+                        <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
+                            ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
+                        </span>
                     </div>
-                    <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
-                        ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
-                    </span>
-                </div>
-                <div class="rec-description">${rec.description || 'Analyze device usage to save energy.'}</div>
-                <div class="rec-savings">
-                    <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
-                </div>
-                <div class="rec-footer">
-                    <button onclick="implementRecommendation(${rec.id})" class="btn-implement" 
-                            style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        Mark as Implemented
-                    </button>
-                </div>
-            </div>`;
+                    <div class="rec-description">${rec.description || 'Analyze device usage to save energy.'}</div>
+                    <div class="rec-savings">
+                        <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
+                    </div>
+                    <div class="rec-footer">
+                        <button onclick="implementRecommendation(${rec.id})" class="btn-implement"
+                                style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                            Mark as Implemented
+                        </button>
+                    </div>
+                </div>`;
             }).join('');
         }
 
@@ -466,17 +505,22 @@
 
         function displayStatistics(stats) {
             if (!stats) {
-                console.warn('No statistics data received');
+                console.warn('[Recs] No statistics data received');
                 return;
             }
+            console.log('[Recs] Displaying statistics:', stats);
 
-            console.log('Displaying statistics:', stats);
+            const total = stats.Total ?? stats.total ?? stats.totalCount ?? 0;
+            const pending = stats.Pending ?? stats.pending ?? stats.active ?? stats.Active ?? 0;
+            const implemented = stats.Implemented ?? stats.implemented ?? stats.implementedCount ?? 0;
+            const highPri = stats.HighPriority ?? stats.highPriority ?? stats.highPriorityCount ?? 0;
+            const savings = stats.TotalEstimatedSavings ?? stats.totalEstimatedSavings ?? stats.totalSavings ?? stats.potentialSavings ?? 0;
 
-            document.getElementById('totalCount').textContent = stats.Total || stats.total || 0;
-            document.getElementById('activeCount').textContent = stats.Pending || stats.pending || 0;
-            document.getElementById('implementedCount').textContent = stats.Implemented || stats.implemented || 0;
-            document.getElementById('highPriorityCount').textContent = stats.HighPriority || stats.highPriority || 0;
-            document.getElementById('savingsTotal').textContent = (stats.TotalEstimatedSavings || stats.totalEstimatedSavings || 0).toFixed(1);
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('activeCount').textContent = pending;
+            document.getElementById('implementedCount').textContent = implemented;
+            document.getElementById('highPriorityCount').textContent = highPri;
+            document.getElementById('savingsTotal').textContent = Number(savings).toFixed(1);
         }
         function populateCategories(recommendations) {
             if (!recommendations || recommendations.length === 0) return;
@@ -511,7 +555,7 @@
             loadRecommendations();
         }
 
-        // ✅ Implement Recommendation
+        // Implement Recommendation
         async function implementRecommendation(id) {
             if (!confirm('Mark this recommendation as implemented?')) return;
 
@@ -533,7 +577,7 @@
             }
         }
 
-        // ✅ Initialize
+        //  Initialize
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Recommendations page loaded');
 

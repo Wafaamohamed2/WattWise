@@ -55,18 +55,12 @@
                     body: JSON.stringify({ email, password })
                 });
 
-                const result = await response.json();
-                console.log("API Response:", result);
+                const loginResult = await AuthHelper.handleLoginResponse(response);
 
-                if (response.ok && result.details && result.details.token) {
-                    // save token to localStorage
-                    localStorage.setItem('token', result.details.token);
-                    // save user details to localStorage
-                    localStorage.setItem('user', JSON.stringify(result.details.user));
-                    // redirect to main page
+                if (loginResult.success) {
                     window.location.href = 'index.html';
                 } else {
-                    messageDiv.innerText = result.message || "login failed";
+                    messageDiv.innerText = loginResult.message;
                 }
             } catch (error) {
                 messageDiv.innerText = "An error occurred while connecting to the server.";

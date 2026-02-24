@@ -23,10 +23,9 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("run")]
         public async Task<IActionResult> SeedData()
         {
-            if (_env.IsProduction())
-            {
-                throw new BadRequestException("Seeding is not allowed in Production environment!");
-            }
+
+            if (!(_env.IsDevelopment() || _env.IsStaging()))
+                throw new BadRequestException("Seeding only allowed in Dev/Staging!");
 
             await _seedingService.SeedAsync();
 

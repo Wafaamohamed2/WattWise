@@ -36,12 +36,29 @@
         const result = await response.json();
 
         if (response.ok) {
-            localStorage.setItem('token', result.details.token);
-            localStorage.setItem('user', JSON.stringify(result.details.user));
+            localStorage.setItem('token', result.details?.token || result.token);
+            localStorage.setItem('user', JSON.stringify(result.details?.user || result.user));
             return { success: true, message: result.message };
         } else {
             return { success: false, message: result.message || "Login failed" };
         }
+    },
+    async apiCall(url, options = {}) {
+        const response = await this.fetchWithAuth(url, options);
+        if (!response) return null;
+
+        const result = await response.json();
+
+        if (response.ok) {
+            return result.data || result.details || result;
+        } else {
+            const errorMsg = result.message || "An error occurred";
+            toastr.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+    },
+    broadcastEvent(name, detail) {
+        window.dispatchEvent(new CustomEvent(name, { detail }));
     }
 };
 AuthHelper.checkAuth();

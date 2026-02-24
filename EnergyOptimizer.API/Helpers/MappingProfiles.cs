@@ -15,14 +15,16 @@ namespace EnergyOptimizer.API.Helpers
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
+
             // Alerts Mapping 
             CreateMap<Alert, AlertDto>()
                 .ForMember(dest => dest.DeviceName, opt => opt.MapFrom(src => src.Device != null ? src.Device.Name : "Unknown"))
                 .ForMember(dest => dest.ZoneName, opt => opt.MapFrom(src => (src.Device != null && src.Device.Zone != null) ? src.Device.Zone.Name : "Unknown"))
                 .ForMember(dest => dest.AlertType, opt => opt.MapFrom(src => src.Type.ToString()))
-                .ForMember(dest => dest.SeverityLabel, opt => opt.MapFrom(src =>
-                    src.Severity == 1 ? "Info" : src.Severity == 2 ? "Warning" : "Critical"));
-
+               .ForMember(dest => dest.SeverityLabel, opt => opt.MapFrom(src =>
+                  Enum.GetName(typeof(AlertSeverity), src.Severity) ?? "Unknown"));
         }
+        public enum AlertSeverity { Info = 1, Warning = 2, Critical = 3 }
+
     }
 }

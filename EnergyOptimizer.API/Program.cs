@@ -17,6 +17,7 @@ using EnergyOptimizer.Service.Services.Implementation;
 using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 using EnergyOptimizer.API.Helpers;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,8 +100,9 @@ builder.Services.AddAuthentication(options => {
 
 // Add MediatR and register handlers from the Core assembly
 builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+    cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
 });
+
 // Add Background Service
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();

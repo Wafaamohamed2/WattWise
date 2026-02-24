@@ -12,16 +12,17 @@ toastr.options = {
     "timeOut": "5000"
 };
 
-connection.on("ReceiveAlert", (alert) => {
-    const message = `${alert.deviceName}: ${alert.message}`;
+connection.on("ReceiveAlert", (alertJson) => {
+    const alert = typeof alertJson === 'string' ? JSON.parse(alertJson) : alertJson;
+    AuthHelper.broadcastEvent('app-alert', alert);
+});
 
-    if (alert.severity === 3) {
-        toastr.error(message, "Critical Alert!");
-    } else if (alert.severity === 2) {
-        toastr.warning(message, "Warnning");
-    } else {
-        toastr.info(message, "Information");
-    }
+connection.on("DeviceStatusUpdated", (data) => {
+    AuthHelper.broadcastEvent('device-status-change', data);
+});
+
+connection.on("ReceiveReadings", (readings) => {
+    AuthHelper.broadcastEvent('new-readings', readings);
 });
 
 async function startSignalR() {

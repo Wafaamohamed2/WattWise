@@ -50,7 +50,7 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDevice(int id, [FromBody] UpdateDeviceDto dto)
         {
-            var result = await _mediator.Send(new UpdateDeviceCommand(dto));
+            var result = await _mediator.Send(new UpdateDeviceCommand(id,dto));
             return Ok(result);
         }
 

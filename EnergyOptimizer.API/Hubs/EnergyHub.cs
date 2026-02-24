@@ -2,6 +2,7 @@
 
 namespace EnergyOptimizer.API.Hubs
 {
+    
     public class EnergyHub: Hub
     {
 

@@ -503,22 +503,65 @@
         // ===== Load Dashboard Data =====
         async function loadStatistics() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
+                // نجيب الـ stats أولاً
+                const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
+                if (!statsResponse) return;
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Statistics API Response:', data);
+                const statsResult = await statsResponse.json();
+                console.log('[Dashboard] Statistics raw response:', JSON.stringify(statsResult));
 
-                    const details = data.details || data || {};
-                    displayStatistics(details);
-                    displayCharts(details);
-                } else if (response.status === 401) {
-                    AuthHelper.logout();
+                if (!statsResponse.ok) throw new Error(statsResult.message || `Server error ${statsResponse.status}`);
+
+                // استخراج الـ data من أي wrapper
+                let details = statsResult.data ?? statsResult.details ?? statsResult;
+
+                // تأكد إن details object وليس primitive
+                if (typeof details !== 'object' || details === null) details = statsResult;
+
+                displayStatistics(details);
+
+                // جيب الـ anomalies بشكل منفصل عشان نبني الـ chart
+                try {
+                    const anomResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=1000&isResolved=false`);
+                    if (anomResponse && anomResponse.ok) {
+                        const anomResult = await anomResponse.json();
+                        console.log('[Dashboard] Anomalies raw response:', JSON.stringify(anomResult));
+
+                        const anomPayload = anomResult.details ?? anomResult.data ?? anomResult;
+                        const anomList = Array.isArray(anomPayload)
+                            ? anomPayload
+                            : (anomPayload?.data ?? anomPayload?.items ?? []);
+
+                        console.log('[Dashboard] Anomalies list length:', anomList.length);
+
+                        if (anomList.length > 0) {
+                            // احسب bySeverity من الـ list مباشرة
+                            // الـ severity ممكن يجي كـ string أو كـ integer
+                            const severityLabels = { 1: 'Info', 2: 'Warning', 3: 'Critical' };
+                            const severityMap = {};
+                            anomList.forEach(a => {
+                                let sev = a.severityLabel || a.severity;
+                                // لو جاي كـ number حوّله لـ label
+                                if (typeof sev === 'number') sev = severityLabels[sev] || `Level ${sev}`;
+                                sev = sev || 'Unknown';
+                                severityMap[sev] = (severityMap[sev] || 0) + 1;
+                            });
+                            details.anomalies = details.anomalies || {};
+                            details.anomalies.bySeverity = Object.entries(severityMap)
+                                .map(([severity, count]) => ({ severity, count }));
+                            console.log('[Dashboard] Built bySeverity:', details.anomalies.bySeverity);
+                        }
+                    }
+                } catch (anomErr) {
+                    console.warn('[Dashboard] Could not load anomalies for chart:', anomErr.message);
                 }
+
+                displayCharts(details);
+
             } catch (error) {
-                console.error('Error loading statistics:', error);
+                console.error('[Dashboard] Error loading statistics:', error);
                 document.getElementById('statsGrid').innerHTML =
-                    '<div class="empty-state">⚠️ Failed to load statistics</div>';
+                    `<div class="empty-state">⚠️ Failed to load statistics: ${error.message}</div>`;
             }
         }
 
@@ -555,86 +598,99 @@
         function displayStatistics(data) {
             const statsGrid = document.getElementById('statsGrid');
 
+            // null safety لكل field
+            const totalAnalyses    = data.analyses?.total ?? '—';
+            const last30Days       = data.analyses?.last30Days ?? 0;
+            const activeRecs       = data.recommendations?.active ?? '—';
+            const implementedRecs  = data.recommendations?.implemented ?? 0;
+            const potentialSavings = data.recommendations?.totalPotentialSavings != null
+                ? data.recommendations.totalPotentialSavings.toFixed(1) : '—';
+            const unresolvedAnoms  = data.anomalies?.unresolved ?? '—';
+            const last7Days        = data.anomalies?.last7Days ?? 0;
+
             statsGrid.innerHTML = `
                         <div class="stat-card">
                             <div class="stat-icon">📊</div>
-                            <div class="stat-value">${data.analyses.total}</div>
+                            <div class="stat-value">${totalAnalyses}</div>
                             <div class="stat-label">Total Analyses</div>
-                            <div class="stat-change positive">↑ ${data.analyses.last30Days} in last 30 days</div>
+                            <div class="stat-change positive">↑ ${last30Days} in last 30 days</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-icon">💡</div>
-                            <div class="stat-value">${data.recommendations.active}</div>
+                            <div class="stat-value">${activeRecs}</div>
                             <div class="stat-label">Active Recommendations</div>
-                            <div class="stat-change">${data.recommendations.implemented} implemented</div>
+                            <div class="stat-change">${implementedRecs} implemented</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-icon">⚡</div>
-                            <div class="stat-value">${data.recommendations.totalPotentialSavings.toFixed(1)}</div>
+                            <div class="stat-value">${potentialSavings}</div>
                             <div class="stat-label">Potential Savings (kWh)</div>
                             <div class="stat-change positive">💰 Cost savings available</div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-icon">🚨</div>
-                            <div class="stat-value">${data.anomalies.unresolved}</div>
+                            <div class="stat-value">${unresolvedAnoms}</div>
                             <div class="stat-label">Unresolved Anomalies</div>
-                            <div class="stat-change ${data.anomalies.last7Days > 0 ? 'negative' : 'positive'}">
-                                ${data.anomalies.last7Days > 0 ? '↑' : '✓'} ${data.anomalies.last7Days} in last 7 days
+                            <div class="stat-change ${last7Days > 0 ? 'negative' : 'positive'}">
+                                ${last7Days > 0 ? '↑' : '✓'} ${last7Days} in last 7 days
                             </div>
                         </div>
                     `;
         }
 
         function displayCharts(data) {
-            // Analysis by Type Chart
-            const analysisCtx = document.getElementById('analysisChart').getContext('2d');
-            new Chart(analysisCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.analyses.byType.map(t => t.type),
-                    datasets: [{
-                        data: data.analyses.byType.map(t => t.count),
-                        backgroundColor: ['#667eea', '#764ba2', '#f59e0b', '#10b981']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-
-            // Anomalies by Severity Chart
-            const anomaliesCtx = document.getElementById('anomaliesChart').getContext('2d');
-            new Chart(anomaliesCtx, {
-                type: 'bar',
-                data: {
-                    labels: data.anomalies.bySeverity.map(s => s.severity),
-                    datasets: [{
-                        label: 'Anomalies',
-                        data: data.anomalies.bySeverity.map(s => s.count),
-                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
+            // Guard: لو مفيش بيانات للـ charts متعملهاش
+            if (!data.analyses?.byType || data.analyses.byType.length === 0) {
+                console.warn('[Dashboard] No analysis type data for charts');
+                document.getElementById('analysisChart').parentElement.innerHTML =
+                    '<div style="text-align:center;color:#9ca3af;padding:40px">No chart data available</div>';
+            } else {
+                // Analysis by Type Chart
+                const analysisCtx = document.getElementById('analysisChart').getContext('2d');
+                new Chart(analysisCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.analyses.byType.map(t => t.type),
+                        datasets: [{
+                            data: data.analyses.byType.map(t => t.count),
+                            backgroundColor: ['#667eea', '#764ba2', '#f59e0b', '#10b981']
+                        }]
                     },
-                    scales: {
-                        y: { beginAtZero: true }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom' } }
                     }
-                }
-            });
-            if (!data.analyses.byType || data.analyses.byType.length === 0) {
-                console.warn("No analysis data for charts");
-                return;
+                });
+            }
+
+            if (!data.anomalies?.bySeverity || data.anomalies.bySeverity.length === 0) {
+                console.warn('[Dashboard] No anomaly severity data for charts');
+                document.getElementById('anomaliesChart').parentElement.innerHTML =
+                    '<div style="text-align:center;color:#9ca3af;padding:40px">No anomaly data available</div>';
+            } else {
+                // Anomalies by Severity Chart
+                const anomaliesCtx = document.getElementById('anomaliesChart').getContext('2d');
+                new Chart(anomaliesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.anomalies.bySeverity.map(s => s.severity),
+                        datasets: [{
+                            label: 'Anomalies',
+                            data: data.anomalies.bySeverity.map(s => s.count),
+                            backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
             }
         }
 
@@ -642,15 +698,16 @@
         async function loadRecommendations() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
+                if (!response) return;
                 const result = await response.json();
-                console.log('Recommendations API Response:', result);
+                console.log('[Dashboard] Recommendations API Response:', result);
 
-                // Fix: Backend returns data in result.details
-                const details = result.details || result || {};
-                const items = details.data || details || [];
+                const details = result.details ?? result.data ?? result ?? {};
+                let items = details.data ?? (Array.isArray(details) ? details : []);
+                items = items.slice(0, 5); // أول 5 بس للـ dashboard
                 displayRecommendations(items);
             } catch (error) {
-                console.error('Error loading recommendations:', error);
+                console.error('[Dashboard] Error loading recommendations:', error);
             }
         }
 
@@ -665,8 +722,8 @@
             container.innerHTML = recommendations.map(rec => `
                         <div class="item">
                             <div class="item-header">
-                                <div class="item-title">${rec.title}</div>
-                                <span class="item-badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>
+                                <div class="item-title">${rec.title || '—'}</div>
+                                <span class="item-badge badge-${(rec.priority || '').toLowerCase()}">${rec.priority || '—'}</span>
                             </div>
                             <div class="item-description">${rec.description}</div>
                             <div class="item-meta">
@@ -697,16 +754,20 @@
         // ===== Load Anomalies =====
         async function loadAnomalies() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5&isResolved=false`);
+                // جرب أول بدون filter عشان تجيب أحدث anomalies
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5`);
+                if (!response) return;
                 const result = await response.json();
-                console.log('Anomalies API Response:', result);
+                console.log('[Dashboard] Anomalies API Response:', result);
 
-                // Fix: Backend returns data in result.details
-                const details = result.details || result || {};
-                const items = details.data || [];
-                displayAnomalies(items);
+                const payload = result.details ?? result.data ?? result;
+                const items = Array.isArray(payload)
+                    ? payload
+                    : (payload?.data ?? payload?.items ?? []);
+
+                displayAnomalies(items.slice(0, 5));
             } catch (error) {
-                console.error('Error loading anomalies:', error);
+                console.error('[Dashboard] Error loading anomalies:', error);
             }
         }
 
@@ -714,20 +775,23 @@
             const container = document.getElementById('anomaliesList');
 
             if (!anomalies || anomalies.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div>No unresolved anomalies</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div>No anomalies found</div></div>';
                 return;
             }
 
             container.innerHTML = anomalies.map(anomaly => `
-                        <div class="item">
+                        <div class="item" style="${anomaly.isResolved ? 'opacity:0.6' : ''}">
                             <div class="item-header">
-                                <div class="item-title">${anomaly.device.name}</div>
-                                <span class="item-badge badge-${anomaly.severity.toLowerCase()}">${anomaly.severity}</span>
+                                <div class="item-title">${anomaly.device?.name || anomaly.deviceName || 'Unknown Device'}</div>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    ${anomaly.isResolved ? '<span style="font-size:0.75em;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;">✓ Resolved</span>' : ''}
+                                    <span class="item-badge badge-${(anomaly.severity || anomaly.severityLabel || '').toLowerCase()}">${anomaly.severityLabel || anomaly.severity || '—'}</span>
+                                </div>
                             </div>
-                            <div class="item-description">${anomaly.description}</div>
+                            <div class="item-description">${anomaly.description || ''}</div>
                             <div class="item-meta">
-                                <span>📍 ${anomaly.device.zone}</span>
-                                <span>⚠️ ${anomaly.deviationPercent.toFixed(1)}% deviation</span>
+                                <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
+                                <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
                                 <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
