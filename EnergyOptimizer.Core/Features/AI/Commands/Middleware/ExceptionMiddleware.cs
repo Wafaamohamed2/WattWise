@@ -1,5 +1,4 @@
 ﻿using EnergyOptimizer.Core.Exceptions;
-using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

@@ -9,9 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Core", "Ene
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Infrastructure", "EnergyOptimizer.Infrastructure\EnergyOptimizer.Infrastructure.csproj", "{0815ADA7-9448-4C62-97B7-30D695370E4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOptimizer.Data", "EnergyOptimizer.Data\EnergyOptimizer.Data.csproj", "{99CF8F40-2D99-4882-839A-C3FAB4B813EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Data", "EnergyOptimizer.Data\EnergyOptimizer.Data.csproj", "{99CF8F40-2D99-4882-839A-C3FAB4B813EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOptimizer.Service", "EnergyOptimizer.Service\EnergyOptimizer.Service.csproj", "{1958D460-6876-4218-BE92-D9361CCEC174}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Service", "EnergyOptimizer.Service\EnergyOptimizer.Service.csproj", "{1958D460-6876-4218-BE92-D9361CCEC174}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOptimizer.Tests", "Energy-Optimizer-Test\EnergyOptimizer.Tests.csproj", "{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{1958D460-6876-4218-BE92-D9361CCEC174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1958D460-6876-4218-BE92-D9361CCEC174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1958D460-6876-4218-BE92-D9361CCEC174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
