@@ -38,7 +38,7 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         #region Action Endpoints
-        [HttpPost("analyze-patterns")]
+        [HttpGet("analyze-patterns")]
         public async Task<IActionResult> AnalyzePatterns(
           [FromQuery] DateTime? startDate = null,
           [FromQuery] DateTime? endDate = null)
@@ -68,7 +68,7 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost("predict-consumption")]
+        [HttpGet("predict-consumption")]
         public async Task<IActionResult> PredictConsumption(
            [FromQuery] int days = 7)
         {
@@ -99,7 +99,9 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] string? startDate = null,
         [FromQuery] string? endDate = null)
         {
-            var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, null, null));
+            DateTime? start =  DateTime.TryParse(startDate, out var s) ? s : null;
+            DateTime? end =  DateTime.TryParse(endDate, out var e) ? e : null;
+            var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, start, end));
             return Ok(result);
         }
 

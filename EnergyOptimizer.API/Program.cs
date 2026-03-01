@@ -18,17 +18,19 @@ using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
 using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 using EnergyOptimizer.API.Helpers;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Service.Services;
+using Microsoft.AspNetCore.RateLimiting;               
+using System.Threading.RateLimiting;
+using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Explicitly load appsettings.json (ensures Gemini section is available)
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-
-// Configure Serilog
+// Serilog 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/energy-.txt", rollingInterval: RollingInterval.Day)
@@ -36,12 +38,14 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container
+// Controllers 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -49,9 +53,10 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = actionContext =>
     {
         var errors = actionContext.ModelState
-            .Where(e => e.Value.Errors.Count > 0)
-            .SelectMany(x => x.Value.Errors)
-            .Select(x => x.ErrorMessage).ToArray();
+            .Where(e => e.Value!.Errors.Count > 0)
+            .SelectMany(x => x.Value!.Errors)
+            .Select(x => x.ErrorMessage)
+            .ToArray();
 
         return new BadRequestObjectResult(new ApiResponse(400, "Validation Failed", errors));
     };
@@ -60,13 +65,14 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+// Generic Repository 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-// Add DbContext
+// Database 
 builder.Services.AddDbContext<EnergyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// SignalR 
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
@@ -74,18 +80,21 @@ builder.Services.AddSignalR(options =>
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });
 
-// Identity Services
+// Identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<EnergyDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT Authentication
+// JWT Authentication 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-builder.Services.AddAuthentication(options => {
+
+builder.Services.AddAuthentication(options =>
+{
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(options => {
+.AddJwtBearer(options =>
+{
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -94,55 +103,90 @@ builder.Services.AddAuthentication(options => {
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(
+                                       Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+    };
+
+    // SignalR sends the token as a query-string param instead of a header
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = ctx =>
+        {
+            var accessToken = ctx.Request.Query["access_token"];
+            var path = ctx.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/energyhub"))
+            {
+                ctx.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
-// Add MediatR and register handlers from the Core assembly
-builder.Services.AddMediatR(cfg => {
+// IJwtTokenService 
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Rate Limiting 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.PermitLimit = 10;   // 10 requests/min per client
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+// Strongly-typed options 
+builder.Services.Configure<AIAnalysisOptions>(
+    builder.Configuration.GetSection(AIAnalysisOptions.SectionName));
+
+builder.Services.Configure<SimulationOptions>(
+    builder.Configuration.GetSection(SimulationOptions.SectionName));
+
+// MediatR 
+builder.Services.AddMediatR(cfg =>
+{
     cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
 });
 
-// Add Background Service
+// Background Services 
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();
+builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
-// Add Energy Hub Service
+// Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-
-// Add Data Seeding Service
 builder.Services.AddTransient<DataSeedingService>();
 
-// Configure Gemini Settings
+// Gemini / AI
 builder.Services.Configure<GeminiSettings>(
     builder.Configuration.GetSection("Gemini"));
 
-// Add Memory Cache for AI responses
 builder.Services.AddMemoryCache();
-
-// Register HttpClient for Gemini Service
 builder.Services.AddHttpClient();
-
-// Register Gemini Service
 builder.Services.AddScoped<IGeminiService, GeminiService>();
-
-// Register Pattern Detection Service
 builder.Services.AddScoped<IPatternDetectionService, PatternDetectionService>();
-
-// Add AutoMapper 
-builder.Services.AddAutoMapper(typeof(MappingProfiles));
-
-// Register AI Analysis and Data Cleanup Services
 builder.Services.AddScoped<IAIAnalysisService, AIAnalysisService>();
 builder.Services.AddScoped<IDataCleanupService, DataCleanupService>();
-builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
-// Add CORS
+//  AutoMapper 
+builder.Services.AddAutoMapper(typeof(MappingProfiles));
+
+//  CORS 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://localhost:7083", "http://localhost:5167", "http://localhost:3000")
+        policy.WithOrigins(
+                  "https://localhost:7083",
+                  "http://localhost:5167",
+                  "http://localhost:3000")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -151,10 +195,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// add custom exception middleware
 app.UseMiddleware<ExceptionMiddleware>();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -170,10 +212,13 @@ app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.MapHub<EnergyHub>("/energyhub");
 
 app.Run();

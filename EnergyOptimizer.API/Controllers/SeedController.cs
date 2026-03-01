@@ -6,7 +6,7 @@ using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddl
 
 namespace EnergyOptimizer.API.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class SeedController : ControllerBase

@@ -60,12 +60,11 @@ namespace EnergyOptimizer.API.Controllers
         {
             var result = await _mediator.Send(new ExportReadingsQuery(deviceId, startDate, endDate));
 
-            var exportData = result.Details as dynamic;
-
-            if (exportData == null)
+            if (result.Details is not ExportResultDto exportData)
                 throw new BadRequestException("Export data could not be generated.");
 
             return File(exportData.Content, "text/csv", exportData.FileName);
         }
+        public record ExportResultDto(byte[] Content, string FileName);
     }
 }

@@ -6,6 +6,7 @@ using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EnergyOptimizer.API.Services
 {
@@ -13,14 +14,15 @@ namespace EnergyOptimizer.API.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<EnergyReadingSimulatorService> _logger;
-        private readonly IConfiguration _config;
+        private readonly IOptionsMonitor<SimulationOptions> _options;
         private readonly IHubContext<EnergyHub> _hubContext;
 
-        public EnergyReadingSimulatorService(IServiceProvider serviceProvider, ILogger<EnergyReadingSimulatorService> logger, IConfiguration config, IHubContext<EnergyHub> hubContext)
+        public EnergyReadingSimulatorService(IServiceProvider serviceProvider, ILogger<EnergyReadingSimulatorService> logger, IOptionsMonitor<SimulationOptions> options,
+              IHubContext<EnergyHub> hubContext)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _config = config;
+            _options = options;
             _hubContext = hubContext;
         }
 
@@ -30,14 +32,18 @@ namespace EnergyOptimizer.API.Services
 
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 
-            var intervalMinutes = _config.GetValue<int>("Simulation:IntervalMinutes", 1);
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    await GenerateReadingsAsync();
+                    await GenerateReadingsAsync(stoppingToken);
+                    var intervalMinutes = _options.CurrentValue.IntervalMinutes;
                     await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
+                }
+                catch(OperationCanceledException)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -47,7 +53,7 @@ namespace EnergyOptimizer.API.Services
             }
 
         }
-        private async Task GenerateReadingsAsync()
+        private async Task GenerateReadingsAsync(CancellationToken cancellationToken)
         {
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
@@ -63,20 +69,23 @@ namespace EnergyOptimizer.API.Services
                 return;
             }
 
-            var readings = new List<EnergyReading>();
-            var liveReadings = new List<LiveReadingDto>();  // For broadcasting
+            var readings = new List<EnergyReading>(activeDevices.Count);
+            var liveReadings = new List<LiveReadingDto>(activeDevices.Count);
 
-
+            var nowUtc = DateTime.UtcNow;
             var cairoTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Egypt Standard Time");
             var hour = cairoTime.Hour;
             var dayOfWeek = cairoTime.DayOfWeek;
-            var random =  Random.Shared;
 
-            bool blackout = random.NextDouble() < 0.05;
+            bool blackout = Random.Shared.NextDouble() < 0.05;
 
             foreach (var device in activeDevices)
             {
                 decimal consumption = CalculateConsumption(device, hour, dayOfWeek);
+
+                var voltage = GenerateVoltage(blackout);
+                var current = consumption > 0 ? (consumption / 220.0m) * 1000m : 0m;
+                var tempReading = (decimal)GenerateTemperature(hour);
 
                 //  Generate reading even if consumption is 0 (standby mode)
                 var reading = new EnergyReading
@@ -88,14 +97,13 @@ namespace EnergyOptimizer.API.Services
                     Current = (consumption > 0 ? (consumption / 220.0m) * 1000m : 0m),
                     Temperature = GenerateTemperature(hour)
                 };
-                readings.Add(reading);
 
                 liveReadings.Add(new LiveReadingDto
                 {
                     DeviceId = device.Id,
                     DeviceName = device.Name ?? "Unknown Device",
                     ZoneName = device.Zone?.Name ?? "Unknown Zone",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = nowUtc,
                     PowerConsumptionKW = Math.Round(consumption, 4),
                     Current = (double)Math.Round(reading.Current, 2),
                     Voltage = Math.Round(reading.Voltage, 2),
@@ -108,19 +116,17 @@ namespace EnergyOptimizer.API.Services
             {
                 await context.EnergyReadings.AddRangeAsync(readings);
                 await context.SaveChangesAsync();
-                _logger.LogInformation($"Generated {readings.Count} readings at {cairoTime:yyyy-MM-dd HH:mm:ss}");
+                _logger.LogInformation("Generated {Count} readings at {Time}" ,readings.Count, cairoTime);
 
-
-                // Broadcast to all connected clients
-                await BroadcastReadings(liveReadings);
-
-                // Broadcast dashboard update
-                await BroadcastDashboardUpdate(liveReadings);
+                // Broadcast — fire in parallel for efficiency
+                await Task.WhenAll(
+                   BroadcastReadingsAsync(liveReadings, activeDevices.Count),
+                   BroadcastDashboardUpdateAsync(liveReadings, activeDevices.Count));
             }
         }
 
         //  Broadcast readings to all clients
-        private async Task BroadcastReadings(List<LiveReadingDto> readings)
+        private async Task BroadcastReadingsAsync(List<LiveReadingDto> readings, int totalActiveDevices)
         {
             try
             {
@@ -131,12 +137,13 @@ namespace EnergyOptimizer.API.Services
                 await _hubContext.Clients.All.SendAsync("ReceiveReadings", readings);
 
                 // Send zone-specific readings
-                var readingsByZone = readings.GroupBy(r => r.ZoneName);
-                foreach (var group in readingsByZone)
-                {
-                    await _hubContext.Clients.Group($"Zone_{group.Key}")
-                        .SendAsync("ReceiveZoneReadings", group.ToList());
-                }
+                var zoneTasks = readings
+                    .GroupBy(r => r.ZoneName)
+                    .Select(g => _hubContext.Clients
+                        .Group($"Zone_{g.Key}")
+                        .SendAsync("ReceiveZoneReadings", g.ToList()));
+
+                await Task.WhenAll(zoneTasks);
 
                 _logger.LogDebug($"Broadcasted {readings.Count} readings to all clients");
             }
@@ -146,28 +153,21 @@ namespace EnergyOptimizer.API.Services
             }
         }
 
-        private async Task BroadcastDashboardUpdate(List<LiveReadingDto> readings)
+        private async Task BroadcastDashboardUpdateAsync(List<LiveReadingDto> readings , int totalActiveDevices)
         {
             try
             {
-                using var scope = _serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
-
-                // Get actual count of active devices from database
-                var totalActiveDevices = await context.Devices
-                    .CountAsync(d => d.IsActive);
-
                 var update = new DashboardUpdateDto
                 {
                     Timestamp = DateTime.UtcNow,
                     TotalConsumption = Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2),
-                    ActiveDevices = totalActiveDevices, 
+                    ActiveDevices = totalActiveDevices,
                     TotalReadings = readings.Count,
                     TopConsumers = readings
                         .OrderByDescending(r => r.PowerConsumptionKW)
                         .Take(5)
                         .Select(r => new TopConsumerDto
-                        { 
+                        {
                             DeviceName = r.DeviceName,
                             CurrentConsumption = r.PowerConsumptionKW
                         })
@@ -187,67 +187,56 @@ namespace EnergyOptimizer.API.Services
 
         {
             var baseConsumption = device.RatedPowerKW;
-            var random = Random.Shared;
+            var rng = Random.Shared;
             bool isWeekend = (dayOfWeek == DayOfWeek.Friday || dayOfWeek == DayOfWeek.Saturday);
 
-            switch (device.Type)
+            return device.Type switch
             {
-                case DeviceType.AirConditioner:
-                    // AC works during hot hours (12PM-5PM) and night (10PM-6AM)
+                DeviceType.AirConditioner when (hour >= 22 || hour <= 6)   // night
+                    => baseConsumption * (decimal)(0.7 + rng.NextDouble() * 0.3),
 
-                    if ((hour >= 22 || hour <= 6))
-                        // Night time usage
-                        return baseConsumption *(decimal) (0.7 + random.NextDouble() * 0.3);
+                DeviceType.AirConditioner when (hour >= 13 && hour <= 17)  // afternoon
+                    => baseConsumption * (decimal)(0.9 + rng.NextDouble() * 0.3),
 
-                    else if (hour >= 13 && hour <= 17)
-                        // Afternoon usage
-                        return baseConsumption *(decimal) (0.9 + random.NextDouble() * 0.3);
+                DeviceType.AirConditioner
+                    => rng.NextDouble() < 0.1 ? baseConsumption * 0.2m : 0m,
 
-                    else
-                        // Off or minimal
-                        return random.NextDouble() < 0.1 ? baseConsumption * (decimal)0.2 : 0;
+                DeviceType.Refrigerator
+                    => baseConsumption * (decimal)(0.15 + rng.NextDouble() * 0.15),
 
+                DeviceType.WashingMachine when ((hour >= 7 && hour <= 9) || (hour >= 18 && hour <= 20))
+                    => rng.NextDouble() < 0.3 ? baseConsumption * (decimal)(0.7 + rng.NextDouble() * 0.3) : 0m,
 
-                case DeviceType.Refrigerator:
-                    // Fridge runs continuously with slight variations
-                    return baseConsumption * (decimal)(0.15 + random.NextDouble() * 0.15);
+                DeviceType.WashingMachine => 0m,
 
-                case DeviceType.WashingMachine:
-                    // Washing machine used mainly in mornings and evenings
-                    if ((hour >= 7 && hour <= 9) || (hour >= 18 && hour <= 20))
-                        return random.NextDouble() < 0.3 ? baseConsumption *(decimal) (0.7 + random.NextDouble() * 0.3) : 0;
-                    return 0;
+                DeviceType.WaterHeater when ((hour >= 5 && hour <= 8) || (hour >= 18 && hour <= 22))
+                    => baseConsumption * (decimal)(0.6 + rng.NextDouble() * 0.4),
 
-                case DeviceType.WaterHeater:
-                    // Water heater used in early mornings and evenings
-                    if ((hour >= 5 && hour <= 8) || (hour >= 18 && hour <= 22))
-                        return baseConsumption * (decimal)(0.6 + random.NextDouble() * 0.4);
-                    return baseConsumption * (decimal)0.1;
+                DeviceType.WaterHeater => baseConsumption * 0.1m,
 
-                case DeviceType.Lights:
-                    // Lights used mainly in evenings and nights
-                    if (hour >= 18 && hour <= 23)
-                        return baseConsumption * (decimal)(0.8 + random.NextDouble() * 0.2);
-                    else if (hour >= 6 && hour <= 8)
-                        return baseConsumption * (decimal)(0.5 + random.NextDouble() * 0.3);
-                    return 0;
+                DeviceType.Lights when (hour >= 18 && hour <= 23)
+                    => baseConsumption * (decimal)(0.8 + rng.NextDouble() * 0.2),
 
-                case DeviceType.TV:
-                    // TV used mainly in evenings and weekends
-                    if (hour >= 18 && hour <= 24)
-                        return baseConsumption * (decimal)(0.7 + random.NextDouble() * 0.3);
-                    else if (isWeekend && hour >= 12 && hour <= 17)
-                        return baseConsumption * (decimal)(0.6 + random.NextDouble() * 0.3);
-                    return 0;
+                DeviceType.Lights when (hour >= 6 && hour <= 8)
+                    => baseConsumption * (decimal)(0.5 + rng.NextDouble() * 0.3),
 
-                case DeviceType.Microwave:
-                    if ((hour >= 7 && hour <= 9) || (hour >= 12 && hour <= 14) || (hour >= 19 && hour <= 21))
-                        return random.NextDouble() < 0.15 ? baseConsumption * (decimal)(0.5 + random.NextDouble() * 0.5) : 0;
-                    return 0;
+                DeviceType.Lights => 0m,
 
-                default:
-                    return baseConsumption * (decimal) random.NextDouble() * (decimal)0.5;
-            }
+                DeviceType.TV when (hour >= 18 && hour <= 23)
+                    => baseConsumption * (decimal)(0.7 + rng.NextDouble() * 0.3),
+
+                DeviceType.TV when (isWeekend && hour >= 12 && hour <= 17)
+                    => baseConsumption * (decimal)(0.6 + rng.NextDouble() * 0.3),
+
+                DeviceType.TV => 0m,
+
+                DeviceType.Microwave when ((hour >= 7 && hour <= 9) || (hour >= 12 && hour <= 14) || (hour >= 19 && hour <= 21))
+                    => rng.NextDouble() < 0.15 ? baseConsumption * (decimal)(0.5 + rng.NextDouble() * 0.5) : 0m,
+
+                DeviceType.Microwave => 0m,
+
+                _ => baseConsumption * (decimal)(rng.NextDouble() * 0.5)
+            };
         }
 
         private decimal GenerateVoltage(bool blackout)
@@ -265,6 +254,12 @@ namespace EnergyOptimizer.API.Services
                 return 22 + Random.Shared.NextDouble() * 4;
             else
                 return 24 + Random.Shared.NextDouble() * 5;
+        }
+
+        public class SimulationOptions
+        {
+            public const string SectionName = "Simulation";
+            public int IntervalMinutes { get; set; } = 1;
         }
     }
 }

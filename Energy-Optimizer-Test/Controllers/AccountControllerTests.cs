@@ -1,21 +1,21 @@
-﻿using EnergyOptimizer.API.Controllers;
+﻿using AutoMapper;
+using EnergyOptimizer.API.Controllers;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Moq;
-using AutoMapper;
 using static EnergyOptimizer.API.DTOs.AuthDto;
+using EnergyOptimizer.Service.Services;
 
 namespace EnergyOptimizer.Tests.Controllers
 {
     public class AccountControllerTests
     {
         private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
-        private readonly Mock<IConfiguration> _mockConfig;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<IJwtTokenService> _mockTokenService; 
         private readonly AccountController _controller;
 
         public AccountControllerTests()
@@ -23,16 +23,10 @@ namespace EnergyOptimizer.Tests.Controllers
             var store = new Mock<IUserStore<ApplicationUser>>();
             _mockUserManager = new Mock<UserManager<ApplicationUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-            _mockConfig = new Mock<IConfiguration>();
             _mockMapper = new Mock<IMapper>();
+            _mockTokenService = new Mock<IJwtTokenService>(); 
 
-            _mockConfig.Setup(c => c.GetSection("Jwt:Key")).Returns(new Mock<IConfigurationSection>().Object);
-            _mockConfig.Setup(c => c.GetSection("Jwt")["Key"]).Returns("ThisIsAVeryLongSecretKeyForTestingPurposes123!");
-            _mockConfig.Setup(c => c.GetSection("Jwt")["Issuer"]).Returns("EnergyOptimizer");
-            _mockConfig.Setup(c => c.GetSection("Jwt")["Audience"]).Returns("EnergyOptimizerUsers");
-            _mockConfig.Setup(c => c.GetSection("Jwt")["DurationInMinutes"]).Returns("60");
-
-            _controller = new AccountController(_mockUserManager.Object, _mockConfig.Object, _mockMapper.Object);
+            _controller = new AccountController(_mockUserManager.Object, _mockMapper.Object, _mockTokenService.Object);
         }
 
         [Fact]
@@ -78,18 +72,23 @@ namespace EnergyOptimizer.Tests.Controllers
             // Arrange 
             var loginDto = new LoginDto("test@example.com", "Password123!");
             var user = new ApplicationUser { Id = "1", Email = loginDto.Email, FullName = "Ali Mohamed", UserName = "test@example.com" };
+            var fakeToken = "fake-jwt-token";
 
             _mockUserManager.Setup(u => u.FindByEmailAsync(loginDto.Email)).ReturnsAsync(user);
             _mockUserManager.Setup(u => u.CheckPasswordAsync(user, loginDto.Password)).ReturnsAsync(true);
+
+            _mockTokenService.Setup(t => t.GenerateToken(user)).Returns(fakeToken);
 
             // Act
             var result = await _controller.Login(loginDto);
 
             // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            var responseJson = System.Text.Json.JsonSerializer.Serialize(okResult.Value);
 
-            responseJson.Should().Contain("Token");
+            _mockTokenService.Verify(t => t.GenerateToken(user), Times.Once);
+
+            var responseJson = System.Text.Json.JsonSerializer.Serialize(okResult.Value);
+            responseJson.Should().Contain(fakeToken);
         }
 
         [Fact]
@@ -107,6 +106,8 @@ namespace EnergyOptimizer.Tests.Controllers
 
             // Assert
             await act.Should().ThrowAsync<UnauthorizedException>();
+
+            _mockTokenService.Verify(t => t.GenerateToken(It.IsAny<ApplicationUser>()), Times.Never);
         }
     }
 }

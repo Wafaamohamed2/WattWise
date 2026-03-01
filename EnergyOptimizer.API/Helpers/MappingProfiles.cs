@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Enums;
 using static EnergyOptimizer.API.DTOs.AuthDto;
 
 namespace EnergyOptimizer.API.Helpers
@@ -24,7 +25,6 @@ namespace EnergyOptimizer.API.Helpers
                .ForMember(dest => dest.SeverityLabel, opt => opt.MapFrom(src =>
                   Enum.GetName(typeof(AlertSeverity), src.Severity) ?? "Unknown"));
         }
-        public enum AlertSeverity { Info = 1, Warning = 2, Critical = 3 }
 
     }
 }

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
+using Hub = Microsoft.AspNetCore.SignalR.Hub;
 
 namespace EnergyOptimizer.API.Hubs
 {
-    
+    [Authorize]
     public class EnergyHub: Hub
     {
 
@@ -49,12 +51,12 @@ namespace EnergyOptimizer.API.Hubs
 
             await Clients.Caller.SendAsync("DataRequested", new
             {
-                message = "Latest data request received",
+                message = "Subscribed – next reading cycle will be pushed to you automatically",
                 timestamp = DateTime.UtcNow
             });
         }
 
-        public async Task BroadcastDeviceStatus(int deviceId, bool isActive)
+        internal async Task BroadcastDeviceStatus(int deviceId, bool isActive)
         {
             await Clients.All.SendAsync("DeviceStatusUpdated", new
             {
@@ -62,7 +64,9 @@ namespace EnergyOptimizer.API.Hubs
                 IsActive = isActive,
             });
 
-            _logger.LogInformation("Broadcasted status for device {DeviceId}: {Status}", deviceId, isActive ? "Active" : "Inactive");
+            _logger.LogInformation("Broadcasted status for device {DeviceId}: {Status}",
+                deviceId, 
+                isActive ? "Active" : "Inactive");
         }
 
 

@@ -3,8 +3,6 @@ using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Service.Services.Abstract;
