@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.Core.Enums;
 using MediatR;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries
 {

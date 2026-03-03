@@ -4,7 +4,7 @@ using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Exceptions; 
 using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
 {

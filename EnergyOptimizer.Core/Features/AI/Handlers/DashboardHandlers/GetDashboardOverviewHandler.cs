@@ -5,7 +5,7 @@ using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
 {

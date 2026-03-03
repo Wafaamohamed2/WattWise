@@ -33,7 +33,7 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("cleanup")]
         public async Task<IActionResult> RunCleanup()
         {
-            var result = await _mediator.Send(new RunAllCleanupTasksCommand(HttpContext.RequestAborted));
+            var result = await _mediator.Send(new RunAllCleanupTasksCommand());
             return Ok(result);
         }
 

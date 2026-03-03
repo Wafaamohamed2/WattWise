@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using EnergyOptimizer.Core.Features.AI.Commands;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
 using EnergyOptimizer.Service.Services.Abstract;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers

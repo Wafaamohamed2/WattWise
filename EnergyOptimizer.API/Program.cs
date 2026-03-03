@@ -14,14 +14,14 @@ using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.API.Helpers;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.RateLimiting;               
 using System.Threading.RateLimiting;
 using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
+using ApiResponse = EnergyOptimizer.API.Middleware.ExceptionMiddleware.ApiResponse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +87,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 // JWT Authentication 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSettings["Key"]
+    ?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json under 'Jwt:Key'.");
+
+if (jwtKey.Length < 32)
+    throw new InvalidOperationException("JWT Key must be at least 32 characters for HMAC-SHA256.");
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -136,7 +142,7 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.Window = TimeSpan.FromMinutes(1);
         limiterOptions.PermitLimit = 10;   // 10 requests/min per client
         limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 0;
+        limiterOptions.QueueLimit = 2;
     });
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -162,7 +168,7 @@ builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
 // Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-builder.Services.AddTransient<DataSeedingService>();
+builder.Services.AddScoped<DataSeedingService>();
 
 // Gemini / AI
 builder.Services.Configure<GeminiSettings>(
@@ -204,16 +210,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
-
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.UseCors("AllowAll");
-
 app.UseRateLimiter();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

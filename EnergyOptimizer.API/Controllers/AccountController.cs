@@ -5,12 +5,8 @@ using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using static EnergyOptimizer.API.DTOs.AuthDto;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.API.Controllers
 {

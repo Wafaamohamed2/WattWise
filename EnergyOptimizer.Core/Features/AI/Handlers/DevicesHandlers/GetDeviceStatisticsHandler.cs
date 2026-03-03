@@ -5,7 +5,7 @@ using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
 {

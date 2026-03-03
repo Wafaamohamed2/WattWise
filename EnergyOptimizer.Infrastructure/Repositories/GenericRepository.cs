@@ -49,16 +49,12 @@ namespace EnergyOptimizer.Infrastructure.Repositories
         }
         public void Update(T entity)
         {
-            _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
         }
         public void UpdateRange(IEnumerable<T> entities)
         {
-            _dbSet.AttachRange(entities);
             foreach (var entity in entities)
-            {
-                _context.Entry(entity).State = EntityState.Modified;
-            }
+                _context.Entry(entity).State = EntityState.Modified;         
         }
         public void Delete(T entity)
         {

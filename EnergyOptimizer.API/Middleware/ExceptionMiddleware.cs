@@ -1,11 +1,8 @@
 ﻿using EnergyOptimizer.Core.Exceptions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
-namespace EnergyOptimizer.Core.Features.AI.Commands.Middleware
+namespace EnergyOptimizer.API.Middleware
 {
     public class ExceptionMiddleware
     {

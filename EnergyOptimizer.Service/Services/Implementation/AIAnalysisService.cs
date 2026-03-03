@@ -44,11 +44,6 @@ namespace EnergyOptimizer.Service.Services.Implementation
             await DetectAnomalies(ct);
             await GenerateRecommendations(ct);
 
-            await _analysisRepo.SaveChangesAsync();
-            await _recommendationRepo.SaveChangesAsync();
-            await _anomalyRepo.SaveChangesAsync();
-            await _alertRepo.SaveChangesAsync();
-
             _logger.LogInformation("AI Global Analysis completed successfully");
         }
 
@@ -80,6 +75,12 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
                 foreach (var r in anomalies)
                 {
+                    // Check if anomaly already exists for this timestamp to avoid duplicates
+                    var alreadyExists = await _anomalyRepo.AnyAsync(
+                        new AnomalyExistsSpec(device.Id, r.Timestamp));
+
+                    if (alreadyExists) continue;
+
                     decimal deviationPercent =
                         avg == 0 ? 0 : (r.PowerConsumptionKW - avg) / avg * 100;
 
@@ -112,14 +113,18 @@ namespace EnergyOptimizer.Service.Services.Implementation
                     });
                 }
             }
+            await _anomalyRepo.SaveChangesAsync();
+            await _alertRepo.SaveChangesAsync();
         }
 
 
         private async Task RunDailyAnalysis(CancellationToken ct)
         {
             var startDate = DateTime.UtcNow.AddDays(-7);
+            var endDate = DateTime.UtcNow;
+
             var readings = await _readingRepo.ListAsync(
-                new PaginatedReadingsSpec(startDate, DateTime.UtcNow, 1000));
+                new ReadingsByDateRangeSpec(startDate, endDate));
 
             if (!readings.Any()) return;
 
@@ -144,37 +149,39 @@ namespace EnergyOptimizer.Service.Services.Implementation
             };
 
             await _analysisRepo.AddAsync(analysis);
+            await _analysisRepo.SaveChangesAsync();
         }
 
 
         private async Task GenerateRecommendations(CancellationToken ct)
         {
-            var devices = await _deviceRepo.ListAsync(
-                new HighPowerDevicesSpec((decimal)2.0));
+            var devices = await _deviceRepo.ListAsync(new HighPowerDevicesSpec(2.0m));
 
-            foreach (var device in devices)
+            var recommendations = devices.Select(device => new EnergyRecommendation
             {
-                await _recommendationRepo.AddAsync(new EnergyRecommendation
-                {
-                    Title = $"Optimize {device.Name}",
-                    Category = "Efficiency",
-                    Priority = "1",
-                    EstimatedSavingsKWh = 10.5,
-                    EstimatedSavingsPercent = 15.0,
-                    CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddDays(30),
-                    IsImplemented = false,
-                    Description = $"Usage pattern optimization for {device.Name}.",
-                    ActionItems = "Review schedule; Check device health;"
-                });
+                Title = $"Optimize {device.Name}",
+                Category = "Efficiency",
+                Priority = "1",
+                EstimatedSavingsKWh = 10.5,
+                EstimatedSavingsPercent = 15.0,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                IsImplemented = false,
+                Description = $"Usage pattern optimization for {device.Name}.",
+                ActionItems = "Review schedule; Check device health;"
+            }).ToList();
+
+            if (recommendations.Any())
+            {
+                await _recommendationRepo.AddRangeAsync(recommendations);
+                await _recommendationRepo.SaveChangesAsync();
             }
         }
 
         private decimal CalculateStandardDeviation(IEnumerable<decimal> values)
         {
             var list = values.ToList();
-            if (!list.Any())
-                return 0;
+            if (list.Count < 2) return 0;
 
             decimal avg = list.Average();
             decimal variance =

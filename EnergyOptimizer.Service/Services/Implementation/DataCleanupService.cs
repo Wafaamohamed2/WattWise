@@ -34,10 +34,11 @@ namespace EnergyOptimizer.Service.Services.Implementation
         // This method runs all cleanup tasks sequentially
         public async Task RunAllCleanupTasks(CancellationToken ct)
         {
-            _logger.LogInformation("Starting AI Global Analysis...");
+            _logger.LogInformation("Starting data cleanup tasks...");
             await CleanupOldAnalyses(90, ct);
             await CleanupResolvedAnomalies(30, ct);
             await MarkExpiredRecommendations(ct);
+            _logger.LogInformation("Data cleanup tasks completed");
         }
         public async Task CleanupOldAnalyses(int daysToKeep, CancellationToken cancellationToken)
         {
@@ -85,7 +86,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
             {
                 foreach (var rec in expiredRecs)
                 {
-                    rec.Description += " (EXPIRED)";
+                    rec.ExpiresAt = DateTime.UtcNow;
                 }
 
                 _recommendationRepo.UpdateRange(expiredRecs);

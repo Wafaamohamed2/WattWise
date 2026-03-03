@@ -2,7 +2,7 @@
 using EnergyOptimizer.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using EnergyOptimizer.Core.Exceptions; 
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using ApiResponse = EnergyOptimizer.Core.Features.AI.Commands.ApiResponse;
 
 namespace EnergyOptimizer.API.Controllers
 {

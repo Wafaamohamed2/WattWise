@@ -3,7 +3,7 @@ using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers
 {

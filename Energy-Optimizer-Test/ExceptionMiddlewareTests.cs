@@ -1,5 +1,5 @@
-﻿using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Commands.Middleware;
+﻿using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Core.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;

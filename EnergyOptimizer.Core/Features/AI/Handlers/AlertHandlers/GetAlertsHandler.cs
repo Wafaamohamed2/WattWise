@@ -4,7 +4,7 @@ using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 using AutoMapper;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
@@ -30,13 +30,27 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
                 ? DateTime.UtcNow
                 : DateTime.Parse(request.EndDate).AddDays(1).AddSeconds(-1);
 
-            var spec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end);
+            var countSpec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end);
+            var total = await _alertRepo.CountAsync(countSpec);
 
-            var totalAlerts = await _alertRepo.CountAsync(spec);
-            var alerts = await _alertRepo.ListAsync(spec);
+            var pagedSpec = new AlertsWithFiltersSpec(
+               request.IsRead, request.Severity, request.DeviceId,
+               start, end,
+               page: request.Page, pageSize: request.PageSize);
 
+            var alerts = await _alertRepo.ListAsync(pagedSpec);
             var data = _mapper.Map<List<AlertDto>>(alerts);
-            return new ApiResponse(200, "Alerts retrieved successfully", new { data });
+
+            var totalPages = (int)Math.Ceiling(total / (double)request.PageSize);
+
+            return new ApiResponse(200, "Alerts retrieved successfully", new
+            {
+                page = request.Page,
+                pageSize = request.PageSize,
+                total,
+                totalPages,
+                data
+            });
         }
     }
 }

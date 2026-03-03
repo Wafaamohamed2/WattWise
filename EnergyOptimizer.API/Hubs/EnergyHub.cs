@@ -56,19 +56,17 @@ namespace EnergyOptimizer.API.Hubs
             });
         }
 
-        internal async Task BroadcastDeviceStatus(int deviceId, bool isActive)
-        {
-            await Clients.All.SendAsync("DeviceStatusUpdated", new
-            {
-                DeviceId = deviceId,
-                IsActive = isActive,
-            });
 
-            _logger.LogInformation("Broadcasted status for device {DeviceId}: {Status}",
-                deviceId, 
-                isActive ? "Active" : "Inactive");
+        public async Task JoinZone(string zoneName)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"Zone_{zoneName}");
+            _logger.LogInformation("Client {ConnectionId} joined zone group: {Zone}", Context.ConnectionId, zoneName);
         }
 
+        public async Task LeaveZone(string zoneName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Zone_{zoneName}");
+        }
 
         public async Task Ping()
         {

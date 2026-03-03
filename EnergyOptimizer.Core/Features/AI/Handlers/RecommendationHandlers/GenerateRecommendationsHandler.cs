@@ -4,7 +4,7 @@ using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Exceptions; 
 using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
-using static EnergyOptimizer.Core.Features.AI.Commands.Middleware.ExceptionMiddleware;
+using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 {

@@ -77,15 +77,15 @@ namespace EnergyOptimizer.API.Services
             var hour = cairoTime.Hour;
             var dayOfWeek = cairoTime.DayOfWeek;
 
-            bool blackout = Random.Shared.NextDouble() < 0.05;
+            bool blackout = Random.Shared.NextDouble() < 0.002;
 
             foreach (var device in activeDevices)
             {
                 decimal consumption = CalculateConsumption(device, hour, dayOfWeek);
 
-                var voltage = GenerateVoltage(blackout);
-                var current = consumption > 0 ? (consumption / 220.0m) * 1000m : 0m;
-                var tempReading = (decimal)GenerateTemperature(hour);
+                decimal voltage = GenerateVoltage(blackout);
+                decimal current = consumption > 0 ? (consumption / 220.0m) * 1000m : 0m;
+                double tempReading = GenerateTemperature(hour);
 
                 //  Generate reading even if consumption is 0 (standby mode)
                 var reading = new EnergyReading
@@ -97,6 +97,7 @@ namespace EnergyOptimizer.API.Services
                     Current = (consumption > 0 ? (consumption / 220.0m) * 1000m : 0m),
                     Temperature = GenerateTemperature(hour)
                 };
+                readings.Add(reading);
 
                 liveReadings.Add(new LiveReadingDto
                 {
@@ -145,7 +146,7 @@ namespace EnergyOptimizer.API.Services
 
                 await Task.WhenAll(zoneTasks);
 
-                _logger.LogDebug($"Broadcasted {readings.Count} readings to all clients");
+                _logger.LogDebug("Broadcasted {Count} readings to all clients", readings.Count);
             }
             catch (Exception ex)
             {

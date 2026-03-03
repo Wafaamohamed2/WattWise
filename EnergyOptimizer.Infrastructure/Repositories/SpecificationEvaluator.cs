@@ -1,10 +1,5 @@
 ﻿using EnergyOptimizer.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EnergyOptimizer.Infrastructure.Repositories
 {
@@ -21,7 +16,7 @@ namespace EnergyOptimizer.Infrastructure.Repositories
             }
 
             // Apply includes
-            query = spec.Includes
+            query = spec.IncludeStrings
                .Aggregate(query, (current, include) => current.Include(include));
 
             // Apply ordering
