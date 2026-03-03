@@ -2,6 +2,7 @@
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Specifications.AnalysisSpec;
 using MediatR;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
@@ -17,32 +18,27 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 
         public async Task<ApiResponse> Handle(GetAnalysisHistoryQuery request, CancellationToken ct)
         {
-            var analyses = await _analysisRepo.ListAllAsync();
-            var query = analyses.AsEnumerable();
+            var countSpec = new AnalysisHistoryCountSpec(
+                request.AnalysisType, request.StartDate, request.EndDate);
 
-            if (!string.IsNullOrEmpty(request.AnalysisType))
-                query = query.Where(a => a.AnalysisType == request.AnalysisType);
-
-            if (request.StartDate.HasValue)
-                query = query.Where(a => a.AnalysisDate >= request.StartDate);
-
-            if (request.EndDate.HasValue)
-                query = query.Where(a => a.AnalysisDate <= request.EndDate.Value.AddDays(1));
-
-            var total = query.Count();
+            var total = await _analysisRepo.CountAsync(countSpec);
             var totalPages = (int)Math.Ceiling(total / (double)request.PageSize);
 
-            var data = query.OrderByDescending(a => a.AnalysisDate)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .Select(a => new {
-                    a.Id,
-                    a.AnalysisType,
-                    a.AnalysisDate,
-                    a.Summary,
-                    a.TotalConsumptionKWh,
-                    a.DevicesAnalyzed
-                });
+            var dataSpec = new AnalysisHistorySpec(
+                request.AnalysisType, request.StartDate, request.EndDate,
+                request.Page, request.PageSize);
+
+            var analyses = await _analysisRepo.ListAsync(dataSpec);
+
+            var data = analyses.Select(a => new
+            {
+                a.Id,
+                a.AnalysisType,
+                a.AnalysisDate,
+                a.Summary,
+                a.TotalConsumptionKWh,
+                a.DevicesAnalyzed
+            });
 
             return new ApiResponse(200, "Analysis history retrieved", new
             {

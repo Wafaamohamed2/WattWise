@@ -17,7 +17,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
         {
             if (!DateTime.TryParse(request.Date, out DateTime targetDate)) targetDate = DateTime.UtcNow.Date;
 
-            var readings = await _readingRepo.ListAsync(new TodayReadingsSpec());
+            var readings = await _readingRepo.ListAsync(new HourlyReadingsSpec(targetDate));
 
             var hourlyData = Enumerable.Range(0, 24).Select(hour =>
             {

@@ -4,6 +4,7 @@ using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Specifications.AnomaliesSpec;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 {
@@ -20,32 +21,23 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 
         public async Task<ApiResponse> Handle(GetAnomaliesQuery request, CancellationToken ct)
         {
-            var anomalies = await _anomalyRepo.ListAllAsync();
+            var countSpec = new AnomaliesCountSpec(request.IsResolved, request.Severity, request.DeviceId);
+            var total = await _anomalyRepo.CountAsync(countSpec);
 
-            var query = anomalies.AsQueryable();
+            var dataSpec = new AnomaliesFilterSpec(
+                request.IsResolved, request.Severity, request.DeviceId,
+                request.Page, request.PageSize);
 
-            if (request.IsResolved.HasValue)
-                query = query.Where(a => a.IsResolved == request.IsResolved.Value);
+            var items = await _anomalyRepo.ListAsync(dataSpec);
 
-            if (!string.IsNullOrEmpty(request.Severity))
-                query = query.Where(a => a.Severity == request.Severity);
-
-            var totalItems = query.Count();
-            var items = query
-                .OrderByDescending(a => a.DetectedAt)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToList();
-
-            var responseData = new
+            return new ApiResponse(200, "Anomalies retrieved", new
             {
-                items = items,
-                totalItems = totalItems,
+                items,
+                totalItems = total,
                 page = request.Page,
-                totalPages = (int)Math.Ceiling(totalItems / (double)request.PageSize)
-            };
-
-            return new ApiResponse(200, "Anomalies retrieved", responseData);
+                pageSize = request.PageSize,
+                totalPages = (int)Math.Ceiling(total / (double)request.PageSize)
+            });
         }
     }
 }

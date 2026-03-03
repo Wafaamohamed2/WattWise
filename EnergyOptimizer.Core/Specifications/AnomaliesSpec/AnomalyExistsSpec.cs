@@ -1,6 +1,6 @@
 ﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
 
-namespace EnergyOptimizer.Core.Specifications.ReadSpec
+namespace EnergyOptimizer.Core.Specifications.AnomaliesSpec
 {
     public class AnomalyExistsSpec : BaseSpecifcation<DetectedAnomaly>
     {

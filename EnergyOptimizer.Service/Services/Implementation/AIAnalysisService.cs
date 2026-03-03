@@ -1,6 +1,7 @@
 ﻿using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Specifications.AnomaliesSpec;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Service.Services.Abstract;

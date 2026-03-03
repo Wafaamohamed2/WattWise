@@ -3,6 +3,7 @@ using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Features.AI.Queries.Reco;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Specifications.RecommendationSpec;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 {
@@ -17,15 +18,10 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
 
         public async Task<ApiResponse> Handle(GetRecommendationsQuery request, CancellationToken ct)
         {
-            var recommendations = await _recommendationRepo.ListAllAsync();
-            var query = recommendations.AsEnumerable();
+            var spec = new RecommendationsFilterSpec(request.IsImplemented);
+            var recommendations = await _recommendationRepo.ListAsync(spec);
 
-            if (request.IsImplemented.HasValue)
-                query = query.Where(r => r.IsImplemented == request.IsImplemented.Value);
-
-            var result = query.OrderByDescending(r => r.Priority).ToList();
-
-            return new ApiResponse(200, "Recommendations retrieved successfully", result);
+            return new ApiResponse(200, "Recommendations retrieved successfully", recommendations);
         }
     }
 }

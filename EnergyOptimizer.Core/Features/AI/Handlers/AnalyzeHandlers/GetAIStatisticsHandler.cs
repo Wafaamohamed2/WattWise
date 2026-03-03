@@ -3,6 +3,9 @@ using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Specifications.AnalysisSpec;
+using EnergyOptimizer.Core.Specifications.RecommendationSpec;
+using EnergyOptimizer.Core.Specifications.AnomaliesSpec;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 {
@@ -29,47 +32,58 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             var sevenDaysAgo = today.AddDays(-7);
 
             // Analyses
-            var allAnalyses = await _analysisRepo.ListAllAsync();
-            int totalCount = allAnalyses.Count;
-            int count30 = allAnalyses.Count(a => a.AnalysisDate >= thirtyDaysAgo);
+            var totalAnalysesTask = _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, null, null));
+            var recentAnalysesTask = _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, thirtyDaysAgo, null));
 
             // Recommendations
-            var allRecs = await _recommendationRepo.ListAllAsync();
-            int activeRecs = allRecs.Count(r => !r.IsImplemented);
-            int doneRecs = allRecs.Count(r => r.IsImplemented);
-            double realizedSavings = allRecs.Where(r => r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
-            double potentialSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+            var activeRecsTask = _recommendationRepo.CountAsync(new RecommendationsCountSpec(isImplemented: false));
+            var doneRecsTask = _recommendationRepo.CountAsync(new RecommendationsCountSpec(isImplemented: true));
+
+            var implementedRecsTask = _recommendationRepo.ListAsync(new RecommendationsFilterSpec(isImplemented: true));
+            var activeRecsListTask = _recommendationRepo.ListAsync(new RecommendationsFilterSpec(isImplemented: false));
 
             // Anomalies
-            var allAnomalies = await _anomalyRepo.ListAllAsync();
-            int pendingAnoms = allAnomalies.Count(a => !a.IsResolved);
-            int recentAnoms = allAnomalies.Count(a => a.DetectedAt >= sevenDaysAgo);
+            var totalAnomaliesTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, null, null));
+            var unresolvedTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(isResolved: false, null, null));
+            var recentAnomaliesTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, null, null));
+            var criticalTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Critical", null));
+            var highTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "High", null));
+            var mediumTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Medium", null));
+            var lowTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Low", null));
+
+
+            // Run all DB queries in parallel
+            await Task.WhenAll(
+                totalAnalysesTask, recentAnalysesTask,
+                activeRecsTask, doneRecsTask, implementedRecsTask, activeRecsListTask,
+                totalAnomaliesTask, unresolvedTask, recentAnomaliesTask,
+                criticalTask, highTask, mediumTask, lowTask);
+
+            var implementedRecs = await implementedRecsTask;
+            var activeRecsList = await activeRecsListTask;
 
             var stats = new
             {
                 analyses = new
                 {
-                    total = totalCount,
-                    last30Days = count30,
-                    byType = allAnalyses.GroupBy(a => a.AnalysisType)
-                                         .Select(g => new { type = g.Key, count = g.Count() })
+                    total = await totalAnalysesTask,
+                    last30Days = await recentAnalysesTask
                 },
                 recommendations = new
                 {
-                    active = activeRecs,
-                    implemented = doneRecs,
-                    totalRealizedSavings = realizedSavings,
-                    totalPotentialSavings = potentialSavings
+                    active = await activeRecsTask,
+                    implemented = await doneRecsTask,
+                    totalRealizedSavings = implementedRecs.Sum(r => r.EstimatedSavingsKWh),
+                    totalPotentialSavings = activeRecsList.Sum(r => r.EstimatedSavingsKWh)
                 },
                 anomalies = new
                 {
-                    total = allAnomalies.Count,
-                    unresolved = allAnomalies.Count(a => !a.IsResolved),
-                    criticalSeverityCount = allAnomalies.Count(a => a.Severity == "Critical"),
-                    highSeverityCount = allAnomalies.Count(a => a.Severity == "High"),
-                    mediumSeverityCount = allAnomalies.Count(a => a.Severity == "Medium"),
-                    lowSeverityCount = allAnomalies.Count(a => a.Severity == "Low"),
-
+                    total = await totalAnomaliesTask,
+                    unresolved = await unresolvedTask,
+                    criticalSeverityCount = await criticalTask,
+                    highSeverityCount = await highTask,
+                    mediumSeverityCount = await mediumTask,
+                    lowSeverityCount = await lowTask
                 }
             };
 
