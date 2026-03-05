@@ -867,21 +867,16 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'login.html';
-        }
+        // FIXED: Token مش في localStorage دلوقتي — في HttpOnly cookie.
+        // Auth check بقت async عن طريق GET /api/account/me.
+        // authHeader اتشال — الـ cookie بتتبعت تلقائياً مع credentials: 'include'.
 
         const baseUrl = window.location.origin;
-        const authHeader = { 'Authorization': `Bearer ${token}` };
 
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-        }
+        // FIXED: SignalR بيستخدم withCredentials بدل accessTokenFactory
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/energyhub", {
-                accessTokenFactory: () => localStorage.getItem('token')
+                withCredentials: true   // بيبعت الـ HttpOnly cookie تلقائياً
             })
             .withAutomaticReconnect()
             .build();
@@ -951,9 +946,8 @@
         async function loadInitialAlerts() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts?isRead=false&pageSize=20`, {
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 const data = await response.json();
                 if (data.data) {
                     alerts = data.data;
@@ -986,12 +980,12 @@
 
             if (alerts.length === 0) {
                 container.innerHTML = `
-                            <div class="empty-alerts">
-                                <div class="empty-alerts-icon">✅</div>
-                                <div>No alerts yet</div>
-                                <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
-                            </div>
-                        `;
+                                    <div class="empty-alerts">
+                                        <div class="empty-alerts-icon">✅</div>
+                                        <div>No alerts yet</div>
+                                        <div style="font-size: 0.85em; margin-top: 5px;">System is running normally</div>
+                                    </div>
+                                `;
                 return;
             }
 
@@ -1004,28 +998,28 @@
                 div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
 
                 div.innerHTML = `
-                            <div class="alert-header-row">
-                                <div class="alert-device">
-                                    ${alert.icon} ${alert.deviceName}
-                                </div>
-                                <div class="alert-time">${timeAgo}</div>
-                            </div>
-                            <div class="alert-message">${alert.message}</div>
-                            <div class="alert-footer">
-                                <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
-                                <span>📍 ${alert.zoneName}</span>
-                            </div>
-                            <div class="alert-actions">
-                                ${!alert.isRead ? `
-                                    <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
-                                        ✓ Mark as Read
-                                    </button>
-                                ` : ''}
-                                <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
-                                    🗑️ Delete
-                                </button>
-                            </div>
-                        `;
+                                    <div class="alert-header-row">
+                                        <div class="alert-device">
+                                            ${alert.icon} ${alert.deviceName}
+                                        </div>
+                                        <div class="alert-time">${timeAgo}</div>
+                                    </div>
+                                    <div class="alert-message">${alert.message}</div>
+                                    <div class="alert-footer">
+                                        <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
+                                        <span>📍 ${alert.zoneName}</span>
+                                    </div>
+                                    <div class="alert-actions">
+                                        ${!alert.isRead ? `
+                                            <button class="alert-action-btn mark-read" onclick="markAlertAsRead(${alert.id}); event.stopPropagation();">
+                                                ✓ Mark as Read
+                                            </button>
+                                        ` : ''}
+                                        <button class="alert-action-btn delete" onclick="deleteAlert(${alert.id}); event.stopPropagation();">
+                                            🗑️ Delete
+                                        </button>
+                                    </div>
+                                `;
                 container.appendChild(div);
             });
         }
@@ -1049,9 +1043,8 @@
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/${alertId}/read`, {
                     method: 'PATCH',
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 if (response.ok) {
                     const alert = alerts.find(a => a.id === alertId);
                     if (alert) {
@@ -1069,9 +1062,8 @@
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/${alertId}`, {
                     method: 'DELETE',
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 if (response.ok) {
                     alerts = alerts.filter(a => a.id !== alertId);
                     updateUnreadCount();
@@ -1088,9 +1080,8 @@
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/all-read`, {
                     method: 'POST',
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 if (response.ok) {
                     alerts.forEach(a => a.isRead = true);
                     updateUnreadCount();
@@ -1107,9 +1098,8 @@
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/clear-read`, {
                     method: 'DELETE',
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 if (response.ok) {
                     alerts = alerts.filter(a => !a.isRead);
                     updateUnreadCount();
@@ -1163,32 +1153,32 @@
 
                 if (!consumers || consumers.length === 0) {
                     topConsumersDiv.innerHTML = `
-                            <div class="empty-state">
-                                <p>No data yet...</p>
-                            </div>`;
+                                    <div class="empty-state">
+                                        <p>No data yet...</p>
+                                    </div>`;
                     return;
                 }
 
                 topConsumersDiv.innerHTML = consumers.map((device, i) => `
-                        <div class="consumer-item">
-                            <div class="consumer-info">
-                                <strong>#${i + 1} ${device.deviceName}</strong>
-                                <span>${device.zoneName}</span>
-                            </div>
-                            <div class="consumer-consumption" style="color:#667eea;font-weight:bold;">
-                                ${(device.totalConsumption ?? device.todayConsumption ?? device.avgConsumption ?? 0).toFixed(3)} kW
-                            </div>
-                        </div>
-                    `).join('');
+                                <div class="consumer-item">
+                                    <div class="consumer-info">
+                                        <strong>#${i + 1} ${device.deviceName}</strong>
+                                        <span>${device.zoneName}</span>
+                                    </div>
+                                    <div class="consumer-consumption" style="color:#667eea;font-weight:bold;">
+                                        ${(device.totalConsumption ?? device.todayConsumption ?? device.avgConsumption ?? 0).toFixed(3)} kW
+                                    </div>
+                                </div>
+                            `).join('');
 
             } catch (error) {
                 console.error('Error loading top consumers:', error);
                 const topConsumersDiv = document.getElementById("topConsumers");
                 if (topConsumersDiv) {
                     topConsumersDiv.innerHTML = `
-                            <div class="empty-state">
-                                <p>No data yet...</p>
-                            </div>`;
+                                    <div class="empty-state">
+                                        <p>No data yet...</p>
+                                    </div>`;
                 }
             }
         }
@@ -1226,10 +1216,10 @@
 
             if (!readings || readings.length === 0) {
                 container.innerHTML = `
-                            <div class="empty-state">
-                                <div class="spinner"></div>
-                                <p>Waiting for data...</p>
-                            </div>`;
+                                    <div class="empty-state">
+                                        <div class="spinner"></div>
+                                        <p>Waiting for data...</p>
+                                    </div>`;
                 return;
             }
 
@@ -1240,18 +1230,18 @@
                 div.className = "reading";
 
                 div.innerHTML = `
-                            <div class="reading-header">
-                                <strong>${reading.deviceName || 'Unknown Device'}</strong>
-                                <span class="device-zone">📍 ${reading.zoneName || 'Unknown Zone'}</span>
-                            </div>
-                            <div class="reading-metrics">
-                                <div><b>⚡ Power:</b> ${(reading.powerConsumptionKW || 0).toFixed(3)} kW</div>
-                                <div><b>🌡️ Temp:</b> ${(reading.temperature || 0).toFixed(1)} °C</div>
-                                <div><b>🔌 Voltage:</b> ${(reading.voltage || 0).toFixed(1)} V</div>
-                                <div><b>⚡ Current:</b> ${(reading.current || 0).toFixed(2)} A</div>
-                            </div>
-                            <div class="reading-time">${new Date(reading.timestamp).toLocaleTimeString()}</div>
-                        `;
+                                    <div class="reading-header">
+                                        <strong>${reading.deviceName || 'Unknown Device'}</strong>
+                                        <span class="device-zone">📍 ${reading.zoneName || 'Unknown Zone'}</span>
+                                    </div>
+                                    <div class="reading-metrics">
+                                        <div><b>⚡ Power:</b> ${(reading.powerConsumptionKW || 0).toFixed(3)} kW</div>
+                                        <div><b>🌡️ Temp:</b> ${(reading.temperature || 0).toFixed(1)} °C</div>
+                                        <div><b>🔌 Voltage:</b> ${(reading.voltage || 0).toFixed(1)} V</div>
+                                        <div><b>⚡ Current:</b> ${(reading.current || 0).toFixed(2)} A</div>
+                                    </div>
+                                    <div class="reading-time">${new Date(reading.timestamp).toLocaleTimeString()}</div>
+                                `;
                 container.appendChild(div);
             });
 
@@ -1289,12 +1279,12 @@
                     const div = document.createElement("div");
                     div.className = "reading";
                     div.innerHTML = `
-                                <div class="reading-header">#${index + 1} ${device.deviceName}</div>
-                                <div style="margin-top: 8px;">
-                                    <span style="color: #6b7280;">Consumption:</span>
-                                    <span style="color: #667eea; font-weight: bold; margin-left: 8px;">${(device.currentConsumption ?? device.totalConsumption ?? device.consumption ?? 0).toFixed(3)} kW</span>
-                                </div>
-                            `;
+                                        <div class="reading-header">#${index + 1} ${device.deviceName}</div>
+                                        <div style="margin-top: 8px;">
+                                            <span style="color: #6b7280;">Consumption:</span>
+                                            <span style="color: #667eea; font-weight: bold; margin-left: 8px;">${(device.currentConsumption ?? device.totalConsumption ?? device.consumption ?? 0).toFixed(3)} kW</span>
+                                        </div>
+                                    `;
                     topConsumersDiv.appendChild(div);
                 });
             } else {
@@ -1305,9 +1295,8 @@
         async function loadDeviceControls() {
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/devices`, {
-                    headers: authHeader
                 });
-                if (response.status === 401) logout();
+
                 const result = await response.json();
 
                 const devices = result.data ?? result.details ?? (Array.isArray(result) ? result : []);
@@ -1362,24 +1351,24 @@
             const powerRating = device.ratedPowerKW || 0;
 
             div.innerHTML = `
-                        <div class="device-control-header">
-                            <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
-                            ${device.name}
-                        </div>
-                        <div class="device-control-info">
-                            📍 ${device.zone?.name || 'Unknown Zone'}<br>
-                            ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
-                            <span id="device-${device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
-                                ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
-                            </span>
-                        </div>
-                        <button
-                            class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
-                            onclick="toggleDeviceControl(${device.id})"
-                        >
-                            ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
-                        </button>
-                    `;
+                                <div class="device-control-header">
+                                    <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
+                                    ${device.name}
+                                </div>
+                                <div class="device-control-info">
+                                    📍 ${device.zone?.name || 'Unknown Zone'}<br>
+                                    ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
+                                    <span id="device-${device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
+                                        ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
+                                    </span>
+                                </div>
+                                <button
+                                    class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
+                                    onclick="toggleDeviceControl(${device.id})"
+                                >
+                                    ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
+                                </button>
+                            `;
 
             return div;
         }
@@ -1521,8 +1510,12 @@
             if (card) card.remove();
         });
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (!AuthHelper.checkAuth()) return;
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Simple auth check - no API call needed
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'login.html';
+                return;
+            }
 
             try {
                 await connection.start();

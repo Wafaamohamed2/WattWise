@@ -14,14 +14,13 @@ using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
-using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.API.Helpers;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Service.Services;
-using Microsoft.AspNetCore.RateLimiting;               
+using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
-using ApiResponse = EnergyOptimizer.API.Middleware.ExceptionMiddleware.ApiResponse;
+using EnergyOptimizer.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,12 +86,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 // JWT Authentication 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSettings["Key"]
-    ?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json under 'Jwt:Key'.");
-
-if (jwtKey.Length < 32)
-    throw new InvalidOperationException("JWT Key must be at least 32 characters for HMAC-SHA256.");
-
 
 builder.Services.AddAuthentication(options =>
 {
@@ -113,19 +106,32 @@ builder.Services.AddAuthentication(options =>
                                        Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 
-    // SignalR sends the token as a query-string param instead of a header
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = ctx =>
         {
+            // 1. Try HttpOnly cookie first (browser pages)
+            if (ctx.Request.Cookies.TryGetValue("access_token", out var cookieToken)
+                && !string.IsNullOrEmpty(cookieToken))
+            {
+                ctx.Token = cookieToken;
+                return Task.CompletedTask;
+            }
+
+            // 2. Fallback to Authorization header (Swagger / API clients)
+            var authHeader = ctx.Request.Headers["Authorization"].FirstOrDefault();
+            if (authHeader?.StartsWith("Bearer ") == true)
+            {
+                ctx.Token = authHeader["Bearer ".Length..];
+                return Task.CompletedTask;
+            }
+
+            // 3. SignalR sends token as query param
             var accessToken = ctx.Request.Query["access_token"];
             var path = ctx.HttpContext.Request.Path;
-
-            if (!string.IsNullOrEmpty(accessToken) &&
-                path.StartsWithSegments("/energyhub"))
-            {
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/energyhub"))
                 ctx.Token = accessToken;
-            }
+
             return Task.CompletedTask;
         }
     };
@@ -142,7 +148,7 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.Window = TimeSpan.FromMinutes(1);
         limiterOptions.PermitLimit = 10;   // 10 requests/min per client
         limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 2;
+        limiterOptions.QueueLimit = 0;
     });
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -168,7 +174,7 @@ builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
 // Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-builder.Services.AddScoped<DataSeedingService>();
+builder.Services.AddTransient<DataSeedingService>();
 
 // Gemini / AI
 builder.Services.Configure<GeminiSettings>(
@@ -210,14 +216,19 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
-app.UseHttpsRedirection();
 
+// CORS must come before everything else that touches responses
 app.UseCors("AllowAll");
+
+// HttpsRedirection only in production — in dev the browser blocks self-signed cert redirects
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

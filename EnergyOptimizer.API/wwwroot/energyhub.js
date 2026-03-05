@@ -1,6 +1,6 @@
 ﻿const connection = new signalR.HubConnectionBuilder()
     .withUrl("/energyhub", {
-        accessTokenFactory: () => AuthHelper.getToken() 
+        accessTokenFactory: () => localStorage.getItem('token')
     })
     .withAutomaticReconnect()
     .build();
@@ -31,10 +31,11 @@ async function startSignalR() {
         console.log("SignalR Connected.");
     } catch (err) {
         console.error("SignalR Connection Error: ", err);
-        setTimeout(startSignalR, 5000); 
+        setTimeout(startSignalR, 5000);
     }
 }
 
-if (AuthHelper.isAuthenticated()) {
+// Start SignalR if token exists - no /me check needed
+if (localStorage.getItem('token')) {
     startSignalR();
 }

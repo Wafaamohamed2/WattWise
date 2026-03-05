@@ -544,10 +544,10 @@
 
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=5000&startDate=${startDate}&endDate=${endDate}`);
 
-                if (!response) return; 
+                if (!response) return;
 
                 const result = await response.json();
-                console.log('[Charts] API raw response:', result); 
+                console.log('[Charts] API raw response:', result);
 
                 let actualReadings =
                     result.data
@@ -863,11 +863,11 @@
             link.click();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (AuthHelper.checkAuth()) {
-                loadData();
-            }
-        });
+        document.addEventListener('DOMContentLoaded', async () => {
+            await AuthHelper.checkAuth();
+            loadData();
+        }
+            });
     </script>
 </body>
 </html>

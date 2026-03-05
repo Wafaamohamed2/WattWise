@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
+using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using static EnergyOptimizer.API.DTOs.AuthDto;
-using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -21,7 +21,7 @@ namespace EnergyOptimizer.API.Controllers
         public AccountController(
         UserManager<ApplicationUser> userManager,
         IMapper mapper,
-        IJwtTokenService tokenService) 
+        IJwtTokenService tokenService)
         {
             _userManager = userManager;
             _mapper = mapper;
@@ -48,6 +48,19 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(new ApiResponse(200, "User registered successfully!"));
         }
 
+        // ===== LOGOUT: clear the HttpOnly cookie =====
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+            return Ok(new ApiResponse(200, "Logged out successfully"));
+        }
+
         [HttpPost("login")]
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login(LoginDto model)
@@ -64,6 +77,17 @@ namespace EnergyOptimizer.API.Controllers
 
             var token = _tokenService.GenerateToken(user);
 
+            // Set cookie: SameSite=Lax works on both HTTP and HTTPS dev
+            Response.Cookies.Append("access_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,          // false = works on HTTP localhost too
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddHours(8),
+                Path = "/"
+            });
+
+            // Also return token in body for backward compatibility
             return Ok(new ApiResponse(200, "Login successful", new
             {
                 Token = token,

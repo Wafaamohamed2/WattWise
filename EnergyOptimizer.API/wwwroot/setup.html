@@ -288,6 +288,7 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', async () => { await AuthHelper.checkAuth(); });
         const baseUrl = window.location.origin;
         let logEntries = [];
 
@@ -300,11 +301,11 @@
         function updateLogDisplay() {
             const logDiv = document.getElementById('progressLog');
             logDiv.innerHTML = logEntries.map(entry => `
-                    <div class="log-entry ${entry.type}">
-                        <strong>${entry.time}</strong>
-                        <span>${entry.message}</span>
-                    </div>
-                `).join('');
+                        <div class="log-entry ${entry.type}">
+                            <strong>${entry.time}</strong>
+                            <span>${entry.message}</span>
+                        </div>
+                    `).join('');
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -353,20 +354,25 @@
                 await sleep(500);
 
                 // Step 3: Generate Recommendations
-                addLog('💡 Generating energy-saving recommendations...', 'info');
-                const analysisResponse = await AuthHelper.fetchWithAuth(
-                    `${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
-                    { method: 'POST' }
+                // FIXED: كان في duplicate declaration لـ analysisResponse
+                // و recsResponse مكانتش متعرفة خالص — كان الكود كمان بيعمل نفس الـ call تاني
+                // الـ recommendations بتتولد تلقائياً من analyze-patterns — بنجيبها من API مباشرة
+                addLog('💡 Fetching generated recommendations...', 'info');
+                const recsResponse = await AuthHelper.fetchWithAuth(
+                    `${baseUrl}/api/AI/recommendations?pageSize=100&isImplemented=false`
                 );
 
-                if (recsResponse.ok) {
+                if (recsResponse && recsResponse.ok) {
                     const recsResult = await recsResponse.json();
-                    addLog(`✅ Generated ${recsResult.totalRecommendations} recommendations`, 'success');
-                    if (recsResult.estimatedSavings.kWh > 0) {
-                        addLog(`💰 Potential savings: ${recsResult.estimatedSavings.kWh.toFixed(1)} kWh`, 'info');
+                    const recsList = recsResult.details ?? recsResult.data ?? recsResult ?? [];
+                    const recsArray = Array.isArray(recsList) ? recsList : [];
+                    const totalSavings = recsArray.reduce((s, r) => s + (r.estimatedSavingsKWh || 0), 0);
+                    addLog(`✅ Found ${recsArray.length} active recommendations`, 'success');
+                    if (totalSavings > 0) {
+                        addLog(`💰 Potential savings: ${totalSavings.toFixed(1)} kWh`, 'info');
                     }
                 } else {
-                    addLog('⚠️ Some recommendations could not be generated', 'warning');
+                    addLog('⚠️ Could not fetch recommendations', 'warning');
                 }
                 await sleep(500);
 
@@ -376,7 +382,7 @@
                 const devicesData = await devicesResponse.json();
 
                 let totalAnomalies = 0;
-                const devicesToCheck = devicesData.data.filter(d => d.isActive).slice(0, 5);
+                const devicesToCheck = (devicesData.data ?? devicesData.details ?? []).filter(d => d.isActive).slice(0, 5);
 
                 for (let i = 0; i < devicesToCheck.length; i++) {
                     const device = devicesToCheck[i];
@@ -475,31 +481,31 @@
             const last30Days = analyses.Last30Days || analyses.last30Days || 0;
 
             statsGrid.innerHTML = `
-                    <div class="stat-box">
-                        <div class="stat-value">${totalAnalyses}</div>
-                        <div class="stat-label">Total Analyses</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">${activeRecs}</div>
-                        <div class="stat-label">Active Recommendations</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">${unresolvedAnomalies}</div>
-                        <div class="stat-label">Unresolved Anomalies</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">${potentialSavings.toFixed(1)}</div>
-                        <div class="stat-label">Potential Savings (kWh)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">${devicesAffected}</div>
-                        <div class="stat-label">Devices Affected</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">${last30Days}</div>
-                        <div class="stat-label">Recent Analyses</div>
-                    </div>
-                `;
+                        <div class="stat-box">
+                            <div class="stat-value">${totalAnalyses}</div>
+                            <div class="stat-label">Total Analyses</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${activeRecs}</div>
+                            <div class="stat-label">Active Recommendations</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${unresolvedAnomalies}</div>
+                            <div class="stat-label">Unresolved Anomalies</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${potentialSavings.toFixed(1)}</div>
+                            <div class="stat-label">Potential Savings (kWh)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${devicesAffected}</div>
+                            <div class="stat-label">Devices Affected</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${last30Days}</div>
+                            <div class="stat-label">Recent Analyses</div>
+                        </div>
+                    `;
 
             statsContainer.style.display = 'block';
             console.log('Stats display complete');

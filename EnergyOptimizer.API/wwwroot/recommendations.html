@@ -471,27 +471,27 @@
                 const savings = rec.estimatedSavingsKWh || 0;
 
                 return `
-                <div class="recommendation-card">
-                    <div class="rec-header">
-                        <div class="rec-title-section">
-                            <div class="rec-title">${rec.title || 'Optimization Tip'}</div>
-                            <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                    <div class="recommendation-card">
+                        <div class="rec-header">
+                            <div class="rec-title-section">
+                                <div class="rec-title">${rec.title || 'Optimization Tip'}</div>
+                                <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                            </div>
+                            <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
+                                ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
+                            </span>
                         </div>
-                        <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
-                            ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
-                        </span>
-                    </div>
-                    <div class="rec-description">${rec.description || 'Analyze device usage to save energy.'}</div>
-                    <div class="rec-savings">
-                        <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
-                    </div>
-                    <div class="rec-footer">
-                        <button onclick="implementRecommendation(${rec.id})" class="btn-implement"
-                                style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                            Mark as Implemented
-                        </button>
-                    </div>
-                </div>`;
+                        <div class="rec-description">${rec.description || 'Analyze device usage to save energy.'}</div>
+                        <div class="rec-savings">
+                            <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
+                        </div>
+                        <div class="rec-footer">
+                            <button onclick="implementRecommendation(${rec.id})" class="btn-implement"
+                                    style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                Mark as Implemented
+                            </button>
+                        </div>
+                    </div>`;
             }).join('');
         }
 
@@ -578,15 +578,17 @@
         }
 
         //  Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('Recommendations page loaded');
 
             // Check authentication
-            if (!AuthHelper.checkAuth()) {
+            // FIXED: checkAuth is now async - handles redirect internally
+            if (false) {
                 console.log('Not authenticated, redirecting to login');
                 return;
             }
 
+            await AuthHelper.checkAuth();
             console.log('Loading recommendations...');
             loadRecommendations();
         });
