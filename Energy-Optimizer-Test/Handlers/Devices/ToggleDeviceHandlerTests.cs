@@ -36,7 +36,7 @@ namespace Energy_Optimizer_Test.Handlers.Devices
 
             // Assert
             device.IsActive.Should().BeFalse(); 
-            _mockDeviceRepo.Verify(r => r.Update(device), Times.Once);
+            _mockDeviceRepo.Verify(r => r.UpdateAsync(device), Times.Once);
             _mockHubService.Verify(h => h.NotifyDeviceStatusChanged(deviceId, false), Times.Once);
             result.StatusCode.Should().Be(200);
         }

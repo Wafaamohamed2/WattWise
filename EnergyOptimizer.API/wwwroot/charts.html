@@ -344,17 +344,15 @@
         <!-- Navigation Menu -->
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html">📊 Live Monitor</a></li>
+                <li><a href="index.html">🏠 Live Monitor</a></li>
                 <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
                 <li><a href="recommendations.html">💡 Recommendations</a></li>
                 <li><a href="anomalies.html">🚨 Anomalies</a></li>
                 <li><a href="analysis-history.html">📜 Analysis History</a></li>
                 <li><a href="charts.html" class="active">📈 Analytics & Charts</a></li>
                 <li><a href="setup.html">⚙️ AI Setup</a></li>
-
             </ul>
         </nav>
-
         <!-- Header -->
         <div class="header">
             <h1>📈 Advanced Analytics</h1>
@@ -673,7 +671,7 @@
 
             const deviceData = {};
             data.forEach(reading => {
-                const device = reading.device?.name || reading.deviceName || 'Unknown';
+                const device = reading.deviceName || reading.device?.name || reading.deviceId || 'Unknown';
                 deviceData[device] = (deviceData[device] || 0) + reading.powerConsumptionKW;
             });
 
@@ -751,7 +749,7 @@
 
             const zoneData = {};
             data.forEach(reading => {
-                const zoneName = reading.zone?.name || reading.device?.zone?.name || 'Unknown';
+                const zoneName = reading.zoneName || reading.zone?.name || reading.device?.zone?.name || 'Unknown Zone';
                 zoneData[zoneName] = (zoneData[zoneName] || 0) + reading.powerConsumptionKW;
             });
 
@@ -786,7 +784,7 @@
 
             const typeData = {};
             data.forEach(reading => {
-                const type = reading.device?.type || reading.deviceType || 'Unknown';
+                const type = reading.deviceType || reading.device?.type || 'Unknown Type';
                 typeData[type] = (typeData[type] || 0) + reading.powerConsumptionKW;
             });
 
@@ -822,13 +820,15 @@
             const zonesMap = new Map();
 
             data.forEach(reading => {
-                if (reading.device?.id && reading.device?.name) {
-                    devicesMap.set(reading.device.id, reading.device.name);
+                // Flat properties from API (deviceName, zoneName, zoneId, deviceId)
+                if (reading.deviceId) {
+                    devicesMap.set(reading.deviceId, reading.deviceName || reading.device?.name || String(reading.deviceId));
                 }
-
-                if (reading.zone?.id && reading.zone?.name) {
-                    zonesMap.set(reading.zone.id, reading.zone.name);
-                } else if (reading.device?.zone?.id && reading.device?.zone?.name) {
+                if (reading.zoneId || reading.zone?.id) {
+                    const zId = reading.zoneId || reading.zone?.id;
+                    const zName = reading.zoneName || reading.zone?.name || String(zId);
+                    zonesMap.set(zId, zName);
+                } else if (reading.device?.zone?.id) {
                     zonesMap.set(reading.device.zone.id, reading.device.zone.name);
                 }
             });
@@ -867,7 +867,7 @@
             await AuthHelper.checkAuth();
             loadData();
         }
-            });
+                );
     </script>
 </body>
 </html>

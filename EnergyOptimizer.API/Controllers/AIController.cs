@@ -38,7 +38,7 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         #region Action Endpoints
-        [HttpGet("analyze-patterns")]
+        [HttpPost("analyze-patterns")]
         public async Task<IActionResult> AnalyzePatterns(
           [FromQuery] DateTime? startDate = null,
           [FromQuery] DateTime? endDate = null)

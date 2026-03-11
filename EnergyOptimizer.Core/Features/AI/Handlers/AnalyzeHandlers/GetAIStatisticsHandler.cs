@@ -27,67 +27,64 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
 
         public async Task<ApiResponse> Handle(GetAIStatisticsQuery request, CancellationToken ct)
         {
+            try { 
             var today = DateTime.UtcNow;
             var thirtyDaysAgo = today.AddDays(-30);
-            var sevenDaysAgo = today.AddDays(-7);
 
             // Analyses
-            var totalAnalysesTask = _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, null, null));
-            var recentAnalysesTask = _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, thirtyDaysAgo, null));
+            var totalAnalyses = await _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, null, null));
+            var recentAnalyses = await _analysisRepo.CountAsync(new AnalysisHistoryCountSpec(null, thirtyDaysAgo, null));
 
             // Recommendations
-            var activeRecsTask = _recommendationRepo.CountAsync(new RecommendationsCountSpec(isImplemented: false));
-            var doneRecsTask = _recommendationRepo.CountAsync(new RecommendationsCountSpec(isImplemented: true));
-
-            var implementedRecsTask = _recommendationRepo.ListAsync(new RecommendationsFilterSpec(isImplemented: true));
-            var activeRecsListTask = _recommendationRepo.ListAsync(new RecommendationsFilterSpec(isImplemented: false));
+            var allRecs = await _recommendationRepo.ListAsync(new RecommendationsFilterSpec(isImplemented: null));
+            var activeRecs = allRecs.Count(r => !r.IsImplemented);
+            var doneRecs = allRecs.Count(r => r.IsImplemented);
+            var realizedSavings = allRecs.Where(r => r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+            var potentialSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
 
             // Anomalies
-            var totalAnomaliesTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, null, null));
-            var unresolvedTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(isResolved: false, null, null));
-            var recentAnomaliesTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, null, null));
-            var criticalTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Critical", null));
-            var highTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "High", null));
-            var mediumTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Medium", null));
-            var lowTask = _anomalyRepo.CountAsync(new AnomaliesCountSpec(null, "Low", null));
-
-
-            // Run all DB queries in parallel
-            await Task.WhenAll(
-                totalAnalysesTask, recentAnalysesTask,
-                activeRecsTask, doneRecsTask, implementedRecsTask, activeRecsListTask,
-                totalAnomaliesTask, unresolvedTask, recentAnomaliesTask,
-                criticalTask, highTask, mediumTask, lowTask);
-
-            var implementedRecs = await implementedRecsTask;
-            var activeRecsList = await activeRecsListTask;
+            var allAnomalies = await _anomalyRepo.ListAsync(
+                        new AnomaliesFilterSpec(null, null, null, 1, int.MaxValue));
+            var totalAnomalies = allAnomalies.Count();
+            var unresolved = allAnomalies.Count(a => !a.IsResolved);
+            var critical = allAnomalies.Count(a => a.Severity == "Critical");
+            var high = allAnomalies.Count(a => a.Severity == "High");
+            var medium = allAnomalies.Count(a => a.Severity == "Medium");
+            var low = allAnomalies.Count(a => a.Severity == "Low");
+            var devicesAffected = allAnomalies.Select(a => a.DeviceId).Distinct().Count();
 
             var stats = new
             {
                 analyses = new
                 {
-                    total = await totalAnalysesTask,
-                    last30Days = await recentAnalysesTask
+                    total = totalAnalyses,
+                    last30Days = recentAnalyses
                 },
                 recommendations = new
                 {
-                    active = await activeRecsTask,
-                    implemented = await doneRecsTask,
-                    totalRealizedSavings = implementedRecs.Sum(r => r.EstimatedSavingsKWh),
-                    totalPotentialSavings = activeRecsList.Sum(r => r.EstimatedSavingsKWh)
+                    active = activeRecs,
+                    implemented = doneRecs,
+                    totalRealizedSavings = realizedSavings,
+                    totalPotentialSavings = potentialSavings
                 },
                 anomalies = new
                 {
-                    total = await totalAnomaliesTask,
-                    unresolved = await unresolvedTask,
-                    criticalSeverityCount = await criticalTask,
-                    highSeverityCount = await highTask,
-                    mediumSeverityCount = await mediumTask,
-                    lowSeverityCount = await lowTask
+                    total = totalAnomalies,
+                    unresolved = unresolved,
+                    criticalSeverityCount = critical,
+                    highSeverityCount = high,
+                    mediumSeverityCount = medium,
+                    lowSeverityCount = low,
+                    devicesAffected = devicesAffected
                 }
             };
 
             return new ApiResponse(200, "Statistics retrieved successfully", stats);
+        }
+            catch (Exception ex)
+            {
+                return new ApiResponse(500, "Failed to retrieve statistics", new { error = ex.Message });
+            }
         }
     }
 }

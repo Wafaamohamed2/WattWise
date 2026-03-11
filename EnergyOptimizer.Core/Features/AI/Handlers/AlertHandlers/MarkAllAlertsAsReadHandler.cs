@@ -22,7 +22,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
             foreach (var alert in unreadAlerts)
                 alert.IsRead = true;
 
-            _alertRepo.UpdateRange(unreadAlerts);
+            _alertRepo.UpdateRangeAsync(unreadAlerts);
 
             await _alertRepo.SaveChangesAsync();
             return new ApiResponse(200, $"{unreadAlerts.Count} alerts marked as read");

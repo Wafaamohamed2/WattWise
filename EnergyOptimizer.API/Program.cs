@@ -45,6 +45,8 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition =
             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+           System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -68,8 +70,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Database 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContextFactory<EnergyDbContext>(options =>
+    options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
+
 builder.Services.AddDbContext<EnergyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
 
 // SignalR 
 builder.Services.AddSignalR(options =>

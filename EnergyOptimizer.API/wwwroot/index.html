@@ -867,16 +867,12 @@
     </div>
 
     <script>
-        // FIXED: Token مش في localStorage دلوقتي — في HttpOnly cookie.
-        // Auth check بقت async عن طريق GET /api/account/me.
-        // authHeader اتشال — الـ cookie بتتبعت تلقائياً مع credentials: 'include'.
 
         const baseUrl = window.location.origin;
 
-        // FIXED: SignalR بيستخدم withCredentials بدل accessTokenFactory
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/energyhub", {
-                withCredentials: true   // بيبعت الـ HttpOnly cookie تلقائياً
+                withCredentials: true   
             })
             .withAutomaticReconnect()
             .build();

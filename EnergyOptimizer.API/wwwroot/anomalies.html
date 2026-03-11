@@ -639,14 +639,13 @@
         <!-- Navigation Menu -->
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html" class="active-if-dashboard">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
-                <li><a href="analysis-history.html" class="active-if-history">📜 Analysis History</a></li>
-                <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
-                <li><a href="anomalies.html" class="active-if-settings">⚙️ anomalies</a></li>
+                <li><a href="index.html">🏠 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html">💡 Recommendations</a></li>
+                <li><a href="anomalies.html" class="active">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html">📜 Analysis History</a></li>
+                <li><a href="charts.html">📈 Analytics & Charts</a></li>
                 <li><a href="setup.html">⚙️ AI Setup</a></li>
-
             </ul>
         </nav>
         <!-- Header -->
@@ -765,11 +764,11 @@
             try {
                 // Show loading
                 document.getElementById('anomaliesList').innerHTML = `
-                                <div class="loading">
-                                    <div class="spinner"></div>
-                                    <div>Loading anomalies...</div>
-                                </div>
-                            `;
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading anomalies...</div>
+                                    </div>
+                                `;
 
                 const params = new URLSearchParams({
                     page: currentPage,
@@ -827,15 +826,15 @@
             } catch (error) {
                 console.error('Error loading anomalies:', error);
                 document.getElementById('anomaliesList').innerHTML = `
-                                <div class="empty-state">
-                                    <div class="empty-icon">⚠️</div>
-                                    <div>Failed to load anomalies</div>
-                                    <p style="color: #ef4444; margin-top: 10px;">${error.message}</p>
-                                    <button class="btn action-btn" style="margin-top: 15px; background: #667eea; color: white;" onclick="loadAnomalies()">
-                                        🔄 Retry
-                                    </button>
-                                </div>
-                            `;
+                                    <div class="empty-state">
+                                        <div class="empty-icon">⚠️</div>
+                                        <div>Failed to load anomalies</div>
+                                        <p style="color: #ef4444; margin-top: 10px;">${error.message}</p>
+                                        <button class="btn action-btn" style="margin-top: 15px; background: #667eea; color: white;" onclick="loadAnomalies()">
+                                            🔄 Retry
+                                        </button>
+                                    </div>
+                                `;
             }
         }
 
@@ -859,12 +858,12 @@
 
             if (!anomalies || anomalies.length === 0) {
                 container.innerHTML = `
-                                <div class="empty-state">
-                                    <div class="empty-icon">Checkmark</div>
-                                    <div>No unresolved anomalies</div>
-                                    <p>All clear! Your system is running efficiently.</p>
-                                </div>
-                            `;
+                                    <div class="empty-state">
+                                        <div class="empty-icon">Checkmark</div>
+                                        <div>No unresolved anomalies</div>
+                                        <p>All clear! Your system is running efficiently.</p>
+                                    </div>
+                                `;
                 return;
             }
 
@@ -873,55 +872,55 @@
                 const severityClass = a.severity?.toLowerCase() || 'low';
 
                 return `
-                                <div class="anomaly-card ${severityClass}">
-                                    <div class="anomaly-header">
-                                        <div class="device-info">
-                                            <div class="device-name">Warning ${dev.name}</div>
-                                            <div class="device-meta">
-                                                <span>Location ${dev.zone}</span>
-                                                <span>Time ${new Date(a.anomalyTimestamp || a.detectedAt).toLocaleString()}</span>
+                                    <div class="anomaly-card ${severityClass}">
+                                        <div class="anomaly-header">
+                                            <div class="device-info">
+                                                <div class="device-name">Warning ${dev.name}</div>
+                                                <div class="device-meta">
+                                                    <span>Location ${dev.zone}</span>
+                                                    <span>Time ${new Date(a.anomalyTimestamp || a.detectedAt).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <span class="severity-badge severity-${severityClass}">${a.severity || 'Unknown'}</span>
+                                        </div>
+
+                                        <div class="anomaly-description">${a.description || 'No description'}</div>
+
+                                        <div class="deviation-section">
+                                            <div class="deviation-item">
+                                                <div class="deviation-label">Expected</div>
+                                                <div class="deviation-value">${(a.expectedValue || 0).toFixed(2)} kW</div>
+                                            </div>
+                                            <div class="deviation-item">
+                                                <div class="deviation-label">Actual</div>
+                                                <div class="deviation-value">${(a.actualValue || 0).toFixed(2)} kW</div>
+                                            </div>
+                                            <div class="deviation-item">
+                                                <div class="deviation-label">Deviation</div>
+                                                <div class="deviation-value deviation-percent">
+                                                    +${Math.round(((a.actualValue / a.expectedValue) - 1) * 100)}%
+                                                </div>
                                             </div>
                                         </div>
-                                        <span class="severity-badge severity-${severityClass}">${a.severity || 'Unknown'}</span>
-                                    </div>
 
-                                    <div class="anomaly-description">${a.description || 'No description'}</div>
+                                        ${a.possibleCauses ? `
+                                        <div class="possible-causes">
+                                            <div class="causes-title">Possible Causes:</div>
+                                            <ul class="causes-list">
+                                                ${a.possibleCauses.split(',').map(c => `<li>${c.trim()}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                        ` : ''}
 
-                                    <div class="deviation-section">
-                                        <div class="deviation-item">
-                                            <div class="deviation-label">Expected</div>
-                                            <div class="deviation-value">${(a.expectedValue || 0).toFixed(2)} kW</div>
-                                        </div>
-                                        <div class="deviation-item">
-                                            <div class="deviation-label">Actual</div>
-                                            <div class="deviation-value">${(a.actualValue || 0).toFixed(2)} kW</div>
-                                        </div>
-                                        <div class="deviation-item">
-                                            <div class="deviation-label">Deviation</div>
-                                            <div class="deviation-value deviation-percent">
-                                                +${Math.round(((a.actualValue / a.expectedValue) - 1) * 100)}%
+                                        <div class="anomaly-footer">
+                                            <div class="anomaly-actions">
+                                                <button class="action-btn action-btn-resolve" onclick="openResolveModal(${a.id})">
+                                                    Checkmark Resolve
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-
-                                    ${a.possibleCauses ? `
-                                    <div class="possible-causes">
-                                        <div class="causes-title">Possible Causes:</div>
-                                        <ul class="causes-list">
-                                            ${a.possibleCauses.split(',').map(c => `<li>${c.trim()}</li>`).join('')}
-                                        </ul>
-                                    </div>
-                                    ` : ''}
-
-                                    <div class="anomaly-footer">
-                                        <div class="anomaly-actions">
-                                            <button class="action-btn action-btn-resolve" onclick="openResolveModal(${a.id})">
-                                                Checkmark Resolve
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                                `;
             }).join('');
         }
 
@@ -934,10 +933,10 @@
             }
             pagination.style.display = 'flex';
             pagination.innerHTML = `
-                            <button class="page-btn" onclick="currentPage--; loadAnomalies()" ${page === 1 ? 'disabled' : ''}>Previous</button>
-                            <span class="page-info">Page ${page} of ${total}</span>
-                            <button class="page-btn" onclick="currentPage++; loadAnomalies()" ${page === total ? 'disabled' : ''}>Next</button>
-                        `;
+                                <button class="page-btn" onclick="currentPage--; loadAnomalies()" ${page === 1 ? 'disabled' : ''}>Previous</button>
+                                <span class="page-info">Page ${page} of ${total}</span>
+                                <button class="page-btn" onclick="currentPage++; loadAnomalies()" ${page === total ? 'disabled' : ''}>Next</button>
+                            `;
         }
 
         function openResolveModal(id) {

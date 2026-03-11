@@ -1,10 +1,27 @@
 ﻿const AuthHelper = {
-
     getToken() {
         return localStorage.getItem('token');
     },
 
-    // All API calls go through here - adds Authorization header automatically
+    async checkAuth() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        // Verify token is not expired by checking its payload
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.exp && payload.exp * 1000 < Date.now()) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return false;
+            }
+        } catch {
+        }
+        return true;
+    },
+
     async fetchWithAuth(url, options = {}) {
         const token = this.getToken();
         const response = await fetch(url, {
@@ -16,7 +33,6 @@
                 ...(options.headers || {})
             }
         });
-
         if (response.status === 401) {
             localStorage.removeItem('token');
             window.location.href = 'login.html';
@@ -26,6 +42,12 @@
     },
 
     async logout() {
+        try {
+            await fetch('/api/account/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch { }
         localStorage.removeItem('token');
         window.location.href = 'login.html';
     },

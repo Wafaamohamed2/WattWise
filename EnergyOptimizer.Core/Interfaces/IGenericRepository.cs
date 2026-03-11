@@ -16,11 +16,11 @@ namespace EnergyOptimizer.Core.Interfaces
         // Add multiple entities
         Task AddRangeAsync(IEnumerable<T> entities);
 
-        void Update(T entity);
-        void UpdateRange(IEnumerable<T> entities);
+        Task UpdateAsync(T entity);
+        Task UpdateRangeAsync(IEnumerable<T> entities);
 
-        void Delete(T entity);
-        void DeleteRange(IEnumerable<T> entities);
+        Task DeleteAsync(T entity);
+        Task DeleteRangeAsync(IEnumerable<T> entities);
         Task<int> SaveChangesAsync();
 
     }

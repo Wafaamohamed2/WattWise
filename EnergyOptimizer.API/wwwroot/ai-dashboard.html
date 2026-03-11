@@ -420,15 +420,15 @@
         <!-- Navigation Menu -->
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
-                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
-                <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
-                <li><a href="analysis-history.html" class="active-if-history">📜 Analysis History</a></li>
-                <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
+                <li><a href="index.html">🏠 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html" class="active">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html">💡 Recommendations</a></li>
+                <li><a href="anomalies.html">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html">📜 Analysis History</a></li>
+                <li><a href="charts.html">📈 Analytics & Charts</a></li>
                 <li><a href="setup.html">⚙️ AI Setup</a></li>
             </ul>
         </nav>
-
         <!-- Header -->
         <div class="header">
             <h1>
@@ -503,7 +503,6 @@
         // ===== Load Dashboard Data =====
         async function loadStatistics() {
             try {
-                // نجيب الـ stats أولاً
                 const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
                 if (!statsResponse) return;
 
@@ -512,36 +511,52 @@
 
                 if (!statsResponse.ok) throw new Error(statsResult.message || `Server error ${statsResponse.status}`);
 
-                // استخراج الـ data من أي wrapper
-                let details = statsResult.data ?? statsResult.details ?? statsResult;
-
-                // تأكد إن details object وليس primitive
+                // ✅ Unwrap Details (capital D) first
+                let details = statsResult.Details ?? statsResult.data ?? statsResult.details ?? statsResult;
                 if (typeof details !== 'object' || details === null) details = statsResult;
 
                 displayStatistics(details);
 
-                // جيب الـ anomalies بشكل منفصل عشان نبني الـ chart
+                // Build "Analysis by Type" from analysis-history
                 try {
-                    const anomResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=1000&isResolved=false`);
+                    const histResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis-history?pageSize=500`);
+                    if (histResponse && histResponse.ok) {
+                        const histResult = await histResponse.json();
+                        const histPayload = histResult.Details ?? histResult.details ?? histResult.data ?? histResult;
+                        const histList = Array.isArray(histPayload)
+                            ? histPayload
+                            : (histPayload?.data ?? histPayload?.items ?? []);
+
+                        if (histList.length > 0) {
+                            const typeMap = {};
+                            histList.forEach(a => {
+                                const t = a.analysisType || a.type || 'General';
+                                typeMap[t] = (typeMap[t] || 0) + 1;
+                            });
+                            details.analyses = details.analyses || {};
+                            details.analyses.byType = Object.entries(typeMap)
+                                .map(([type, count]) => ({ type, count }));
+                        }
+                    }
+                } catch (histErr) {
+                    console.warn('[Dashboard] Could not load history for chart:', histErr.message);
+                }
+
+                // Build "Anomalies by Severity" from anomalies list
+                try {
+                    const anomResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=1000`);
                     if (anomResponse && anomResponse.ok) {
                         const anomResult = await anomResponse.json();
-                        console.log('[Dashboard] Anomalies raw response:', JSON.stringify(anomResult));
-
-                        const anomPayload = anomResult.details ?? anomResult.data ?? anomResult;
+                        const anomPayload = anomResult.Details ?? anomResult.details ?? anomResult.data ?? anomResult;
                         const anomList = Array.isArray(anomPayload)
                             ? anomPayload
                             : (anomPayload?.data ?? anomPayload?.items ?? []);
 
-                        console.log('[Dashboard] Anomalies list length:', anomList.length);
-
                         if (anomList.length > 0) {
-                            // احسب bySeverity من الـ list مباشرة
-                            // الـ severity ممكن يجي كـ string أو كـ integer
-                            const severityLabels = { 1: 'Info', 2: 'Warning', 3: 'Critical' };
+                            const severityLabels = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
                             const severityMap = {};
                             anomList.forEach(a => {
                                 let sev = a.severityLabel || a.severity;
-                                // لو جاي كـ number حوّله لـ label
                                 if (typeof sev === 'number') sev = severityLabels[sev] || `Level ${sev}`;
                                 sev = sev || 'Unknown';
                                 severityMap[sev] = (severityMap[sev] || 0) + 1;
@@ -549,7 +564,6 @@
                             details.anomalies = details.anomalies || {};
                             details.anomalies.bySeverity = Object.entries(severityMap)
                                 .map(([severity, count]) => ({ severity, count }));
-                            console.log('[Dashboard] Built bySeverity:', details.anomalies.bySeverity);
                         }
                     }
                 } catch (anomErr) {
@@ -596,7 +610,6 @@
         function displayStatistics(data) {
             const statsGrid = document.getElementById('statsGrid');
 
-            // null safety لكل field
             const totalAnalyses = data.analyses?.total ?? '—';
             const last30Days = data.analyses?.last30Days ?? 0;
             const activeRecs = data.recommendations?.active ?? '—';
@@ -607,40 +620,40 @@
             const last7Days = data.anomalies?.last7Days ?? 0;
 
             statsGrid.innerHTML = `
-                            <div class="stat-card">
-                                <div class="stat-icon">📊</div>
-                                <div class="stat-value">${totalAnalyses}</div>
-                                <div class="stat-label">Total Analyses</div>
-                                <div class="stat-change positive">↑ ${last30Days} in last 30 days</div>
-                            </div>
-
-                            <div class="stat-card">
-                                <div class="stat-icon">💡</div>
-                                <div class="stat-value">${activeRecs}</div>
-                                <div class="stat-label">Active Recommendations</div>
-                                <div class="stat-change">${implementedRecs} implemented</div>
-                            </div>
-
-                            <div class="stat-card">
-                                <div class="stat-icon">⚡</div>
-                                <div class="stat-value">${potentialSavings}</div>
-                                <div class="stat-label">Potential Savings (kWh)</div>
-                                <div class="stat-change positive">💰 Cost savings available</div>
-                            </div>
-
-                            <div class="stat-card">
-                                <div class="stat-icon">🚨</div>
-                                <div class="stat-value">${unresolvedAnoms}</div>
-                                <div class="stat-label">Unresolved Anomalies</div>
-                                <div class="stat-change ${last7Days > 0 ? 'negative' : 'positive'}">
-                                    ${last7Days > 0 ? '↑' : '✓'} ${last7Days} in last 7 days
+                                <div class="stat-card">
+                                    <div class="stat-icon">📊</div>
+                                    <div class="stat-value">${totalAnalyses}</div>
+                                    <div class="stat-label">Total Analyses</div>
+                                    <div class="stat-change positive">↑ ${last30Days} in last 30 days</div>
                                 </div>
-                            </div>
-                        `;
+
+                                <div class="stat-card">
+                                    <div class="stat-icon">💡</div>
+                                    <div class="stat-value">${activeRecs}</div>
+                                    <div class="stat-label">Active Recommendations</div>
+                                    <div class="stat-change">${implementedRecs} implemented</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-icon">⚡</div>
+                                    <div class="stat-value">${potentialSavings}</div>
+                                    <div class="stat-label">Potential Savings (kWh)</div>
+                                    <div class="stat-change positive">💰 Cost savings available</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-icon">🚨</div>
+                                    <div class="stat-value">${unresolvedAnoms}</div>
+                                    <div class="stat-label">Unresolved Anomalies</div>
+                                    <div class="stat-change ${last7Days > 0 ? 'negative' : 'positive'}">
+                                        ${last7Days > 0 ? '↑' : '✓'} ${last7Days} in last 7 days
+                                    </div>
+                                </div>
+                            `;
         }
 
         function displayCharts(data) {
-            // Guard: لو مفيش بيانات للـ charts متعملهاش
+            // Guard
             if (!data.analyses?.byType || data.analyses.byType.length === 0) {
                 console.warn('[Dashboard] No analysis type data for charts');
                 document.getElementById('analysisChart').parentElement.innerHTML =
@@ -700,9 +713,9 @@
                 const result = await response.json();
                 console.log('[Dashboard] Recommendations API Response:', result);
 
-                const details = result.details ?? result.data ?? result ?? {};
+                const details = result.Details ?? result.details ?? result.data ?? result ?? {};
                 let items = details.data ?? (Array.isArray(details) ? details : []);
-                items = items.slice(0, 5); // أول 5 بس للـ dashboard
+                items = items.slice(0, 5);
                 displayRecommendations(items);
             } catch (error) {
                 console.error('[Dashboard] Error loading recommendations:', error);
@@ -718,18 +731,18 @@
             }
 
             container.innerHTML = recommendations.map(rec => `
-                            <div class="item">
-                                <div class="item-header">
-                                    <div class="item-title">${rec.title || '—'}</div>
-                                    <span class="item-badge badge-${(rec.priority || '').toLowerCase()}">${rec.priority || '—'}</span>
+                                <div class="item">
+                                    <div class="item-header">
+                                        <div class="item-title">${rec.title || '—'}</div>
+                                        <span class="item-badge badge-${(rec.priority || '').toLowerCase()}">${rec.priority || '—'}</span>
+                                    </div>
+                                    <div class="item-description">${rec.description}</div>
+                                    <div class="item-meta">
+                                        <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
+                                        <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <div class="item-description">${rec.description}</div>
-                                <div class="item-meta">
-                                    <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
-                                    <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        `).join('');
+                            `).join('');
         }
         async function implementRecommendation(id) {
             if (!confirm('Mark this recommendation as implemented?')) return;
@@ -752,13 +765,12 @@
         // ===== Load Anomalies =====
         async function loadAnomalies() {
             try {
-                // جرب أول بدون filter عشان تجيب أحدث anomalies
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5`);
                 if (!response) return;
                 const result = await response.json();
                 console.log('[Dashboard] Anomalies API Response:', result);
 
-                const payload = result.details ?? result.data ?? result;
+                const payload = result.Details ?? result.details ?? result.data ?? result;
                 const items = Array.isArray(payload)
                     ? payload
                     : (payload?.data ?? payload?.items ?? []);
@@ -778,22 +790,22 @@
             }
 
             container.innerHTML = anomalies.map(anomaly => `
-                            <div class="item" style="${anomaly.isResolved ? 'opacity:0.6' : ''}">
-                                <div class="item-header">
-                                    <div class="item-title">${anomaly.device?.name || anomaly.deviceName || 'Unknown Device'}</div>
-                                    <div style="display:flex;gap:6px;align-items:center;">
-                                        ${anomaly.isResolved ? '<span style="font-size:0.75em;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;">✓ Resolved</span>' : ''}
-                                        <span class="item-badge badge-${(anomaly.severity || anomaly.severityLabel || '').toLowerCase()}">${anomaly.severityLabel || anomaly.severity || '—'}</span>
+                                <div class="item" style="${anomaly.isResolved ? 'opacity:0.6' : ''}">
+                                    <div class="item-header">
+                                        <div class="item-title">${anomaly.device?.name || anomaly.deviceName || 'Unknown Device'}</div>
+                                        <div style="display:flex;gap:6px;align-items:center;">
+                                            ${anomaly.isResolved ? '<span style="font-size:0.75em;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;">✓ Resolved</span>' : ''}
+                                            <span class="item-badge badge-${(anomaly.severity || anomaly.severityLabel || '').toLowerCase()}">${anomaly.severityLabel || anomaly.severity || '—'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-description">${anomaly.description || ''}</div>
+                                    <div class="item-meta">
+                                        <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
+                                        <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
+                                        <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
-                                <div class="item-description">${anomaly.description || ''}</div>
-                                <div class="item-meta">
-                                    <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
-                                    <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
-                                    <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        `).join('');
+                            `).join('');
         }
 
         // ===== Actions =====
@@ -842,7 +854,7 @@
             await AuthHelper.checkAuth();
             loadDashboard();
         }
-            });
+                );
     </script>
 </body>
 </html>

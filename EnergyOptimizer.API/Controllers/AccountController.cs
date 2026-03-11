@@ -48,7 +48,21 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(new ApiResponse(200, "User registered successfully!"));
         }
 
-        // ===== LOGOUT: clear the HttpOnly cookie =====
+        [HttpGet("me")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+                throw new UnauthorizedException("Not authenticated");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedException("User not found");
+
+            return Ok(new ApiResponse(200, "Success", new { user.Id, user.FullName, user.Email }));
+        }
+
         [HttpPost("logout")]
         public IActionResult Logout()
         {
@@ -77,17 +91,15 @@ namespace EnergyOptimizer.API.Controllers
 
             var token = _tokenService.GenerateToken(user);
 
-            // Set cookie: SameSite=Lax works on both HTTP and HTTPS dev
             Response.Cookies.Append("access_token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,          // false = works on HTTP localhost too
+                Secure = false,          
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddHours(8),
                 Path = "/"
             });
 
-            // Also return token in body for backward compatibility
             return Ok(new ApiResponse(200, "Login successful", new
             {
                 Token = token,

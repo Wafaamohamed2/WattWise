@@ -108,10 +108,10 @@ namespace EnergyOptimizer.API.Services
             var historicalReadings = recentReadings.Skip(1).Take(5).ToList();
 
             if (historicalReadings.Count < 3)
-                return null; // Not enough data
+                return null; 
 
             var baseline = historicalReadings.Average(r => r.PowerConsumptionKW);
-            var threshold = baseline * (decimal)1.5; // 150% of baseline
+            var threshold = baseline * (decimal)1.5; 
 
             if (latestReading.PowerConsumptionKW > threshold && (double)latestReading.PowerConsumptionKW > 0.5)
             {
@@ -119,7 +119,7 @@ namespace EnergyOptimizer.API.Services
                 {
                     DeviceId = device.Id,
                     Type = AlertType.HighConsumption,
-                    Severity = 2, // Warning
+                    Severity = 2, 
                     Message = $"{device.Name} is consuming {latestReading.PowerConsumptionKW:F2} kW (expected: ~{baseline:F2} kW). This is {((latestReading.PowerConsumptionKW / baseline - 1) * 100):F0}% higher than normal.",
                     CreatedAt = DateTime.UtcNow,
                     IsRead = false
@@ -129,7 +129,7 @@ namespace EnergyOptimizer.API.Services
             return null;
         }
 
-        // 2. Anomaly Detection (Sudden Spikes/Drops)
+        // 2. Anomaly Detection 
         private Alert? CheckAnomaly(Device device, EnergyReading latestReading, List<EnergyReading> recentReadings)
         {
             if (recentReadings.Count < 3)
@@ -163,7 +163,7 @@ namespace EnergyOptimizer.API.Services
         {
 
             var hour = now.Hour;
-            var isNightTime = hour >= 0 && hour <= 5; // 12 AM - 5 AM
+            var isNightTime = hour >= 0 && hour <= 5; 
 
             switch (device.Type)
             {
@@ -188,7 +188,7 @@ namespace EnergyOptimizer.API.Services
                         {
                             DeviceId = device.Id,
                             Type = AlertType.Wastage,
-                            Severity = 1, // Info
+                            Severity = 1,
                             Message = $"{device.Name} is still ON at {now:HH:mm}. Remember to turn off lights when not needed.",
                             CreatedAt = DateTime.UtcNow,
                             IsRead = false
@@ -196,7 +196,6 @@ namespace EnergyOptimizer.API.Services
                     }
                     break;
                 case DeviceType.WashingMachine:
-                    // Washing machine running at night (energy saving tip)
                     if (hour >= 23 || hour <= 6)
                     {
                         if ((double)latestReading.PowerConsumptionKW > 0.5)
@@ -231,13 +230,13 @@ namespace EnergyOptimizer.API.Services
                 AnyAsync(new AlertOfflineCheckSpec(device.Id, tenMinutesAgo));
 
             if (hasExistingAlert)
-                return null; // Don't create duplicate alerts
+                return null; 
 
             return new Alert
             {
                 DeviceId = device.Id,
                 Type = AlertType.DeviceOffline,
-                Severity = 2, // Warning
+                Severity = 2,
                 Message = $"{device.Name} has not reported any readings in the last 5 minutes. Device may be offline or malfunctioning.",
                 CreatedAt = DateTime.UtcNow,
                 IsRead = false

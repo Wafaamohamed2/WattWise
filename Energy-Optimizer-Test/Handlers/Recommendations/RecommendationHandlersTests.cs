@@ -50,7 +50,7 @@ namespace EnergyOptimizer.Tests.Handlers.Recommendations
             var result = await handler.Handle(new DeleteRecommendationCommand(1), CancellationToken.None);
 
             // Assert
-            _mockRepo.Verify(r => r.Delete(rec), Times.Once);
+            _mockRepo.Verify(r => r.DeleteAsync(rec), Times.Once);
             result.StatusCode.Should().Be(200);
         }
     }

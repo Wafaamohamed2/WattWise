@@ -591,11 +591,12 @@
         <!-- Navigation Menu -->
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html" class="active-if-index">📊 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html" class="active-if-dashboard">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html" class="active-if-recs">💡 Recommendations</a></li>
-                <li><a href="anomalies.html" class="active-if-anomalies">🚨 Anomalies</a></li>
-                <li><a href="charts.html" class="active-if-charts">📈 Analytics & Charts</a></li>
+                <li><a href="index.html">🏠 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html">💡 Recommendations</a></li>
+                <li><a href="anomalies.html">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html" class="active">📜 Analysis History</a></li>
+                <li><a href="charts.html">📈 Analytics & Charts</a></li>
                 <li><a href="setup.html">⚙️ AI Setup</a></li>
             </ul>
         </nav>
@@ -677,10 +678,10 @@
         async function loadHistory() {
             // Show loading spinner
             document.getElementById('timeline').innerHTML = `
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <div>Loading analysis history...</div>
-                        </div>`;
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <div>Loading analysis history...</div>
+                            </div>`;
 
             try {
                 const params = new URLSearchParams({ page: currentPage, pageSize: 10 });
@@ -716,14 +717,14 @@
             } catch (error) {
                 console.error('[History] Error loading history:', error);
                 document.getElementById('timeline').innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">⚠️</div>
-                                <div>Failed to load analysis history</div>
-                                <p style="margin-top: 10px; color: #6b7280;">${error.message}</p>
-                                <button onclick="loadHistory()" style="margin-top: 15px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                                    🔄 Try Again
-                                </button>
-                            </div>`;
+                                <div class="empty-state">
+                                    <div class="empty-icon">⚠️</div>
+                                    <div>Failed to load analysis history</div>
+                                    <p style="margin-top: 10px; color: #6b7280;">${error.message}</p>
+                                    <button onclick="loadHistory()" style="margin-top: 15px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                        🔄 Try Again
+                                    </button>
+                                </div>`;
             }
         }
 
@@ -732,12 +733,12 @@
 
             if (!analyses || analyses.length === 0) {
                 timeline.innerHTML = `
-                                <div class="empty-state">
-                                    <div class="empty-icon">📭</div>
-                                    <div>No analysis history found</div>
-                                    <p style="margin-top: 10px;">Try running a new analysis or adjusting filters</p>
-                                </div>
-                            `;
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📭</div>
+                                        <div>No analysis history found</div>
+                                        <p style="margin-top: 10px;">Try running a new analysis or adjusting filters</p>
+                                    </div>
+                                `;
                 return;
             }
 
@@ -750,99 +751,99 @@
                     : '—';
 
                 return `
-                                <div class="timeline-item">
-                                    <div class="analysis-header">
-                                        <div class="analysis-title-section">
-                                            <span class="analysis-type type-${(analysis.analysisType || '').toLowerCase()}">
-                                                ${analysis.analysisType || 'Unknown'}
-                                            </span>
-                                            <div class="analysis-date">
-                                                ${analysisDate.toLocaleDateString('en-US', {
+                                    <div class="timeline-item">
+                                        <div class="analysis-header">
+                                            <div class="analysis-title-section">
+                                                <span class="analysis-type type-${(analysis.analysisType || '').toLowerCase()}">
+                                                    ${analysis.analysisType || 'Unknown'}
+                                                </span>
+                                                <div class="analysis-date">
+                                                    ${analysisDate.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 })}
+                                                </div>
+                                                <div class="analysis-period">
+                                                    <span>📅</span>
+                                                    <span>${periodStr}</span>
+                                                </div>
                                             </div>
-                                            <div class="analysis-period">
-                                                <span>📅</span>
-                                                <span>${periodStr}</span>
+                                            <div class="analysis-id">ID: ${analysis.id}</div>
+                                        </div>
+
+                                        ${analysis.summary ? `
+                                            <div class="analysis-summary">
+                                                <div class="summary-title">
+                                                    <span>📝</span>
+                                                    <span>Summary</span>
+                                                </div>
+                                                <div class="summary-text">${analysis.summary}</div>
+                                            </div>
+                                        ` : ''}
+
+                                        <div class="stats-grid">
+                                            <div class="stat-box">
+                                                <div class="stat-box-value">${analysis.totalConsumptionKWh != null ? analysis.totalConsumptionKWh.toFixed(2) : '—'}</div>
+                                                <div class="stat-box-label">Total kWh</div>
+                                            </div>
+                                            <div class="stat-box">
+                                                <div class="stat-box-value">${analysis.devicesAnalyzed ?? '—'}</div>
+                                                <div class="stat-box-label">Devices</div>
+                                            </div>
+                                            <div class="stat-box">
+                                                <div class="stat-box-value">${analysis.insightsCount ?? '—'}</div>
+                                                <div class="stat-box-label">Insights</div>
+                                            </div>
+                                            <div class="stat-box">
+                                                <div class="stat-box-value">${analysis.recommendationsCount ?? '—'}</div>
+                                                <div class="stat-box-label">Recommendations</div>
+                                            </div>
+                                            <div class="stat-box">
+                                                <div class="stat-box-value">${analysis.anomaliesCount ?? '—'}</div>
+                                                <div class="stat-box-label">Anomalies</div>
                                             </div>
                                         </div>
-                                        <div class="analysis-id">ID: ${analysis.id}</div>
+
+                                        ${analysis.insights && analysis.insights.length > 0 ? `
+                                            <div class="insights-section">
+                                                <div class="section-title">
+                                                    <span>💡</span>
+                                                    <span>Key Insights</span>
+                                                </div>
+                                                <div class="insights-list">
+                                                    ${analysis.insights.slice(0, 3).map(insight => `
+                                                        <div class="insight-item">
+                                                            <span class="insight-icon">✓</span>
+                                                            <span>${insight.insightText || insight.text || ''}</span>
+                                                        </div>
+                                                    `).join('')}
+                                                    ${analysis.insights.length > 3 ? `
+                                                        <div style="text-align: center; color: #667eea; font-size: 0.9em;">
+                                                            +${analysis.insights.length - 3} more insights
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+
+                                        <div class="analysis-footer">
+                                            <div class="analysis-meta">
+                                                <span>🕐 ${analysisDate.toLocaleTimeString()}</span>
+                                            </div>
+                                            <div class="action-btns">
+                                                <button class="action-btn action-btn-view" onclick="viewDetails(${analysis.id})">
+                                                    <span>👁️</span>
+                                                    <span>View Details</span>
+                                                </button>
+                                                <button class="action-btn action-btn-export" onclick="exportAnalysis(${analysis.id})">
+                                                    <span>📥</span>
+                                                    <span>Export</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    ${analysis.summary ? `
-                                        <div class="analysis-summary">
-                                            <div class="summary-title">
-                                                <span>📝</span>
-                                                <span>Summary</span>
-                                            </div>
-                                            <div class="summary-text">${analysis.summary}</div>
-                                        </div>
-                                    ` : ''}
-
-                                    <div class="stats-grid">
-                                        <div class="stat-box">
-                                            <div class="stat-box-value">${analysis.totalConsumptionKWh != null ? analysis.totalConsumptionKWh.toFixed(2) : '—'}</div>
-                                            <div class="stat-box-label">Total kWh</div>
-                                        </div>
-                                        <div class="stat-box">
-                                            <div class="stat-box-value">${analysis.devicesAnalyzed ?? '—'}</div>
-                                            <div class="stat-box-label">Devices</div>
-                                        </div>
-                                        <div class="stat-box">
-                                            <div class="stat-box-value">${analysis.insightsCount ?? '—'}</div>
-                                            <div class="stat-box-label">Insights</div>
-                                        </div>
-                                        <div class="stat-box">
-                                            <div class="stat-box-value">${analysis.recommendationsCount ?? '—'}</div>
-                                            <div class="stat-box-label">Recommendations</div>
-                                        </div>
-                                        <div class="stat-box">
-                                            <div class="stat-box-value">${analysis.anomaliesCount ?? '—'}</div>
-                                            <div class="stat-box-label">Anomalies</div>
-                                        </div>
-                                    </div>
-
-                                    ${analysis.insights && analysis.insights.length > 0 ? `
-                                        <div class="insights-section">
-                                            <div class="section-title">
-                                                <span>💡</span>
-                                                <span>Key Insights</span>
-                                            </div>
-                                            <div class="insights-list">
-                                                ${analysis.insights.slice(0, 3).map(insight => `
-                                                    <div class="insight-item">
-                                                        <span class="insight-icon">✓</span>
-                                                        <span>${insight.insightText || insight.text || ''}</span>
-                                                    </div>
-                                                `).join('')}
-                                                ${analysis.insights.length > 3 ? `
-                                                    <div style="text-align: center; color: #667eea; font-size: 0.9em;">
-                                                        +${analysis.insights.length - 3} more insights
-                                                    </div>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    ` : ''}
-
-                                    <div class="analysis-footer">
-                                        <div class="analysis-meta">
-                                            <span>🕐 ${analysisDate.toLocaleTimeString()}</span>
-                                        </div>
-                                        <div class="action-btns">
-                                            <button class="action-btn action-btn-view" onclick="viewDetails(${analysis.id})">
-                                                <span>👁️</span>
-                                                <span>View Details</span>
-                                            </button>
-                                            <button class="action-btn action-btn-export" onclick="exportAnalysis(${analysis.id})">
-                                                <span>📥</span>
-                                                <span>Export</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                                `;
             }).join('');
         }
 
@@ -858,17 +859,17 @@
             pagination.style.display = 'flex';
 
             let html = `
-                            <button class="page-btn" onclick="goToPage(${page - 1})" ${page === 1 ? 'disabled' : ''}>
-                                ← Previous
-                            </button>
-                        `;
+                                <button class="page-btn" onclick="goToPage(${page - 1})" ${page === 1 ? 'disabled' : ''}>
+                                    ← Previous
+                                </button>
+                            `;
 
             for (let i = 1; i <= Math.min(total, 5); i++) {
                 html += `
-                                <button class="page-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">
-                                    ${i}
-                                </button>
-                            `;
+                                    <button class="page-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">
+                                        ${i}
+                                    </button>
+                                `;
             }
 
             if (total > 5) {
@@ -876,10 +877,10 @@
             }
 
             html += `
-                            <button class="page-btn" onclick="goToPage(${page + 1})" ${page === total ? 'disabled' : ''}>
-                                Next →
-                            </button>
-                        `;
+                                <button class="page-btn" onclick="goToPage(${page + 1})" ${page === total ? 'disabled' : ''}>
+                                    Next →
+                                </button>
+                            `;
 
             pagination.innerHTML = html;
         }
@@ -918,87 +919,87 @@
                 if (!response.ok) throw new Error(result.message || `Error ${response.status}`);
 
                 document.getElementById('modalBody').innerHTML = `
-                                <div class="analysis-summary">
-                                    <div class="summary-title">
-                                        <span>📝</span>
-                                        <span>Full Summary</span>
-                                    </div>
-                                    <div class="summary-text">${analysis.summary || 'No summary available'}</div>
-                                </div>
-
-                                ${analysis.insights && analysis.insights.length > 0 ? `
-                                    <div class="insights-section">
-                                        <div class="section-title">
-                                            <span>💡</span>
-                                            <span>All Insights (${analysis.insights.length})</span>
+                                    <div class="analysis-summary">
+                                        <div class="summary-title">
+                                            <span>📝</span>
+                                            <span>Full Summary</span>
                                         </div>
-                                        <div class="insights-list">
-                                            ${analysis.insights.map(insight => `
-                                                <div class="insight-item">
-                                                    <span class="insight-icon">✓</span>
-                                                    <div>
-                                                        <div>${insight.insightText || insight.text || ''}</div>
-                                                        <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
-                                                            Category: ${insight.category || '—'} | Priority: ${insight.priority || '—'}
+                                        <div class="summary-text">${analysis.summary || 'No summary available'}</div>
+                                    </div>
+
+                                    ${analysis.insights && analysis.insights.length > 0 ? `
+                                        <div class="insights-section">
+                                            <div class="section-title">
+                                                <span>💡</span>
+                                                <span>All Insights (${analysis.insights.length})</span>
+                                            </div>
+                                            <div class="insights-list">
+                                                ${analysis.insights.map(insight => `
+                                                    <div class="insight-item">
+                                                        <span class="insight-icon">✓</span>
+                                                        <div>
+                                                            <div>${insight.insightText || insight.text || ''}</div>
+                                                            <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                                                Category: ${insight.category || '—'} | Priority: ${insight.priority || '—'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            `).join('')}
+                                                `).join('')}
+                                            </div>
                                         </div>
-                                    </div>
-                                ` : ''}
+                                    ` : ''}
 
-                                ${analysis.recommendations && analysis.recommendations.length > 0 ? `
-                                    <div class="insights-section" style="margin-top: 20px;">
-                                        <div class="section-title">
-                                            <span>💡</span>
-                                            <span>Recommendations (${analysis.recommendations.length})</span>
-                                        </div>
-                                        <div class="recommendations-list">
-                                            ${analysis.recommendations.map(rec => `
-                                                <div class="recommendation-item">
-                                                    <span class="rec-icon">→</span>
-                                                    <div>
-                                                        <div><strong>${rec.title || '—'}</strong></div>
-                                                        <div style="font-size: 0.9em; margin-top: 5px;">${rec.description || ''}</div>
-                                                        <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
-                                                            Priority: ${rec.priority || '—'} | Savings: ${rec.estimatedSavingsKWh != null ? rec.estimatedSavingsKWh.toFixed(2) : '—'} kWh
+                                    ${analysis.recommendations && analysis.recommendations.length > 0 ? `
+                                        <div class="insights-section" style="margin-top: 20px;">
+                                            <div class="section-title">
+                                                <span>💡</span>
+                                                <span>Recommendations (${analysis.recommendations.length})</span>
+                                            </div>
+                                            <div class="recommendations-list">
+                                                ${analysis.recommendations.map(rec => `
+                                                    <div class="recommendation-item">
+                                                        <span class="rec-icon">→</span>
+                                                        <div>
+                                                            <div><strong>${rec.title || '—'}</strong></div>
+                                                            <div style="font-size: 0.9em; margin-top: 5px;">${rec.description || ''}</div>
+                                                            <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                                                Priority: ${rec.priority || '—'} | Savings: ${rec.estimatedSavingsKWh != null ? rec.estimatedSavingsKWh.toFixed(2) : '—'} kWh
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            `).join('')}
+                                                `).join('')}
+                                            </div>
                                         </div>
-                                    </div>
-                                ` : ''}
+                                    ` : ''}
 
-                                ${analysis.anomalies && analysis.anomalies.length > 0 ? `
-                                    <div class="insights-section" style="margin-top: 20px;">
-                                        <div class="section-title">
-                                            <span>🚨</span>
-                                            <span>Detected Anomalies (${analysis.anomalies.length})</span>
-                                        </div>
-                                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                                            ${analysis.anomalies.map(anomaly => `
-                                                <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
-                                                    <div><strong>${anomaly.device?.name || 'Unknown Device'}</strong> - ${anomaly.severity || '—'}</div>
-                                                    <div style="font-size: 0.9em; margin-top: 5px;">${anomaly.description || ''}</div>
-                                                    <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
-                                                        Deviation: ${anomaly.deviation != null ? anomaly.deviation.toFixed(3) : '—'} kW
-                                                        ${anomaly.expectedValue ? `(${((anomaly.deviation / anomaly.expectedValue) * 100).toFixed(1)}%)` : ''}
+                                    ${analysis.anomalies && analysis.anomalies.length > 0 ? `
+                                        <div class="insights-section" style="margin-top: 20px;">
+                                            <div class="section-title">
+                                                <span>🚨</span>
+                                                <span>Detected Anomalies (${analysis.anomalies.length})</span>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                                ${analysis.anomalies.map(anomaly => `
+                                                    <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                                        <div><strong>${anomaly.device?.name || 'Unknown Device'}</strong> - ${anomaly.severity || '—'}</div>
+                                                        <div style="font-size: 0.9em; margin-top: 5px;">${anomaly.description || ''}</div>
+                                                        <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                                                            Deviation: ${anomaly.deviation != null ? anomaly.deviation.toFixed(3) : '—'} kW
+                                                            ${anomaly.expectedValue ? `(${((anomaly.deviation / anomaly.expectedValue) * 100).toFixed(1)}%)` : ''}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            `).join('')}
+                                                `).join('')}
+                                            </div>
                                         </div>
-                                    </div>
-                                ` : ''}
-                            `;
+                                    ` : ''}
+                                `;
             } catch (error) {
                 console.error('[History] Error loading details:', error);
                 document.getElementById('modalBody').innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">⚠️</div>
-                                <div>Failed to load details: ${error.message}</div>
-                            </div>`;
+                                <div class="empty-state">
+                                    <div class="empty-icon">⚠️</div>
+                                    <div>Failed to load details: ${error.message}</div>
+                                </div>`;
             }
         }
 

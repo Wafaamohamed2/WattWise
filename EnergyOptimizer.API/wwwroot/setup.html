@@ -223,10 +223,91 @@
             justify-content: center;
             margin-top: 20px;
         }
+
+        .main-nav {
+            background: white;
+            padding: 18px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+            .main-nav ul {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 30px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-nav li a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.1em;
+                padding: 12px 24px;
+                border-radius: 12px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                position: relative;
+            }
+
+                .main-nav li a:hover {
+                    background: #667eea;
+                    color: white;
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                }
+
+                .main-nav li a.active {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    transform: translateY(-3px);
+                }
+
+        @media (max-width: 900px) {
+            .main-nav ul {
+                gap: 15px;
+            }
+
+            .main-nav li a {
+                padding: 10px 16px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .main-nav li a {
+                width: 80%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html">🏠 Live Monitor</a></li>
+                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
+                <li><a href="recommendations.html">💡 Recommendations</a></li>
+                <li><a href="anomalies.html">🚨 Anomalies</a></li>
+                <li><a href="analysis-history.html">📜 Analysis History</a></li>
+                <li><a href="charts.html">📈 Analytics & Charts</a></li>
+                <li><a href="setup.html" class="active">⚙️ AI Setup</a></li>
+            </ul>
+        </nav>
         <div class="card">
             <h1>🤖 AI System Setup</h1>
             <p class="subtitle">Initialize your AI-powered energy analysis system</p>
@@ -301,11 +382,11 @@
         function updateLogDisplay() {
             const logDiv = document.getElementById('progressLog');
             logDiv.innerHTML = logEntries.map(entry => `
-                        <div class="log-entry ${entry.type}">
-                            <strong>${entry.time}</strong>
-                            <span>${entry.message}</span>
-                        </div>
-                    `).join('');
+                            <div class="log-entry ${entry.type}">
+                                <strong>${entry.time}</strong>
+                                <span>${entry.message}</span>
+                            </div>
+                        `).join('');
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -327,11 +408,13 @@
                 const readingsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=100`);
                 const readingsData = await readingsResponse.json();
 
-                if (!readingsData.data || readingsData.data.length === 0) {
+                const readingsList = readingsData.Details ?? readingsData.details ?? readingsData.data ?? readingsData ?? [];
+                const readingsArray = Array.isArray(readingsList) ? readingsList : (readingsList.data ?? readingsList.items ?? []);
+                if (!readingsArray || readingsArray.length === 0) {
                     throw new Error('No readings found! Please ensure devices are active.');
                 }
 
-                addLog(`✅ Found ${readingsData.data.length} readings`, 'success');
+                addLog(`✅ Found ${readingsArray.length} readings`, 'success');
                 await sleep(500);
 
                 // Step 2: Pattern Analysis
@@ -354,9 +437,6 @@
                 await sleep(500);
 
                 // Step 3: Generate Recommendations
-                // FIXED: كان في duplicate declaration لـ analysisResponse
-                // و recsResponse مكانتش متعرفة خالص — كان الكود كمان بيعمل نفس الـ call تاني
-                // الـ recommendations بتتولد تلقائياً من analyze-patterns — بنجيبها من API مباشرة
                 addLog('💡 Fetching generated recommendations...', 'info');
                 const recsResponse = await AuthHelper.fetchWithAuth(
                     `${baseUrl}/api/AI/recommendations?pageSize=100&isImplemented=false`
@@ -364,7 +444,7 @@
 
                 if (recsResponse && recsResponse.ok) {
                     const recsResult = await recsResponse.json();
-                    const recsList = recsResult.details ?? recsResult.data ?? recsResult ?? [];
+                    const recsList = recsResult.Details ?? recsResult.details ?? recsResult.data ?? recsResult ?? [];
                     const recsArray = Array.isArray(recsList) ? recsList : [];
                     const totalSavings = recsArray.reduce((s, r) => s + (r.estimatedSavingsKWh || 0), 0);
                     addLog(`✅ Found ${recsArray.length} active recommendations`, 'success');
@@ -382,7 +462,7 @@
                 const devicesData = await devicesResponse.json();
 
                 let totalAnomalies = 0;
-                const devicesToCheck = (devicesData.data ?? devicesData.details ?? []).filter(d => d.isActive).slice(0, 5);
+                const devicesToCheck = (devicesData.Details ?? devicesData.details ?? devicesData.data ?? []).filter(d => d.isActive).slice(0, 5);
 
                 for (let i = 0; i < devicesToCheck.length; i++) {
                     const device = devicesToCheck[i];
@@ -431,7 +511,8 @@
                     addLog('🎉 Your AI system is now ready to use!', 'success');
 
                     spinner.style.display = 'none';
-                    displayStatistics(statsData);
+                    const statsPayload = statsData.Details ?? statsData.details ?? statsData.data ?? statsData;
+                    displayStatistics(statsPayload);
 
                 } catch (statsError) {
                     console.error('Statistics error:', statsError);
@@ -481,31 +562,31 @@
             const last30Days = analyses.Last30Days || analyses.last30Days || 0;
 
             statsGrid.innerHTML = `
-                        <div class="stat-box">
-                            <div class="stat-value">${totalAnalyses}</div>
-                            <div class="stat-label">Total Analyses</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${activeRecs}</div>
-                            <div class="stat-label">Active Recommendations</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${unresolvedAnomalies}</div>
-                            <div class="stat-label">Unresolved Anomalies</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${potentialSavings.toFixed(1)}</div>
-                            <div class="stat-label">Potential Savings (kWh)</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${devicesAffected}</div>
-                            <div class="stat-label">Devices Affected</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${last30Days}</div>
-                            <div class="stat-label">Recent Analyses</div>
-                        </div>
-                    `;
+                            <div class="stat-box">
+                                <div class="stat-value">${totalAnalyses}</div>
+                                <div class="stat-label">Total Analyses</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${activeRecs}</div>
+                                <div class="stat-label">Active Recommendations</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${unresolvedAnomalies}</div>
+                                <div class="stat-label">Unresolved Anomalies</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${potentialSavings.toFixed(1)}</div>
+                                <div class="stat-label">Potential Savings (kWh)</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${devicesAffected}</div>
+                                <div class="stat-label">Devices Affected</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${last30Days}</div>
+                                <div class="stat-label">Recent Analyses</div>
+                            </div>
+                        `;
 
             statsContainer.style.display = 'block';
             console.log('Stats display complete');
