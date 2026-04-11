@@ -102,9 +102,9 @@ namespace EnergyOptimizer.Service.Services.Implementation
                         IsResolved = false
                     };
 
-                    await _anomalyRepo.AddAsync(anomaly);
+                    _anomalyRepo.Add(anomaly);
 
-                    await _alertRepo.AddAsync(new Alert
+                    _alertRepo.Add(new Alert
                     {
                         DeviceId = device.Id,
                         Type = Core.Enums.AlertType.Anomaly,
@@ -149,7 +149,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
                 FullResponse = "{}"
             };
 
-            await _analysisRepo.AddAsync(analysis);
+            _analysisRepo.Add(analysis);
             await _analysisRepo.SaveChangesAsync();
         }
 
@@ -174,7 +174,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (recommendations.Any())
             {
-                await _recommendationRepo.AddRangeAsync(recommendations);
+                _recommendationRepo.AddRange(recommendations);
                 await _recommendationRepo.SaveChangesAsync();
             }
         }

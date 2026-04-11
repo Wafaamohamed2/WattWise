@@ -29,8 +29,8 @@ namespace EnergyOptimizer.Tests.Handlers.Analyze
                 .ReturnsAsync(expectedResult);
 
             mockAnalysisRepo
-                .Setup(r => r.AddAsync(It.IsAny<EnergyAnalysis>()))
-                .ReturnsAsync(new EnergyAnalysis());  
+               .Setup(r => r.Add(It.IsAny<EnergyAnalysis>()));
+
             mockAnalysisRepo
                 .Setup(r => r.SaveChangesAsync())
                 .ReturnsAsync(1);  

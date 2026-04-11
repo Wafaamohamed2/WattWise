@@ -9,7 +9,6 @@ namespace EnergyOptimizer.Infrastructure.Repositories
         private readonly EnergyDbContext _context;
         private readonly DbSet<T> _dbSet;
 
-
         public GenericRepository(EnergyDbContext factory)
         {
             _context = factory;
@@ -51,38 +50,35 @@ namespace EnergyOptimizer.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync();
         }
-        public async Task<T> AddAsync(T entity)
+        public void Add(T entity)
         {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-            return entity;
+            _dbSet.Add(entity);
         }
-        public async Task AddRangeAsync(IEnumerable<T> entities)
+        public void AddRange(IEnumerable<T> entities)
         {
-            await _dbSet.AddRangeAsync(entities);
-            await _context.SaveChangesAsync();
+            _dbSet.AddRange(entities);
         }
-        public async Task UpdateAsync(T entity)
+
+        public void Update(T entity)
         {
+            _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
         }
-        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        public void UpdateRange(IEnumerable<T> entities)
         {
             foreach (var entity in entities)
+            {
+                _dbSet.Attach(entity);
                 _context.Entry(entity).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
+            }
         }
-        public async Task DeleteAsync(T entity)
+        public void Delete(T entity)
         {
             _dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
         }
-        public async Task DeleteRangeAsync(IEnumerable<T> entities)
+        public void DeleteRange(IEnumerable<T> entities)
         {
             _dbSet.RemoveRange(entities);
-            await _context.SaveChangesAsync();
         }
         public async Task<int> SaveChangesAsync()
         {

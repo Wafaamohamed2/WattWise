@@ -26,7 +26,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
             rec.IsImplemented = true;
             rec.ImplementedDate = DateTime.UtcNow;
 
-            _recommendationRepo.UpdateAsync(rec);
+            _recommendationRepo.Update(rec);
             await _recommendationRepo.SaveChangesAsync();
 
             return new ApiResponse(200, "Marked as implemented");

@@ -32,7 +32,7 @@ namespace EnergyOptimizer.Tests.Handlers.Readings
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            _mockRepo.Verify(r => r.AddAsync(It.IsAny<EnergyReading>()), Times.Once);
+            _mockRepo.Verify(r => r.Add(It.IsAny<EnergyReading>()), Times.Once);
             _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
             _mockHub.Verify(h => h.NotifyNewReading(It.IsAny<object>()), Times.Once);
             result.StatusCode.Should().Be(201);

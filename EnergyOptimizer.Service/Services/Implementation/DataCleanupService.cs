@@ -49,7 +49,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (oldAnalyses.Any())
             {
-                _analysisRepo.DeleteRangeAsync(oldAnalyses);
+                _analysisRepo.DeleteRange(oldAnalyses);
                 await _analysisRepo.SaveChangesAsync();
                 _logger.LogInformation("Deleted {Count} old analyses", oldAnalyses.Count);
             }
@@ -68,7 +68,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (oldAlerts.Any())
             {
-                _alertRepo.DeleteRangeAsync(oldAlerts);
+                _alertRepo.DeleteRange(oldAlerts);
                 await _alertRepo.SaveChangesAsync();
                 _logger.LogInformation("Deleted {Count} old alerts", oldAlerts.Count);
             }
@@ -89,7 +89,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
                     rec.ExpiresAt = DateTime.UtcNow;
                 }
 
-                _recommendationRepo.UpdateRangeAsync(expiredRecs);
+                _recommendationRepo.UpdateRange(expiredRecs);
                 int updatedCount = await _recommendationRepo.SaveChangesAsync();
                 _logger.LogInformation("Updated {Count} expired recommendations", updatedCount);
             }

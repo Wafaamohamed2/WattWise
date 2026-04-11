@@ -46,12 +46,12 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
                 DevicesAnalyzed = 0
             };
 
-            await _analysisRepo.AddAsync(analysis);
+            _analysisRepo.Add(analysis);
             await _analysisRepo.SaveChangesAsync();
 
             foreach (var rec in result.Recommendations)
             {
-                await _recommendationRepo.AddAsync(new EnergyRecommendation
+                _recommendationRepo.Add(new EnergyRecommendation
                 {
                     Title = rec.Title,
                     Description = rec.Description,

@@ -29,7 +29,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers
                 Timestamp = DateTime.UtcNow
             };
 
-            await _readingRepo.AddAsync(reading);
+            _readingRepo.Add(reading);
             await _readingRepo.SaveChangesAsync();
 
             await _hubService.NotifyNewReading(new

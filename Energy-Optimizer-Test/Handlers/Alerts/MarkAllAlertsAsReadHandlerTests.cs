@@ -34,7 +34,7 @@ namespace Energy_Optimizer_Test.Handlers.Alerts
             // Assert
             unreadAlerts.All(a => a.IsRead).Should().BeTrue();
 
-            _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Alert>()), Times.AtLeastOnce);
+            _mockRepo.Verify(r => r.Update(It.IsAny<Alert>()), Times.AtLeastOnce);
             _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
     }

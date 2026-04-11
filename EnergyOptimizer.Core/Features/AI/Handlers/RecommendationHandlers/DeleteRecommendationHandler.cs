@@ -23,7 +23,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
             if (rec == null)
                 throw new NotFoundException($"Recommendation with ID {request.Id} not found");
 
-            _recommendationRepo.DeleteAsync(rec);
+            _recommendationRepo.Delete(rec);
             await _recommendationRepo.SaveChangesAsync();
 
             return new ApiResponse(200, "Deleted successfully");

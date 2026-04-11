@@ -88,7 +88,7 @@ namespace EnergyOptimizer.API.Services
             // Save new alerts to database and broadcast via SignalR
             if (alertsToCreate.Any())
             {
-                await alertRepo.AddRangeAsync(alertsToCreate);
+                alertRepo.AddRange(alertsToCreate);
                 await alertRepo.SaveChangesAsync();
 
                 // Broadcast each alert

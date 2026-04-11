@@ -24,7 +24,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
             anomaly.ResolvedAt = DateTime.UtcNow;
             anomaly.ResolutionNotes = request.ResolutionNotes;
 
-            _anomalyRepo.UpdateAsync(anomaly);
+            _anomalyRepo.Update(anomaly);
             await _anomalyRepo.SaveChangesAsync();
 
             return new ApiResponse(200, "Anomaly resolved successfully");

@@ -28,7 +28,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
                 throw new NotFoundException($"Device with ID {request.Id} not found");
 
             device.IsActive = !device.IsActive;
-            _deviceRepo.UpdateAsync(device);
+            _deviceRepo.Update(device);
             await _deviceRepo.SaveChangesAsync();
 
             await _hubService.NotifyDeviceStatusChanged(device.Id, device.IsActive);

@@ -43,7 +43,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
                 FullResponse = JsonSerializer.Serialize(result)
             };
 
-            await _analysisRepo.AddAsync(analysis);
+            _analysisRepo.Add(analysis);
             await _analysisRepo.SaveChangesAsync();
 
             return new ApiResponse(200, "Analysis completed successfully", result);
