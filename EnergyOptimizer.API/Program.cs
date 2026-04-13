@@ -197,15 +197,17 @@ builder.Services.AddScoped<IDataCleanupService, DataCleanupService>();
 //  AutoMapper 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 
-//  CORS 
+//  CORS
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins")
+    .Get<string[]>()
+    ?? new[] { "https://localhost:7083", "http://localhost:5167" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                  "https://localhost:7083",
-                  "http://localhost:5167",
-                  "http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -224,10 +226,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseSerilogRequestLogging();
 
-// CORS must come before everything else that touches responses
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
-// HttpsRedirection only in production — in dev the browser blocks self-signed cert redirects
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 

@@ -94,7 +94,7 @@ namespace EnergyOptimizer.API.Controllers
             Response.Cookies.Append("access_token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,          
+                Secure = false,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddHours(8),
                 Path = "/"

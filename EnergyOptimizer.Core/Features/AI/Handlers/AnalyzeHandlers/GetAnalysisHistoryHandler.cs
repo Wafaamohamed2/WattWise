@@ -40,10 +40,13 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
                 a.DevicesAnalyzed
             });
 
+            // Use explicit camelCase keys to be consistent with all other paginated handlers
+            // (e.g. GetAlertsHandler). Relying on `request.Page` directly produces "Page"
+            // (PascalCase) because C# anonymous-object properties inherit the source name.
             return new ApiResponse(200, "Analysis history retrieved", new
             {
-                request.Page,
-                request.PageSize,
+                page = request.Page,
+                pageSize = request.PageSize,
                 totalPages,
                 count = total,
                 data

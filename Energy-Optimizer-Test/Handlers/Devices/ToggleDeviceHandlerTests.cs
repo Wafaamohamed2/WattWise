@@ -23,21 +23,55 @@ namespace Energy_Optimizer_Test.Handlers.Devices
         }
 
         [Fact]
-        public async Task Handle_DeviceExists_TogglesStatusAndNotifiesHub()
+        public async Task Handle_ActiveDevice_DeactivatesAndNotifiesHub()
         {
             // Arrange
-            var deviceId = 1;
-            var device = new Device { Id = deviceId, IsActive = true };
-            _mockDeviceRepo.Setup(r => r.GetEntityWithSpec(It.IsAny<DeviceWithDetailsSpec>()))
-                           .ReturnsAsync(device);
+            var device = new Device { Id = 1, IsActive = true };
+
+            _mockDeviceRepo
+                .Setup(r => r.GetEntityWithSpec(It.IsAny<DeviceWithDetailsSpec>()))
+                .ReturnsAsync(device);
 
             // Act
-            var result = await _handler.Handle(new ToggleDeviceCommand(deviceId), CancellationToken.None);
+            var result = await _handler.Handle(
+                new ToggleDeviceCommand(1),
+                CancellationToken.None);
+
+            // Assert — device flipped from active to inactive
+            device.IsActive.Should().BeFalse();
+
+            // After 
+            _mockDeviceRepo.Verify(r => r.Update(device), Times.Once);
+            _mockDeviceRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+
+            _mockHubService.Verify(
+                h => h.NotifyDeviceStatusChanged(1, false),
+                Times.Once);
+
+            result.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task Handle_InactiveDevice_ActivatesAndNotifiesHub()
+        {
+            // Arrange
+            var device = new Device { Id = 2, IsActive = false };
+
+            _mockDeviceRepo
+                .Setup(r => r.GetEntityWithSpec(It.IsAny<DeviceWithDetailsSpec>()))
+                .ReturnsAsync(device);
+
+            // Act
+            var result = await _handler.Handle(
+                new ToggleDeviceCommand(2),
+                CancellationToken.None);
 
             // Assert
-            device.IsActive.Should().BeFalse(); 
-            _mockDeviceRepo.Verify(r => r.Update(device), Times.Once);
-            _mockHubService.Verify(h => h.NotifyDeviceStatusChanged(deviceId, false), Times.Once);
+            device.IsActive.Should().BeTrue();
+            _mockHubService.Verify(
+                h => h.NotifyDeviceStatusChanged(2, true),
+                Times.Once);
+
             result.StatusCode.Should().Be(200);
         }
 
@@ -45,15 +79,21 @@ namespace Energy_Optimizer_Test.Handlers.Devices
         public async Task Handle_DeviceNotFound_ThrowsNotFoundException()
         {
             // Arrange
-            _mockDeviceRepo.Setup(r => r.GetEntityWithSpec(It.IsAny<DeviceWithDetailsSpec>()))
-                           .ReturnsAsync((Device)null);
+            _mockDeviceRepo
+                .Setup(r => r.GetEntityWithSpec(It.IsAny<DeviceWithDetailsSpec>()))
+                .ReturnsAsync((Device?)null);
 
             // Act
-            Func<Task> act = async () => await _handler.Handle(new ToggleDeviceCommand(999), CancellationToken.None);
+            Func<Task> act = async () =>
+                await _handler.Handle(new ToggleDeviceCommand(999), CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<NotFoundException>();
-        }
+            await act.Should().ThrowAsync<NotFoundException>()
+                .WithMessage("*999*");
 
+            _mockHubService.Verify(
+                h => h.NotifyDeviceStatusChanged(It.IsAny<int>(), It.IsAny<bool>()),
+                Times.Never);
+        }
     }
 }
