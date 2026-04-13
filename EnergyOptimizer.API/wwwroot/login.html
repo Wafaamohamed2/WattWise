@@ -1,5 +1,4 @@
-﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -42,9 +41,6 @@
         </div>
     </div>
     <script>
-        // Clear old token on login page
-        localStorage.removeItem('token');
-
         async function doLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -74,18 +70,7 @@
                     return;
                 }
 
-                // Extract token - try all possible locations
-                const d = body.Details ?? body.details ?? body.data ?? body;
-                const token = d?.Token ?? d?.token ?? body.Token ?? body.token;
-
-                if (token) {
-                    localStorage.setItem('token', token);
-                    window.location.href = 'index.html';
-                } else {
-                    msg.innerText = 'Login OK but no token in response: ' + JSON.stringify(body).substring(0, 100);
-                    btn.disabled = false;
-                    btn.textContent = 'Sign In';
-                }
+                window.location.href = 'index.html';
 
             } catch (err) {
                 msg.innerText = 'Error: ' + err.message;

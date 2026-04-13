@@ -17,21 +17,24 @@ namespace EnergyOptimizer.API.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtTokenService _tokenService;
         private readonly IMapper _mapper;
+        private readonly IWebHostEnvironment _env;
 
         public AccountController(
-        UserManager<ApplicationUser> userManager,
-        IMapper mapper,
-        IJwtTokenService tokenService)
+            UserManager<ApplicationUser> userManager,
+            IMapper mapper,
+            IJwtTokenService tokenService,
+            IWebHostEnvironment env)
         {
             _userManager = userManager;
             _mapper = mapper;
             _tokenService = tokenService;
+            _env = env;
         }
+
         [HttpPost("register")]
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-
             if (!ModelState.IsValid)
                 throw new BadRequestException("Invalid input data");
 
@@ -69,8 +72,9 @@ namespace EnergyOptimizer.API.Controllers
             Response.Cookies.Delete("access_token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
+                Secure = !_env.IsDevelopment(),
+                SameSite = SameSiteMode.Strict,
+                Path = "/"
             });
             return Ok(new ApiResponse(200, "Logged out successfully"));
         }
@@ -94,18 +98,16 @@ namespace EnergyOptimizer.API.Controllers
             Response.Cookies.Append("access_token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
+                Secure = !_env.IsDevelopment(),
+                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddHours(8),
                 Path = "/"
             });
 
             return Ok(new ApiResponse(200, "Login successful", new
             {
-                Token = token,
                 User = new { user.Id, user.FullName, user.Email }
             }));
         }
-
     }
 }

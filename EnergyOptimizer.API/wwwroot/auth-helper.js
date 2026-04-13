@@ -1,40 +1,34 @@
 ﻿const AuthHelper = {
-    getToken() {
-        return localStorage.getItem('token');
-    },
 
     async checkAuth() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'login.html';
-            return false;
-        }
-        // Verify token is not expired by checking its payload
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            if (payload.exp && payload.exp * 1000 < Date.now()) {
-                localStorage.removeItem('token');
+            const res = await fetch('/api/account/me', {
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.status === 401) {
                 window.location.href = 'login.html';
                 return false;
             }
+            return true;
         } catch {
+            window.location.href = 'login.html';
+            return false;
         }
-        return true;
     },
 
     async fetchWithAuth(url, options = {}) {
-        const token = this.getToken();
+
         const response = await fetch(url, {
             ...options,
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
                 ...(options.headers || {})
             }
         });
+
         if (response.status === 401) {
-            localStorage.removeItem('token');
             window.location.href = 'login.html';
             return null;
         }
@@ -48,7 +42,6 @@
                 credentials: 'include'
             });
         } catch { }
-        localStorage.removeItem('token');
         window.location.href = 'login.html';
     },
 
