@@ -1,5 +1,6 @@
 ﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers;
 using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Interfaces;
@@ -26,9 +27,9 @@ namespace Energy_Optimizer_Test.Handlers.Alerts
             // Arrange
             var alerts = new List<Alert>
             {
-                new Alert { Id = 1, IsRead = false, Severity = 3 }, // Critical & Unread
-                new Alert { Id = 2, IsRead = true, Severity = 2 },  // Warning & Read
-                new Alert { Id = 3, IsRead = false, Severity = 1 }  // Info & Unread
+                new Alert { Id = 1, IsRead = false, Severity = AlertSeverity.Critical}, 
+                new Alert { Id = 2, IsRead = true, Severity = AlertSeverity.Warning }, 
+                new Alert { Id = 3, IsRead = false, Severity = AlertSeverity.Info } 
             };
             _mockAlertRepo.Setup(repo => repo.ListAsync(It.IsAny<AlertsByDateSpec>()))
                          .ReturnsAsync(alerts);

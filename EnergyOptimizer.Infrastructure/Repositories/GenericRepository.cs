@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EnergyOptimizer.Infrastructure.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
-    {
+    { 
         private readonly EnergyDbContext _context;
         private readonly DbSet<T> _dbSet;
 

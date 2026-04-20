@@ -266,8 +266,8 @@ namespace EnergyOptimizer.API.Services
             }
         }
 
-        //  PRIVATE TRANSFORMATION METHODS 
 
+        //  PRIVATE TRANSFORMATION METHODS 
         private EnergyPatternData TransformToEnergyPatternData(
             List<EnergyReading> readings,
             DateTime startDate,
@@ -383,6 +383,19 @@ namespace EnergyOptimizer.API.Services
                 DeviceSummaries = deviceSummaries,
                 CurrentIssues = currentIssues
             };
+        }
+
+        public async Task<string> AskQuestion(string question, string context)
+        {
+            try
+            {
+                return await _geminiService.AskQuestion(question, context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AI question");
+                return "Sorry, I couldn't process your question at the moment. Please try again.";
+            }
         }
 
         #region//  PRIVATE SAVE METHODS 

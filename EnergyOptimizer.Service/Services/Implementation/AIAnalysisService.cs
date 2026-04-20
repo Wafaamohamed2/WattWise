@@ -1,5 +1,7 @@
-﻿using EnergyOptimizer.Core.Entities;
+﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.AnomaliesSpec;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
@@ -108,7 +110,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
                     {
                         DeviceId = device.Id,
                         Type = Core.Enums.AlertType.Anomaly,
-                        Severity = severity == "Critical" ? 3 : 2,
+                        Severity = severity == "Critical" ? AlertSeverity.Critical : AlertSeverity.Warning,
                         Message = $"AI Alert: {device.Name} anomaly detected",
                         CreatedAt = DateTime.UtcNow
                     });

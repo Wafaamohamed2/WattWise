@@ -7,6 +7,5 @@
         Wastage = 3,
         DeviceOffline = 4
     }
-    public enum AlertSeverity { Info = 1, Warning = 2, Critical = 3 }
 
 }

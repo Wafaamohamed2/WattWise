@@ -14,7 +14,7 @@ namespace EnergyOptimizer.Core.Entities
         [Required, MaxLength(500)]
         public string Message { get; set; } = string.Empty;
 
-        public int Severity { get; set; } // 1-5
+        public AlertSeverity Severity { get; set; } = AlertSeverity.Info;
 
         public bool IsRead { get; set; } = false;
 

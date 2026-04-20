@@ -22,8 +22,9 @@ namespace EnergyOptimizer.API.Helpers
                 .ForMember(dest => dest.DeviceName, opt => opt.MapFrom(src => src.Device != null ? src.Device.Name : "Unknown"))
                 .ForMember(dest => dest.ZoneName, opt => opt.MapFrom(src => (src.Device != null && src.Device.Zone != null) ? src.Device.Zone.Name : "Unknown"))
                 .ForMember(dest => dest.AlertType, opt => opt.MapFrom(src => src.Type.ToString()))
-               .ForMember(dest => dest.SeverityLabel, opt => opt.MapFrom(src =>
-                  Enum.GetName(typeof(AlertSeverity), src.Severity) ?? "Unknown"));
+                .ForMember(dest => dest.Severity, opt => opt.MapFrom(src => (int)src.Severity))
+                .ForMember(dest => dest.SeverityLabel, opt => opt.MapFrom(src => src.Severity.ToString()));
+
         }
 
     }

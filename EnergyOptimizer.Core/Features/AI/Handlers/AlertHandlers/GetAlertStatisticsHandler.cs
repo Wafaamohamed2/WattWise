@@ -5,6 +5,7 @@ using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Enums;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
@@ -27,9 +28,9 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
             {
                 TotalAlerts = alerts.Count,
                 UnreadAlerts = alerts.Count(a => !a.IsRead),
-                CriticalAlerts = alerts.Count(a => a.Severity == 3),
-                WarningAlerts = alerts.Count(a => a.Severity == 2),
-                InfoAlerts = alerts.Count(a => a.Severity == 1)
+                CriticalAlerts = alerts.Count(a => a.Severity == AlertSeverity.Critical),
+                WarningAlerts = alerts.Count(a => a.Severity == AlertSeverity.Warning),
+                InfoAlerts = alerts.Count(a => a.Severity == AlertSeverity.Info)
             };
 
             return new ApiResponse(200, "Statistics retrieved successfully", statistics);

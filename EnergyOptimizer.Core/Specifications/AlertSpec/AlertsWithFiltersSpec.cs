@@ -1,4 +1,5 @@
 ﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Enums;
 
 namespace EnergyOptimizer.Core.Specifications.AlertSpec
 {
@@ -7,7 +8,7 @@ namespace EnergyOptimizer.Core.Specifications.AlertSpec
         public AlertsWithFiltersSpec(bool? isRead, int? severity, int? deviceId, DateTime start, DateTime end, int? page = null, int? pageSize = null)
             : base(a => (a.CreatedAt >= start && a.CreatedAt <= end) &&
                         (!isRead.HasValue || a.IsRead == isRead.Value) &&
-                        (!severity.HasValue || a.Severity == severity.Value) &&
+                        (!severity.HasValue || a.Severity == (AlertSeverity)severity.Value) &&
                         (!deviceId.HasValue || a.DeviceId == deviceId.Value))
         {
             AddInclude(a => a.Device);

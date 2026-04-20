@@ -2,12 +2,13 @@
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using System.Text.Json;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using EnergyOptimizer.Core.Specifications.DeviceSpec;
+
 namespace EnergyOptimizer.API.Services
 {
 
@@ -51,14 +52,14 @@ namespace EnergyOptimizer.API.Services
             using var scope = _serviceProvider.CreateScope();
             var deviceRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Device>>();
             var alertRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Alert>>();
+            var hubService = scope.ServiceProvider.GetRequiredService<IEnergyHubService>();
 
             var now = DateTime.UtcNow;
             var fiveMinutesAgo = now.AddMinutes(-5);
 
-            var deviceSpec = new DevicesWithRecentReadingsSpec(fiveMinutesAgo);
-            var devices = await deviceRepo.ListAsync(deviceSpec);
+            var devices = await deviceRepo.ListAsync(new DevicesWithRecentReadingsSpec(fiveMinutesAgo));
 
-            var alertsToCreate = new List<Alert>();
+            var alertsToCreate = new List<(Alert alert, string deviceName, string zoneName)>();
 
 
             foreach (var device in devices)
@@ -66,38 +67,41 @@ namespace EnergyOptimizer.API.Services
                 if (ct.IsCancellationRequested) break;
 
                 var recentReadings = device.EnergyReadings.ToList();
+                var deviceName = device.Name;
+                var zoneName = device.Zone?.Name ?? "General";
 
                 if (!recentReadings.Any())
                 {
                     var offlineAlert = await CheckDeviceOffline(alertRepo, device, now);
-                    if (offlineAlert != null) alertsToCreate.Add(offlineAlert);
+                    if (offlineAlert != null)
+                        alertsToCreate.Add((offlineAlert, deviceName, zoneName));
                     continue;
                 }
                 var latestReading = recentReadings.First();
 
                 var highConsumptionAlert = CheckHighConsumption(device, latestReading, recentReadings);
-                if (highConsumptionAlert != null) alertsToCreate.Add(highConsumptionAlert);
+                if (highConsumptionAlert != null) alertsToCreate.Add((highConsumptionAlert, deviceName, zoneName));
 
                 var anomalyAlert = CheckAnomaly(device, latestReading, recentReadings);
-                if (anomalyAlert != null) alertsToCreate.Add(anomalyAlert);
+                if (anomalyAlert != null) alertsToCreate.Add((anomalyAlert, deviceName, zoneName));
 
                 var wastageAlert = CheckWastage(device, latestReading, now);
-                if (wastageAlert != null) alertsToCreate.Add(wastageAlert);
+                if (wastageAlert != null) alertsToCreate.Add((wastageAlert, deviceName, zoneName));
             }
 
-            // Save new alerts to database and broadcast via SignalR
-            if (alertsToCreate.Any())
+            if (!alertsToCreate.Any()) return;
+
+            foreach (var (alert, _, _) in alertsToCreate)
+                alertRepo.Add(alert);
+
+            await alertRepo.SaveChangesAsync();
+
+            foreach (var (alert, deviceName, zoneName) in alertsToCreate)
             {
-                alertRepo.AddRange(alertsToCreate);
-                await alertRepo.SaveChangesAsync();
+                _logger.LogInformation("New Alert Detected: {AlertType} for {DeviceName} in {ZoneName} - {Message}",
+                    alert.Type, deviceName, zoneName, alert.Message);
 
-                // Broadcast each alert
-                foreach (var alertItem in alertsToCreate)
-                {
-                    await BroadcastAlert(alertItem);
-                }
-
-                _logger.LogInformation("Created {Count} new alerts", alertsToCreate.Count);
+                await BroadcastAlert(hubService, alert, deviceName, zoneName);
             }
         }
 
@@ -119,7 +123,7 @@ namespace EnergyOptimizer.API.Services
                 {
                     DeviceId = device.Id,
                     Type = AlertType.HighConsumption,
-                    Severity = 2, 
+                    Severity = AlertSeverity.Warning, 
                     Message = $"{device.Name} is consuming {latestReading.PowerConsumptionKW:F2} kW (expected: ~{baseline:F2} kW). This is {((latestReading.PowerConsumptionKW / baseline - 1) * 100):F0}% higher than normal.",
                     CreatedAt = DateTime.UtcNow,
                     IsRead = false
@@ -148,7 +152,7 @@ namespace EnergyOptimizer.API.Services
                 {
                     DeviceId = device.Id,
                     Type = AlertType.Anomaly,
-                    Severity = 3, // Critical
+                    Severity = AlertSeverity.Critical,
                     Message = $"{device.Name} consumption spiked from {previousReading.PowerConsumptionKW:F2} kW to {latestReading.PowerConsumptionKW:F2} kW. Please check the device.",
                     CreatedAt = DateTime.UtcNow,
                     IsRead = false
@@ -174,7 +178,7 @@ namespace EnergyOptimizer.API.Services
                         {
                             DeviceId = device.Id,
                             Type = AlertType.Wastage,
-                            Severity = 2, // Warning
+                            Severity = AlertSeverity.Warning, 
                             Message = $"{device.Name} is ON at {now:HH:mm}. Consider turning it off to save energy.",
                             CreatedAt = DateTime.UtcNow,
                             IsRead = false
@@ -188,7 +192,7 @@ namespace EnergyOptimizer.API.Services
                         {
                             DeviceId = device.Id,
                             Type = AlertType.Wastage,
-                            Severity = 1,
+                            Severity = AlertSeverity.Info,
                             Message = $"{device.Name} is still ON at {now:HH:mm}. Remember to turn off lights when not needed.",
                             CreatedAt = DateTime.UtcNow,
                             IsRead = false
@@ -204,7 +208,7 @@ namespace EnergyOptimizer.API.Services
                             {
                                 DeviceId = device.Id,
                                 Type = AlertType.Wastage,
-                                Severity = 1, // Info
+                                Severity = AlertSeverity.Info, 
                                 Message = $"{device.Name} is running during off-peak hours. Good job on saving energy costs!",
                                 CreatedAt = DateTime.UtcNow,
                                 IsRead = false
@@ -236,7 +240,7 @@ namespace EnergyOptimizer.API.Services
             {
                 DeviceId = device.Id,
                 Type = AlertType.DeviceOffline,
-                Severity = 2,
+                Severity = AlertSeverity.Warning,
                 Message = $"{device.Name} has not reported any readings in the last 5 minutes. Device may be offline or malfunctioning.",
                 CreatedAt = DateTime.UtcNow,
                 IsRead = false
@@ -244,27 +248,18 @@ namespace EnergyOptimizer.API.Services
         }
 
         // Broadcast Alert via SignalR
-        private async Task BroadcastAlert(Alert alert)
-        {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var hubService = scope.ServiceProvider.GetRequiredService<IEnergyHubService>();
-                var deviceRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Device>>();
-
+        private async Task BroadcastAlert(IEnergyHubService hubService,Alert alert,string deviceName,string zoneName)
+        {     
                 try
                 {
-                    var device = await deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(alert.DeviceId));
-
-                    if (device == null) return;
-
                     var alertDto = new AlertDto
                     {
                         Id = alert.Id,
-                        DeviceName = device.Name,
-                        ZoneName = device.Zone?.Name ?? "General",
+                        DeviceName = deviceName,
+                        ZoneName = zoneName,
                         AlertType = alert.Type.ToString(),
                         Message = alert.Message,
-                        Severity = alert.Severity,
+                        Severity =alert.Severity,
                         CreatedAt = alert.CreatedAt,
                         IsRead = alert.IsRead
                     };
@@ -275,7 +270,6 @@ namespace EnergyOptimizer.API.Services
                 {
                     _logger.LogError(ex, "Error broadcasting alert {AlertId}", alert.Id);
                 }
-            }
         }
 
     }

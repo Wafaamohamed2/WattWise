@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Hub = Microsoft.AspNetCore.SignalR.Hub;
 
