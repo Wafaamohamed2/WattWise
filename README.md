@@ -1,4 +1,4 @@
-##### ⚡ EnergyOptimizer — AI-Powered Energy Management System
+##### ⚡ EnergyOptimizer — AI-Powered Energy Management System 
 
 ### Overview
   EnergyOptimizer is a production-grade smart energy management system that monitors electricity consumption across devices and zones in real time, detects anomalies using AI, and generates actionable recommendations to reduce energy waste — all powered by Google Gemini AI and delivered live via SignalR WebSockets.
@@ -36,31 +36,31 @@
 
 ### Architecture 
 
-EnergyOptimizer/
-├── API Layer                  # Controllers, Hubs, Middleware, Background Services
-│   ├── Controllers/           # REST endpoints (AI, Alerts, Dashboard, Devices, Readings)
-│   ├── Hubs/                  # EnergyHub (SignalR)
-│   ├── Services/              # Background services (Simulator, AlertDetection, AIAnalysis)
-│   └── Middleware/            # Exception handling
-│
-├── Core Layer                 # Domain entities, interfaces, DTOs, CQRS
-│   ├── Entities/              # Device, Zone, Building, EnergyReading, Alert, AI analysis models
-│   ├── Features/              # CQRS: Commands, Queries, Handlers (MediatR)
-│   ├── Specifications/        # Specification pattern for queries
-│   ├── Interfaces/            # Repository, service contracts
-│   └── Exceptions/            # Domain exceptions
-│
-├── Infrastructure Layer       # Data access, repository implementation
-│   ├── Data/                  # EF Core DbContext
-│   └── Repositories/          # GenericRepository + SpecificationEvaluator
-│
-└── Service Layer              # Business logic
-    └── Services/              # AIAnalysisService, GeminiService, PatternDetectionService,
-                               # DataCleanupService, JwtTokenService
+          EnergyOptimizer/
+          ├── API Layer              # Controllers, Hubs, Middleware, Background Services
+      │   ├── Controllers/           # REST endpoints (AI, Alerts, Dashboard, Devices, Readings)
+      │   ├── Hubs/                  # EnergyHub (SignalR)
+      │   ├── Services/              # Background services (Simulator, AlertDetection, AIAnalysis)
+      │   └── Middleware/            # Exception handling
+      │
+      ├── Core Layer                 # Domain entities, interfaces, DTOs, CQRS
+      │   ├── Entities/              # Device, Zone, Building, EnergyReading, Alert, AI analysis models
+      │   ├── Features/              # CQRS: Commands, Queries, Handlers (MediatR)
+      │   ├── Specifications/        # Specification pattern for queries
+      │   ├── Interfaces/            # Repository, service contracts
+      │   └── Exceptions/            # Domain exceptions
+      │
+      ├── Infrastructure Layer       # Data access, repository implementation
+      │   ├── Data/                  # EF Core DbContext
+      │   └── Repositories/          # GenericRepository + SpecificationEvaluator
+      │
+      └── Service Layer              # Business logic
+      └── Services/                  # AIAnalysisService, GeminiService, PatternDetectionService,
+                                     # DataCleanupService, JwtTokenService
 
 
 ### Design Patterns Used
-      ## Pattern                                         ## Usage
+        Pattern                                                    Usage
      CQRS + MediatR                          All business operations separated into Commands/Queries with dedicated Handlers
      Generic Repository + Specification      Flexible, reusable data access with composable query specs
      Clean Architecture                      Strict layer separation; Core has zero external dependencies
