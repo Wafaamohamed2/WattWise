@@ -511,7 +511,7 @@
 
                 if (!statsResponse.ok) throw new Error(statsResult.message || `Server error ${statsResponse.status}`);
 
-                // ✅ Unwrap Details (capital D) first
+                // Unwrap Details 
                 let details = statsResult.Details ?? statsResult.data ?? statsResult.details ?? statsResult;
                 if (typeof details !== 'object' || details === null) details = statsResult;
 
@@ -620,36 +620,36 @@
             const last7Days = data.anomalies?.last7Days ?? 0;
 
             statsGrid.innerHTML = `
-                                <div class="stat-card">
-                                    <div class="stat-icon">📊</div>
-                                    <div class="stat-value">${totalAnalyses}</div>
-                                    <div class="stat-label">Total Analyses</div>
-                                    <div class="stat-change positive">↑ ${last30Days} in last 30 days</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-icon">💡</div>
-                                    <div class="stat-value">${activeRecs}</div>
-                                    <div class="stat-label">Active Recommendations</div>
-                                    <div class="stat-change">${implementedRecs} implemented</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-icon">⚡</div>
-                                    <div class="stat-value">${potentialSavings}</div>
-                                    <div class="stat-label">Potential Savings (kWh)</div>
-                                    <div class="stat-change positive">💰 Cost savings available</div>
-                                </div>
-
-                                <div class="stat-card">
-                                    <div class="stat-icon">🚨</div>
-                                    <div class="stat-value">${unresolvedAnoms}</div>
-                                    <div class="stat-label">Unresolved Anomalies</div>
-                                    <div class="stat-change ${last7Days > 0 ? 'negative' : 'positive'}">
-                                        ${last7Days > 0 ? '↑' : '✓'} ${last7Days} in last 7 days
+                                    <div class="stat-card">
+                                        <div class="stat-icon">📊</div>
+                                        <div class="stat-value">${totalAnalyses}</div>
+                                        <div class="stat-label">Total Analyses</div>
+                                        <div class="stat-change positive">↑ ${last30Days} in last 30 days</div>
                                     </div>
-                                </div>
-                            `;
+
+                                    <div class="stat-card">
+                                        <div class="stat-icon">💡</div>
+                                        <div class="stat-value">${activeRecs}</div>
+                                        <div class="stat-label">Active Recommendations</div>
+                                        <div class="stat-change">${implementedRecs} implemented</div>
+                                    </div>
+
+                                    <div class="stat-card">
+                                        <div class="stat-icon">⚡</div>
+                                        <div class="stat-value">${potentialSavings}</div>
+                                        <div class="stat-label">Potential Savings (kWh)</div>
+                                        <div class="stat-change positive">💰 Cost savings available</div>
+                                    </div>
+
+                                    <div class="stat-card">
+                                        <div class="stat-icon">🚨</div>
+                                        <div class="stat-value">${unresolvedAnoms}</div>
+                                        <div class="stat-label">Unresolved Anomalies</div>
+                                        <div class="stat-change ${last7Days > 0 ? 'negative' : 'positive'}">
+                                            ${last7Days > 0 ? '↑' : '✓'} ${last7Days} in last 7 days
+                                        </div>
+                                    </div>
+                                `;
         }
 
         function displayCharts(data) {
@@ -731,18 +731,18 @@
             }
 
             container.innerHTML = recommendations.map(rec => `
-                                <div class="item">
-                                    <div class="item-header">
-                                        <div class="item-title">${rec.title || '—'}</div>
-                                        <span class="item-badge badge-${(rec.priority || '').toLowerCase()}">${rec.priority || '—'}</span>
+                                    <div class="item">
+                                        <div class="item-header">
+                                            <div class="item-title">${rec.title || '—'}</div>
+                                            <span class="item-badge badge-${(rec.priority || '').toLowerCase()}">${rec.priority || '—'}</span>
+                                        </div>
+                                        <div class="item-description">${rec.description}</div>
+                                        <div class="item-meta">
+                                            <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
+                                            <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
+                                        </div>
                                     </div>
-                                    <div class="item-description">${rec.description}</div>
-                                    <div class="item-meta">
-                                        <span>💰 Savings: ${rec.estimatedSavingsKWh.toFixed(2)} kWh</span>
-                                        <span>📅 ${new Date(rec.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            `).join('');
+                                `).join('');
         }
         async function implementRecommendation(id) {
             if (!confirm('Mark this recommendation as implemented?')) return;
@@ -790,22 +790,22 @@
             }
 
             container.innerHTML = anomalies.map(anomaly => `
-                                <div class="item" style="${anomaly.isResolved ? 'opacity:0.6' : ''}">
-                                    <div class="item-header">
-                                        <div class="item-title">${anomaly.device?.name || anomaly.deviceName || 'Unknown Device'}</div>
-                                        <div style="display:flex;gap:6px;align-items:center;">
-                                            ${anomaly.isResolved ? '<span style="font-size:0.75em;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;">✓ Resolved</span>' : ''}
-                                            <span class="item-badge badge-${(anomaly.severity || anomaly.severityLabel || '').toLowerCase()}">${anomaly.severityLabel || anomaly.severity || '—'}</span>
+                                    <div class="item" style="${anomaly.isResolved ? 'opacity:0.6' : ''}">
+                                        <div class="item-header">
+                                            <div class="item-title">${anomaly.device?.name || anomaly.deviceName || 'Unknown Device'}</div>
+                                            <div style="display:flex;gap:6px;align-items:center;">
+                                                ${anomaly.isResolved ? '<span style="font-size:0.75em;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;">✓ Resolved</span>' : ''}
+                                                <span class="item-badge badge-${(anomaly.severity || anomaly.severityLabel || '').toLowerCase()}">${anomaly.severityLabel || anomaly.severity || '—'}</span>
+                                            </div>
+                                        </div>
+                                        <div class="item-description">${anomaly.description || ''}</div>
+                                        <div class="item-meta">
+                                            <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
+                                            <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
+                                            <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
                                         </div>
                                     </div>
-                                    <div class="item-description">${anomaly.description || ''}</div>
-                                    <div class="item-meta">
-                                        <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
-                                        <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
-                                        <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            `).join('');
+                                `).join('');
         }
 
         // ===== Actions =====
@@ -833,13 +833,11 @@
         }
 
         function showAllRecommendations() {
-            // TODO: Navigate to full recommendations page
-            alert('Full recommendations page coming soon!');
+            window.location.href = 'recommendations.html';
         }
 
         function showAllAnomalies() {
-            // TODO: Navigate to full anomalies page
-            alert('Full anomalies page coming soon!');
+            window.location.href = 'anomalies.html';
         }
 
 
@@ -854,7 +852,7 @@
             await AuthHelper.checkAuth();
             loadDashboard();
         }
-                );
+        );
     </script>
 </body>
 </html>

@@ -872,7 +872,7 @@
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/energyhub", {
-                withCredentials: true
+                withCredentials: true  
             })
             .withAutomaticReconnect()
             .build();
@@ -941,15 +941,28 @@
 
         async function loadInitialAlerts() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts?isRead=false&pageSize=20`, {
-                });
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts?pageSize=50&startDate=2020-01-01`);
+                if (!response) return;
 
-                const data = await response.json();
-                if (data.data) {
-                    alerts = data.data;
-                    updateUnreadCount();
-                    displayAlerts();
+                const result = await response.json();
+                console.log('[Alerts] RAW API response:', JSON.stringify(result));
+
+                const envelope = result.details ?? result.Details ?? result.data ?? result ?? {};
+                console.log('[Alerts] envelope:', JSON.stringify(envelope));
+
+                let list = [];
+                if (Array.isArray(envelope)) {
+                    list = envelope;
+                } else if (Array.isArray(envelope.data)) {
+                    list = envelope.data;
+                } else if (Array.isArray(envelope.items)) {
+                    list = envelope.items;
                 }
+
+                console.log('[Alerts] Final list length:', list.length);
+                alerts = list;
+                updateUnreadCount();
+                displayAlerts();
             } catch (error) {
                 console.error('Error loading alerts:', error);
             }
@@ -987,23 +1000,30 @@
 
             container.innerHTML = "";
             alerts.forEach(alert => {
-                const severityClass = alert.severityLabel.toLowerCase();
-                const timeAgo = getTimeAgo(alert.createdAt);
+                const severityLabel = alert.severityLabel ?? alert.SeverityLabel ?? 'Info';
+                const severityClass = severityLabel.toLowerCase();
+                const deviceName = alert.deviceName ?? alert.DeviceName ?? 'Unknown Device';
+                const zoneName = alert.zoneName ?? alert.ZoneName ?? '—';
+                const message = alert.message ?? alert.Message ?? '';
+                const icon = alert.icon ?? alert.Icon ?? '🔔';
+                const isRead = alert.isRead ?? alert.IsRead ?? false;
+                const createdAt = alert.createdAt ?? alert.CreatedAt;
+                const timeAgo = getTimeAgo(createdAt);
 
                 const div = document.createElement("div");
-                div.className = `alert-item ${severityClass} ${!alert.isRead ? 'unread' : ''}`;
+                div.className = `alert-item ${severityClass} ${!isRead ? 'unread' : ''}`;
 
                 div.innerHTML = `
                                         <div class="alert-header-row">
                                             <div class="alert-device">
-                                                ${alert.icon} ${alert.deviceName}
+                                                ${icon} ${deviceName}
                                             </div>
                                             <div class="alert-time">${timeAgo}</div>
                                         </div>
-                                        <div class="alert-message">${alert.message}</div>
+                                        <div class="alert-message">${message}</div>
                                         <div class="alert-footer">
-                                            <span class="alert-badge ${severityClass}">${alert.severityLabel}</span>
-                                            <span>📍 ${alert.zoneName}</span>
+                                            <span class="alert-badge ${severityClass}">${severityLabel}</span>
+                                            <span>📍 ${zoneName}</span>
                                         </div>
                                         <div class="alert-actions">
                                             ${!alert.isRead ? `
@@ -1021,7 +1041,7 @@
         }
 
         function updateUnreadCount() {
-            unreadCount = alerts.filter(a => !a.isRead).length;
+            unreadCount = alerts.filter(a => !(a.isRead ?? a.IsRead ?? false)).length;
             const countElement = document.getElementById("alertCount");
             const bellElement = document.getElementById("alertsBell");
 
@@ -1507,9 +1527,6 @@
         });
 
         document.addEventListener("DOMContentLoaded", async () => {
-            const isAuth = await AuthHelper.checkAuth();
-            if (!isAuth) return;
-
             try {
                 await connection.start();
                 log("🚀 SignalR connection started");

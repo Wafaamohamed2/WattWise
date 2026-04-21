@@ -1,4 +1,5 @@
-﻿const AuthHelper = {
+﻿
+const AuthHelper = {
 
     async checkAuth() {
         try {
@@ -6,19 +7,18 @@
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' }
             });
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 500) {
                 window.location.href = 'login.html';
                 return false;
             }
             return true;
-        } catch {
+        } catch (e) {
             window.location.href = 'login.html';
             return false;
         }
     },
 
     async fetchWithAuth(url, options = {}) {
-
         const response = await fetch(url, {
             ...options,
             credentials: 'include',
@@ -27,7 +27,6 @@
                 ...(options.headers || {})
             }
         });
-
         if (response.status === 401) {
             window.location.href = 'login.html';
             return null;
@@ -41,7 +40,7 @@
                 method: 'POST',
                 credentials: 'include'
             });
-        } catch { }
+        } catch (e) { }
         window.location.href = 'login.html';
     },
 
@@ -49,8 +48,8 @@
         const response = await this.fetchWithAuth(url, options);
         if (!response) return null;
         const result = await response.json();
-        if (response.ok) return result.Details ?? result.details ?? result.data ?? result;
-        const errorMsg = result.Message ?? result.message ?? 'An error occurred';
+        if (response.ok) return result.details ?? result.Details ?? result.data ?? result;
+        const errorMsg = result.message ?? result.Message ?? 'An error occurred';
         if (typeof toastr !== 'undefined') toastr.error(errorMsg);
         throw new Error(errorMsg);
     },

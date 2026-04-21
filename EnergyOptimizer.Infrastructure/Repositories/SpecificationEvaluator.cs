@@ -15,9 +15,13 @@ namespace EnergyOptimizer.Infrastructure.Repositories
                 query = query.Where(spec.Criteria);
             }
 
-            // Apply includes
+            // Apply expression-based includes
             query = spec.IncludeStrings
                .Aggregate(query, (current, include) => current.Include(include));
+
+            // Apply string-based includes
+            query = spec.Includes
+                .Aggregate(query, (current, include) => current.Include(include));
 
             // Apply ordering
             if (spec.OrderBy != null)
