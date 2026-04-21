@@ -55,7 +55,7 @@
       │   └── Repositories/          # GenericRepository + SpecificationEvaluator
       │
       └── Service Layer              # Business logic
-      └── Services/                  # AIAnalysisService, GeminiService, PatternDetectionService,
+          └── Services/              # AIAnalysisService, GeminiService, PatternDetectionService,
                                      # DataCleanupService, JwtTokenService
 
 
