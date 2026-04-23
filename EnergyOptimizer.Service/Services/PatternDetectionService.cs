@@ -1,5 +1,4 @@
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using AnomalyEntity = EnergyOptimizer.Core.Entities.AI_Analysis.DetectedAnomaly;
 using AnomalyDto = EnergyOptimizer.API.DTOs.Gemini.DetectedAnomaly;
@@ -56,14 +55,11 @@ namespace EnergyOptimizer.Service.Services
                 _logger.LogInformation("Starting pattern analysis from {Start} to {End}",
                     startDate, endDate);
 
-                // ===== 1. Collect data from database =====
-                var readings = await _readingRepo.GetQueryable()
-                    .Include(r => r.Device)
-                    .ThenInclude(d => d.Zone)
-                    .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate)
-                    . ToListAsync();
+                // ===== 1. Perform SQL Aggregations =====
+                var query = _readingRepo.GetQueryable()
+                    .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate);
 
-                if (!readings.Any())
+                if (!await query.AnyAsync())
                 {
                     _logger.LogWarning("No readings found for the specified period");
                     return new GeminiAnalysisResult
@@ -73,8 +69,8 @@ namespace EnergyOptimizer.Service.Services
                     };
                 }
 
-                // ===== 2. Transform to AI input DTO =====
-                var energyPatternData = TransformToEnergyPatternData(readings, startDate, endDate);
+                // ===== 2. Create AI input DTO =====
+                var (energyPatternData, totalReadingsCount) = await TransformToEnergyPatternDataAsync(query, startDate, endDate);
 
                 // ===== 3. Call Gemini AI =====
                 var analysisResult = await _geminiService.AnalyzeEnergyPatterns(energyPatternData);
@@ -82,7 +78,7 @@ namespace EnergyOptimizer.Service.Services
                 // ===== 4. Save results to database =====
                 if (analysisResult.Success)
                 {
-                    await SaveAnalysisResults(analysisResult, startDate, endDate, readings.Count);
+                    await SaveAnalysisResults(analysisResult, startDate, endDate, totalReadingsCount);
                 }
 
                 return analysisResult;
@@ -164,16 +160,16 @@ namespace EnergyOptimizer.Service.Services
         {
             try
             {
-                // Collect summary data
-                var readings = await _readingRepo.GetQueryable()
-                    .Include(r => r.Device)
-                    .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate)
-                    .ToListAsync();
+                // Collect summary data via SQL aggregations
+                var query = _readingRepo.GetQueryable()
+                    .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate);
 
-                if (!readings.Any())
+                if (!await query.AnyAsync())
                 {
                     return new RecommendationResult();
                 }
+
+
 
                 // Get current issues (unresolved anomalies and alerts)
                 var currentIssues = new List<string>();
@@ -197,7 +193,8 @@ namespace EnergyOptimizer.Service.Services
                 }
 
                 // Transform to DTO
-                var summary = TransformToConsumptionSummary(readings, startDate, endDate, currentIssues);
+                // Transform to DTO
+                var summary = await TransformToConsumptionSummaryAsync(query, startDate, endDate, currentIssues);
 
                 // Call AI
                 var result = await _geminiService.GenerateRecommendations(summary);
@@ -285,68 +282,6 @@ namespace EnergyOptimizer.Service.Services
         }
 
 
-        //  PRIVATE TRANSFORMATION METHODS 
-        private EnergyPatternData TransformToEnergyPatternData(
-            List<EnergyReading> readings,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var deviceGroups = readings.GroupBy(r => r.Device);
-
-            var devicePatterns = deviceGroups.Select(group =>
-            {
-                var device = group.Key;
-                var deviceReadings = group.ToList();
-
-                var avgConsumption = deviceReadings.Average(r => r.PowerConsumptionKW);
-                var peakConsumption = deviceReadings.Max(r => r.PowerConsumptionKW);
-
-                // Find peak hours
-                var hourlyAvg = deviceReadings
-                    .GroupBy(r => r.Timestamp.Hour)
-                    .Select(g => new { Hour = g.Key, Avg = g.Average(r => r.PowerConsumptionKW) })
-                    .OrderByDescending(h => h.Avg)
-                    .ToList();
-
-                var threshold = avgConsumption * (decimal)1.2;
-                var peakHours = hourlyAvg
-                    .Where(h => h.Avg > threshold)
-                    .Select(h => h.Hour)
-                    .OrderBy(h => h)
-                    .ToList();
-
-                return new DevicePattern
-                {
-                    DeviceName = device.Name,
-                    DeviceType = device.Type.ToString(),
-                    AverageConsumptionKWh = (double)Math.Round(avgConsumption, 4),
-                    PeakConsumptionKWh = (double)Math.Round(peakConsumption, 4),
-                    ActiveHours = deviceReadings.Select(r => r.Timestamp.Hour).Distinct().Count(),
-                    PeakHours = peakHours
-                };
-            }).ToList();
-
-            // Hourly aggregation
-            var hourlyData = readings
-                .GroupBy(r => new { r.Timestamp.Date, r.Timestamp.Hour })
-                .Select(g => new HourlyConsumption
-                {
-                    Timestamp = g.Key.Date.AddHours(g.Key.Hour),
-                    Hour = g.Key.Hour,
-                    ConsumptionKWh = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW), 4)
-                })
-                .OrderBy(h => h.Timestamp)
-                .ToList();
-
-            return new EnergyPatternData
-            {
-                StartDate = startDate,
-                EndDate = endDate,
-                DevicePatterns = devicePatterns,
-                HourlyData = hourlyData,
-                TotalConsumptionKWh = (double)Math.Round(readings.Sum(r => r.PowerConsumptionKW), 2)
-            };
-        }
 
         private DeviceConsumptionData TransformToDeviceConsumptionData(
             Device device,
@@ -370,38 +305,6 @@ namespace EnergyOptimizer.Service.Services
             };
         }
 
-        private ConsumptionSummary TransformToConsumptionSummary(
-            List<EnergyReading> readings,
-            DateTime startDate,
-            DateTime endDate,
-            List<string> currentIssues)
-        {
-            var totalDays = (endDate - startDate).Days + 1;
-            var totalConsumption = readings.Sum(r => r.PowerConsumptionKW);
-
-            var deviceSummaries = readings
-                .GroupBy(r => r.Device)
-                .Select(g => new DeviceSummary
-                {
-                    DeviceName = g.Key.Name,
-                    DeviceType = g.Key.Type.ToString(),
-                    ConsumptionKWh = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW), 2),
-                    PercentageOfTotal = (double)Math.Round(g.Sum(r => r.PowerConsumptionKW) / totalConsumption * 100, 1),
-                    DaysActive = g.Select(r => r.Timestamp.Date).Distinct().Count()
-                })
-                .OrderByDescending(d => d.ConsumptionKWh)
-                .ToList();
-
-            return new ConsumptionSummary
-            {
-                PeriodStart = startDate,
-                PeriodEnd = endDate,
-                TotalConsumptionKWh = (double)Math.Round(totalConsumption, 2),
-                AverageDailyConsumption = (double)Math.Round(totalConsumption / totalDays, 2),
-                DeviceSummaries = deviceSummaries,
-                CurrentIssues = currentIssues
-            };
-        }
 
         public async Task<string> AskQuestion(string question, string context)
         {
@@ -514,6 +417,129 @@ namespace EnergyOptimizer.Service.Services
 
             _logger.LogInformation("Saved prediction for {Date}", result.PredictionDate);
         }
+        private async Task<(EnergyPatternData Data, int TotalReadingsCount)> TransformToEnergyPatternDataAsync(
+            IQueryable<EnergyReading> query, DateTime startDate, DateTime endDate)
+        {
+            var totalConsumption = await query.SumAsync(r => r.PowerConsumptionKW);
+
+            // Device basic stats
+            var deviceStats = await query
+                .GroupBy(r => new { r.Device.Name, r.Device.Type })
+                .Select(g => new
+                {
+                    DeviceName = g.Key.Name,
+                    DeviceType = g.Key.Type.ToString(),
+                    AvgConsumption = g.Average(r => r.PowerConsumptionKW),
+                    MaxConsumption = g.Max(r => r.PowerConsumptionKW),
+                    ActiveHours = g.Select(r => r.Timestamp.Hour).Distinct().Count(),
+                    ReadingsCount = g.Count()
+                })
+                .ToListAsync();
+
+            // Hourly consumption per device (for PeakHours calculation)
+            var deviceHourlyStats = await query
+                .GroupBy(r => new { r.Device.Name, r.Timestamp.Hour })
+                .Select(g => new
+                {
+                    DeviceName = g.Key.Name,
+                    Hour = g.Key.Hour,
+                    AvgConsumption = g.Average(r => r.PowerConsumptionKW)
+                })
+                .ToListAsync();
+
+            var devicePatterns = deviceStats.Select(ds => 
+            {
+                var threshold = ds.AvgConsumption * 1.2m;
+                var peakHours = deviceHourlyStats
+                    .Where(h => h.DeviceName == ds.DeviceName && h.AvgConsumption > threshold)
+                    .Select(h => h.Hour)
+                    .OrderBy(h => h)
+                    .ToList();
+
+                return new DevicePattern
+                {
+                    DeviceName = ds.DeviceName ?? "Unknown",
+                    DeviceType = ds.DeviceType,
+                    AverageConsumptionKWh = (double)Math.Round(ds.AvgConsumption, 4),
+                    PeakConsumptionKWh = (double)Math.Round(ds.MaxConsumption, 4),
+                    ActiveHours = ds.ActiveHours,
+                    PeakHours = peakHours
+                };
+            }).ToList();
+
+            // Hourly overall aggregation
+            var hourlyData = await query
+                .GroupBy(r => new { Date = r.Timestamp.Date, Hour = r.Timestamp.Hour })
+                .Select(g => new
+                {
+                    Date = g.Key.Date,
+                    Hour = g.Key.Hour,
+                    TotalConsumption = g.Sum(r => r.PowerConsumptionKW)
+                })
+                .OrderBy(h => h.Date).ThenBy(h => h.Hour)
+                .ToListAsync();
+
+            var hourlyConsumptions = hourlyData.Select(h => new HourlyConsumption
+            {
+                Timestamp = h.Date.AddHours(h.Hour),
+                Hour = h.Hour,
+                ConsumptionKWh = (double)Math.Round(h.TotalConsumption, 4)
+            }).ToList();
+
+            var energyPatternData = new EnergyPatternData
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalConsumptionKWh = (double)Math.Round(totalConsumption, 2),
+                DevicePatterns = devicePatterns,
+                HourlyData = hourlyConsumptions
+            };
+
+            int totalReadingsCount = deviceStats.Sum(d => d.ReadingsCount);
+            return (energyPatternData, totalReadingsCount);
+        }
+
+        private async Task<ConsumptionSummary> TransformToConsumptionSummaryAsync(
+            IQueryable<EnergyReading> query, DateTime startDate, DateTime endDate, List<string> currentIssues)
+        {
+            var totalConsumption = await query.SumAsync(r => r.PowerConsumptionKW);
+
+            var deviceSummariesData = await query
+                .GroupBy(r => new { r.Device.Name, r.Device.Type })
+                .Select(g => new
+                {
+                    DeviceName = g.Key.Name,
+                    DeviceType = g.Key.Type.ToString(),
+                    ConsumptionKWh = g.Sum(r => r.PowerConsumptionKW),
+                    DaysActive = g.Select(r => r.Timestamp.Date).Distinct().Count()
+                })
+                .ToListAsync();
+
+            var deviceSummaries = deviceSummariesData
+                .Select(d => new DeviceSummary
+                {
+                    DeviceName = d.DeviceName ?? "Unknown",
+                    DeviceType = d.DeviceType,
+                    ConsumptionKWh = (double)Math.Round(d.ConsumptionKWh, 2),
+                    PercentageOfTotal = totalConsumption > 0 ? (double)Math.Round(d.ConsumptionKWh / totalConsumption * 100, 1) : 0,
+                    DaysActive = d.DaysActive
+                })
+                .OrderByDescending(d => d.ConsumptionKWh)
+                .ToList();
+
+            var totalDays = (endDate - startDate).Days + 1;
+
+            return new ConsumptionSummary
+            {
+                PeriodStart = startDate,
+                PeriodEnd = endDate,
+                TotalConsumptionKWh = (double)Math.Round(totalConsumption, 2),
+                AverageDailyConsumption = (double)Math.Round(totalConsumption / totalDays, 2),
+                DeviceSummaries = deviceSummaries,
+                CurrentIssues = currentIssues
+            };
+        }
+
         #endregion
     }
 }
