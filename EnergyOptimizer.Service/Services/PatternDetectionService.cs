@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using AnomalyEntity = EnergyOptimizer.Core.Entities.AI_Analysis.DetectedAnomaly;
@@ -9,22 +9,40 @@ using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Core.Interfaces;
 
-namespace EnergyOptimizer.API.Services
+namespace EnergyOptimizer.Service.Services
 {
     // Service to detect energy consumption patterns and prepare data for AI analysis
     public class PatternDetectionService : IPatternDetectionService
     {
-        private readonly EnergyDbContext _context;
+        private readonly IGenericRepository<EnergyReading> _readingRepo;
+        private readonly IGenericRepository<Device> _deviceRepo;
+        private readonly IGenericRepository<AnomalyEntity> _anomalyRepo;
+        private readonly IGenericRepository<EnergyRecommendation> _recommendationRepo;
+        private readonly IGenericRepository<ConsumptionPrediction> _predictionRepo;
+        private readonly IGenericRepository<EnergyAnalysis> _analysisRepo;
+        private readonly IGenericRepository<Alert> _alertRepo;
         private readonly IGeminiService _geminiService;
         private readonly ILogger<PatternDetectionService> _logger;
 
         public PatternDetectionService(
-            EnergyDbContext context,
+            IGenericRepository<EnergyReading> readingRepo,
+            IGenericRepository<Device> deviceRepo,
+            IGenericRepository<AnomalyEntity> anomalyRepo,
+            IGenericRepository<EnergyRecommendation> recommendationRepo,
+            IGenericRepository<ConsumptionPrediction> predictionRepo,
+            IGenericRepository<EnergyAnalysis> analysisRepo,
+            IGenericRepository<Alert> alertRepo,
             IGeminiService geminiService,
             ILogger<PatternDetectionService> logger)
         {
-            _context = context;
-            _geminiService = geminiService;
+            _readingRepo = readingRepo;
+            _deviceRepo = deviceRepo;
+            _anomalyRepo = anomalyRepo;
+            _geminiService = geminiService; 
+            _recommendationRepo = recommendationRepo;
+            _predictionRepo = predictionRepo;
+            _analysisRepo = analysisRepo;
+            _alertRepo = alertRepo;   
             _logger = logger;
         }
 
@@ -39,11 +57,11 @@ namespace EnergyOptimizer.API.Services
                     startDate, endDate);
 
                 // ===== 1. Collect data from database =====
-                var readings = await _context.EnergyReadings
+                var readings = await _readingRepo.GetQueryable()
                     .Include(r => r.Device)
                     .ThenInclude(d => d.Zone)
                     .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate)
-                    .ToListAsync();
+                    . ToListAsync();
 
                 if (!readings.Any())
                 {
@@ -87,7 +105,7 @@ namespace EnergyOptimizer.API.Services
         {
             try
             {
-                var device = await _context.Devices
+                var device = await _deviceRepo.GetQueryable()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);
 
                 if (device == null)
@@ -100,7 +118,7 @@ namespace EnergyOptimizer.API.Services
                 }
 
                 var startDate = DateTime.UtcNow.AddDays(-daysToAnalyze);
-                var readings = await _context.EnergyReadings
+                var readings = await _readingRepo.GetQueryable()
                     .Where(r => r.DeviceId == deviceId && r.Timestamp >= startDate)
                     .OrderBy(r => r.Timestamp)
                     .ToListAsync();
@@ -147,7 +165,7 @@ namespace EnergyOptimizer.API.Services
             try
             {
                 // Collect summary data
-                var readings = await _context.EnergyReadings
+                var readings = await _readingRepo.GetQueryable()
                     .Include(r => r.Device)
                     .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate)
                     .ToListAsync();
@@ -160,7 +178,7 @@ namespace EnergyOptimizer.API.Services
                 // Get current issues (unresolved anomalies and alerts)
                 var currentIssues = new List<string>();
 
-                var unresolvedAnomalies = await _context.DetectedAnomalies
+                var unresolvedAnomalies = await _anomalyRepo.GetQueryable()
                     .Where(a => !a.IsResolved && a.DetectedAt >= startDate)
                     .CountAsync();
 
@@ -169,7 +187,7 @@ namespace EnergyOptimizer.API.Services
                     currentIssues.Add($"{unresolvedAnomalies} unresolved anomalies detected");
                 }
 
-                var unreadAlerts = await _context.Alerts
+                var unreadAlerts = await _alertRepo.GetQueryable()
                     .Where(a => !a.IsRead && a.CreatedAt >= startDate)
                     .CountAsync();
 
@@ -207,7 +225,7 @@ namespace EnergyOptimizer.API.Services
                 var historicalDays = 30;
                 var startDate = DateTime.UtcNow.AddDays(-historicalDays);
 
-                var dailyData = await _context.EnergyReadings
+                var dailyData = await _readingRepo.GetQueryable()
                     .Where(r => r.Timestamp >= startDate)
                     .GroupBy(r => r.Timestamp.Date)
                     .Select(g => new
@@ -423,8 +441,8 @@ namespace EnergyOptimizer.API.Services
                 }).ToList()
             };
 
-            await _context.EnergyAnalyses.AddAsync(analysis);
-            await _context.SaveChangesAsync();
+            _analysisRepo.Add(analysis);
+            await _analysisRepo.SaveChangesAsync();
 
             _logger.LogInformation("Saved analysis results with {InsightCount} insights",
                 result.Insights.Count);
@@ -448,10 +466,10 @@ namespace EnergyOptimizer.API.Services
                     Description = anomaly.Description
                 };
 
-                await _context.DetectedAnomalies.AddAsync(entity);
+                _anomalyRepo.Add(entity);
             }
 
-            await _context.SaveChangesAsync();
+            await _anomalyRepo.SaveChangesAsync();
             _logger.LogInformation("Saved {Count} anomalies for device {DeviceId}",
                 anomalies.Count, deviceId);
         }
@@ -472,10 +490,10 @@ namespace EnergyOptimizer.API.Services
                     ExpiresAt = DateTime.UtcNow.AddDays(30)
                 };
 
-                await _context.EnergyRecommendations.AddAsync(entity);
+                _recommendationRepo.Add(entity);
             }
 
-            await _context.SaveChangesAsync();
+            await _recommendationRepo.SaveChangesAsync();
             _logger.LogInformation("Saved {Count} recommendations", recommendations.Count);
         }
 
@@ -491,8 +509,8 @@ namespace EnergyOptimizer.API.Services
                 PredictionType = "Daily"
             };
 
-            await _context.ConsumptionPredictions.AddAsync(prediction);
-            await _context.SaveChangesAsync();
+            _predictionRepo.Add(prediction);
+            await _predictionRepo.SaveChangesAsync();
 
             _logger.LogInformation("Saved prediction for {Date}", result.PredictionDate);
         }

@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Hosting;
@@ -8,19 +8,24 @@ using EnergyOptimizer.Core.Specifications.AlertSpec;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
+using Microsoft.Extensions.Options;
 
-namespace EnergyOptimizer.API.Services
+namespace EnergyOptimizer.Service.Services
 {
 
     public class AlertDetectionService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly IOptionsMonitor<AlertSettings> _alertSettingsMonitor;
         private readonly ILogger<AlertDetectionService> _logger;
+
         public AlertDetectionService(
              IServiceProvider serviceProvider,
+             IOptionsMonitor<AlertSettings> alertSettingsMonitor,
              ILogger<AlertDetectionService> logger)
         {
             _serviceProvider = serviceProvider;
+            _alertSettingsMonitor = alertSettingsMonitor;
             _logger = logger;
         }
 
@@ -29,7 +34,7 @@ namespace EnergyOptimizer.API.Services
             _logger.LogInformation("Alert Detection Service started");
 
             // Wait for app to start
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -108,16 +113,16 @@ namespace EnergyOptimizer.API.Services
         // 1. High Consumption Detection
         private Alert? CheckHighConsumption(Device device, EnergyReading latestReading, List<EnergyReading> recentReadings)
         {
-            // Calculate baseline (average of last 5 readings, excluding latest)
-            var historicalReadings = recentReadings.Skip(1).Take(5).ToList();
+            var alertSettings = _alertSettingsMonitor.CurrentValue;
+            var historicalReadings = recentReadings.Skip(1).Take(alertSettings.HighConsumptionDetection.MinReadingsCount).ToList();
 
-            if (historicalReadings.Count < 3)
+            if (historicalReadings.Count < alertSettings.HighConsumptionDetection.MinReadingsCount)
                 return null; 
 
             var baseline = historicalReadings.Average(r => r.PowerConsumptionKW);
-            var threshold = baseline * (decimal)1.5; 
+            var threshold = baseline * alertSettings.HighConsumptionDetection.MultiplicationFactor; 
 
-            if (latestReading.PowerConsumptionKW > threshold && (double)latestReading.PowerConsumptionKW > 0.5)
+            if (latestReading.PowerConsumptionKW > threshold && latestReading.PowerConsumptionKW > alertSettings.HighConsumptionDetection.MinConsumptionKW)
             {
                 return new Alert
                 {
@@ -143,6 +148,8 @@ namespace EnergyOptimizer.API.Services
             if (previousReading == null)
                 return null;
 
+            var alertSettings = _alertSettingsMonitor.CurrentValue;
+
             // Check for sudden spike (200% increase in 1 minute)
             if (previousReading.PowerConsumptionKW > 0 &&
                 latestReading.PowerConsumptionKW > previousReading.PowerConsumptionKW * 2 &&
@@ -165,14 +172,14 @@ namespace EnergyOptimizer.API.Services
         // 3. Wastage Detection (Device running at unusual times)
         private Alert? CheckWastage(Device device, EnergyReading latestReading, DateTime now)
         {
-
+            var alertSettings = _alertSettingsMonitor.CurrentValue;
             var hour = now.Hour;
-            var isNightTime = hour >= 0 && hour <= 5; 
+            var isNightTime = hour >= alertSettings.WastageDetection.NoUseTimeRangeStart || hour <= alertSettings.WastageDetection.NoUseTimeRangeEnd; 
 
             switch (device.Type)
             {
                 case DeviceType.TV:
-                    if (isNightTime && (double) latestReading.PowerConsumptionKW > 0.1)
+                    if (isNightTime && (double) latestReading.PowerConsumptionKW > alertSettings.WastageDetection.ThresholdKW)
                     {
                         return new Alert
                         {
@@ -186,7 +193,7 @@ namespace EnergyOptimizer.API.Services
                     }
                     break;
                 case DeviceType.Lights:
-                    if (isNightTime && (double)(double)latestReading.PowerConsumptionKW > 0.05)
+                    if (isNightTime && (double)latestReading.PowerConsumptionKW > alertSettings.WastageDetection.ThresholdKW)
                     {
                         return new Alert
                         {
@@ -200,9 +207,9 @@ namespace EnergyOptimizer.API.Services
                     }
                     break;
                 case DeviceType.WashingMachine:
-                    if (hour >= 23 || hour <= 6)
+                    if (hour >= alertSettings.WastageDetection.NoUseTimeRangeStart || hour <= alertSettings.WastageDetection.NoUseTimeRangeEnd)
                     {
-                        if ((double)latestReading.PowerConsumptionKW > 0.5)
+                        if ((double)latestReading.PowerConsumptionKW > alertSettings.WastageDetection.WashingMachineThresholdKW)
                         {
                             return new Alert
                             {

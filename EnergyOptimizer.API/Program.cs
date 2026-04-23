@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
+using EnergyOptimizer.Service.Services;
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure.Repositories;

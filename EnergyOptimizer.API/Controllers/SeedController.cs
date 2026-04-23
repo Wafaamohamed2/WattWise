@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.API.Services;
+using Microsoft.AspNetCore.Mvc;
+using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using EnergyOptimizer.Core.Exceptions; 
 using ApiResponse = EnergyOptimizer.Core.Features.AI.Commands.ApiResponse;

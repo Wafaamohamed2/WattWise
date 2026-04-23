@@ -50,6 +50,12 @@ namespace EnergyOptimizer.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync();
         }
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsNoTracking()
+                         .AsQueryable();
+        }
+
         public void Add(T entity)
         {
             _dbSet.Add(entity);

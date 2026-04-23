@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Service.Services.Abstract;
+using EnergyOptimizer.Service.Services.Abstract;
 using Microsoft.Extensions.Options;
 
 namespace EnergyOptimizer.API.Services

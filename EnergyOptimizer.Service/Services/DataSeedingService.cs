@@ -1,19 +1,24 @@
-﻿using EnergyOptimizer.Infrastructure.Data;
+using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using EnergyOptimizer.Core.Interfaces;
 
-namespace EnergyOptimizer.API.Services
+namespace EnergyOptimizer.Service.Services
 {
     public class DataSeedingService
     {
-        private readonly EnergyDbContext _context;
+        private readonly IGenericRepository<Building> _buildingRepo;
+        private readonly IGenericRepository<Zone> _zoneRepo;
+        private readonly IGenericRepository<Device> _deviceRepo;
         private readonly ILogger<DataSeedingService> _logger;
 
-        public DataSeedingService(EnergyDbContext context, ILogger<DataSeedingService> logger)
+        public DataSeedingService(IGenericRepository<Building> buildingRepo, IGenericRepository<Zone> zoneRepo, IGenericRepository<Device> deviceRepo, ILogger<DataSeedingService> logger)
         {
-            _context = context;
+            _buildingRepo = buildingRepo;
+            _zoneRepo = zoneRepo;
+            _deviceRepo = deviceRepo;
             _logger = logger;
         }
 
@@ -22,7 +27,7 @@ namespace EnergyOptimizer.API.Services
             try
             {
                 // Check if data already exists
-                if (await _context.Buildings.AnyAsync())
+                if (await _buildingRepo.GetQueryable().AnyAsync())
                 {
                     _logger.LogInformation("Data already seeded. Skipping...");
                     return;
@@ -39,8 +44,8 @@ namespace EnergyOptimizer.API.Services
                     NumberOfRooms = 5,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _context.Buildings.AddAsync(building);
-                await _context.SaveChangesAsync();
+                _buildingRepo.Add(building);
+                await _buildingRepo.SaveChangesAsync();
 
                 // Create Zones
                 var zones = new List<Zone>
@@ -53,8 +58,8 @@ namespace EnergyOptimizer.API.Services
                     new Zone { Name = "Bathroom 1", BuildingId = building.Id, Type = ZoneType.Bathroom, Area = 8 },
                     new Zone { Name = "Bathroom 2", BuildingId = building.Id, Type = ZoneType.Bathroom, Area = 6 }
                 };
-                await _context.Zones.AddRangeAsync(zones);
-                await _context.SaveChangesAsync();
+                _zoneRepo.AddRange(zones);
+                await _zoneRepo.SaveChangesAsync();
 
                 // Create Devices
                 var devices = new List<Device>
@@ -85,8 +90,8 @@ namespace EnergyOptimizer.API.Services
                     new Device { Name = "Lights - Kitchen", ZoneId = zones[4].Id, Type = DeviceType.Lights, RatedPowerKW = (decimal) 0.04, IsActive = true }
                 };
 
-                await _context.Devices.AddRangeAsync(devices);
-                await _context.SaveChangesAsync();
+                _deviceRepo.AddRange(devices);
+                await _deviceRepo.SaveChangesAsync();
 
                 _logger.LogInformation("Data seeding completed successfully!");
             }

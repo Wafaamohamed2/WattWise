@@ -10,6 +10,7 @@ namespace EnergyOptimizer.Core.Interfaces
         Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
         Task<int> CountAsync(ISpecification<T> spec);
         Task<bool> AnyAsync(ISpecification<T> spec);
+        IQueryable<T> GetQueryable();
 
         // Write operations
         void Add(T entity);
