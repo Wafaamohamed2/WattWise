@@ -1,12 +1,14 @@
-﻿using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
+using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EnergyOptimizer.Core.Features.AI.Commands.ApiResponse;
 
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class DashboardController : ControllerBase
     {

@@ -159,7 +159,7 @@
             msg.innerText = '';
 
             try {
-                const res = await fetch('/api/account/login', {
+                const res = await fetch('/api/v1/account/login', {
                     method: 'POST',
                     credentials: 'include',   
                     headers: { 'Content-Type': 'application/json' },

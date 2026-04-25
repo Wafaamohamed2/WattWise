@@ -1,16 +1,17 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using static EnergyOptimizer.API.DTOs.AuthDto;
+using static EnergyOptimizer.API.Middleware.ExceptionMiddleware;
 
 namespace EnergyOptimizer.API.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {

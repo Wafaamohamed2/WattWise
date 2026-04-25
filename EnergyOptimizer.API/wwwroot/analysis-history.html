@@ -689,7 +689,7 @@
                 if (currentFilters.startDate) params.append('startDate', currentFilters.startDate);
                 if (currentFilters.endDate) params.append('endDate', currentFilters.endDate);
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis-history?${params}`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/analysis-history?${params}`);
 
                 if (!response) return;
 
@@ -908,7 +908,7 @@
             document.getElementById('modalBody').innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading details...</div></div>';
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis/${id}`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/analysis/${id}`);
                 if (!response) return;
 
                 const result = await response.json();
@@ -1015,7 +1015,7 @@
             const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
                     method: 'POST'
                 });
 

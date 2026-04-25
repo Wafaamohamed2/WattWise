@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
@@ -12,7 +12,8 @@ using EnergyOptimizer.Core.Exceptions;
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class AIController : ControllerBase
     {
@@ -113,6 +114,7 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpGet("Statistics")]
+        [HttpGet("recommendations/statistics")]
         public async Task<IActionResult> GetAIStatistics()
         {
             var result = await _mediator.Send(new GetAIStatisticsQuery());

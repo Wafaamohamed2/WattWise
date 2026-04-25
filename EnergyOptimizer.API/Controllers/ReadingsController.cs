@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
+using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,8 @@ using EnergyOptimizer.Core.Exceptions;
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class ReadingsController : ControllerBase
     {

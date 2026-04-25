@@ -788,7 +788,7 @@
                 if (startDate) params.append('startDate', startDate);
                 if (endDate) params.append('endDate', endDate);
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?${params}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies?${params}`, {
                     cache: "no-cache"
                 });
 
@@ -807,7 +807,7 @@
 
                 // Fetch statistics separately from dedicated endpoint
                 try {
-                    const statsResp = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
+                    const statsResp = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
                     const statsResult = await statsResp.json();
                     const s = statsResult.data ?? statsResult.details ?? statsResult ?? {};
                     const anom = s.anomalies ?? {};
@@ -949,7 +949,7 @@
             if (!notes) return alert('Please enter resolution notes');
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies/${currentAnomalyId}/resolve`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies/${currentAnomalyId}/resolve`, {
                     method: 'PATCH',
                     body: JSON.stringify({ resolutionNotes: notes })
                 });

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -480,13 +480,13 @@
         async function loadRecommendations() {
             try {
                 const status = currentFilters.isImplemented;
-                let url = `${baseUrl}/api/AI/recommendations?pageSize=100`;
+                let url = `${baseUrl}/api/v1/AI/recommendations?pageSize=100`;
                 if (status === 'false') url += '&isImplemented=false';
                 else if (status === 'true') url += '&isImplemented=true';
 
                 const [listResponse, statsResponse] = await Promise.all([
                     AuthHelper.fetchWithAuth(url),
-                    AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/statistics`)
+                    AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`)
                 ]);
 
                 if (!listResponse || !listResponse.ok) throw new Error(`HTTP error! status: ${listResponse?.status}`);
@@ -501,11 +501,12 @@
                 if (statsResponse && statsResponse.ok) {
                     const statsResult = await statsResponse.json();
                     console.log('[Recs] Stats response:', statsResult);
-                    const stats = statsResult.data ?? statsResult.details ?? statsResult;
+                    const fullStats = statsResult.data ?? statsResult.details ?? statsResult;
+                    const stats = fullStats.recommendations ?? fullStats;
                     displayStatistics(stats);
                 } else {
                     console.warn('[Recs] Stats endpoint unavailable, calculating from list');
-                    const allResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=1000`);
+                    const allResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations?pageSize=1000`);
                     if (allResponse && allResponse.ok) {
                         const allResult = await allResponse.json();
                         const allList = allResult.details?.data ?? allResult.details ?? allResult.data ?? [];
@@ -641,7 +642,7 @@
             if (!confirm('Mark this recommendation as implemented?')) return;
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/${id}/implement`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations/${id}/implement`, {
                     method: 'PATCH'
                 });
 

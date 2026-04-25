@@ -503,7 +503,7 @@
         // ===== Load Dashboard Data =====
         async function loadStatistics() {
             try {
-                const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
+                const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
                 if (!statsResponse) return;
 
                 const statsResult = await statsResponse.json();
@@ -519,7 +519,7 @@
 
                 // Build "Analysis by Type" from analysis-history
                 try {
-                    const histResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analysis-history?pageSize=500`);
+                    const histResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/analysis-history?pageSize=500`);
                     if (histResponse && histResponse.ok) {
                         const histResult = await histResponse.json();
                         const histPayload = histResult.Details ?? histResult.details ?? histResult.data ?? histResult;
@@ -544,7 +544,7 @@
 
                 // Build "Anomalies by Severity" from anomalies list
                 try {
-                    const anomResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=1000`);
+                    const anomResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies?pageSize=1000`);
                     if (anomResponse && anomResponse.ok) {
                         const anomResult = await anomResponse.json();
                         const anomPayload = anomResult.Details ?? anomResult.details ?? anomResult.data ?? anomResult;
@@ -581,7 +581,7 @@
 
         async function triggerAIAnalysis() {
             try {
-                const response = await AuthHelper.fetchWithAuth('/api/AI/run-analysis', {
+                const response = await AuthHelper.fetchWithAuth('/api/v1/AI/run-analysis', {
                     method: 'POST',
                     headers: {
                     }
@@ -600,7 +600,7 @@
         }
         async function triggerCleanup() {
             if (confirm('Are you sure you want to clean the old data?')) {
-                const response = await AuthHelper.fetchWithAuth('/api/AI/cleanup', {
+                const response = await AuthHelper.fetchWithAuth('/api/v1/AI/cleanup', {
                     method: 'POST',
                 });
                 if (response.ok) alert('Data has been cleaned successfully!');
@@ -708,7 +708,7 @@
         // ===== Load Recommendations =====
         async function loadRecommendations() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations?pageSize=5&isImplemented=false`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations?pageSize=5&isImplemented=false`);
                 if (!response) return;
                 const result = await response.json();
                 console.log('[Dashboard] Recommendations API Response:', result);
@@ -748,7 +748,7 @@
             if (!confirm('Mark this recommendation as implemented?')) return;
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/recommendations/${id}/implement`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations/${id}/implement`, {
                     method: 'PATCH'
                 });
 
@@ -765,7 +765,7 @@
         // ===== Load Anomalies =====
         async function loadAnomalies() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/anomalies?pageSize=5`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies?pageSize=5`);
                 if (!response) return;
                 const result = await response.json();
                 console.log('[Dashboard] Anomalies API Response:', result);
@@ -816,7 +816,7 @@
             const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`, {
                     method: 'POST'
                 });
 

@@ -1,4 +1,3 @@
-﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Features.AI.Commands.AlertsCommans;
 using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
 using MediatR;
@@ -8,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class AlertsController : ControllerBase
     {

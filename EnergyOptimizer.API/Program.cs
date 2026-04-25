@@ -17,11 +17,14 @@ using EnergyOptimizer.Service.Services.Abstract;
 using EnergyOptimizer.Service.Services.Implementation;
 using EnergyOptimizer.API.Helpers;
 using EnergyOptimizer.Core.Features.AI.Commands;
-using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
 using EnergyOptimizer.API.Middleware;
+using Asp.Versioning;
+using EnergyOptimizer.API.Swagger;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +68,26 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+
+// API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("x-api-version"),
+        new MediaTypeApiVersionReader("x-api-version"));
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
+// Swagger Registration
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
 
 // Generic Repository 
@@ -222,10 +245,33 @@ app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        var descriptions = app.DescribeApiVersions();
+        foreach (var description in descriptions)
+        {
+            var url = $"/swagger/{description.GroupName}/swagger.json";
+            var name = description.GroupName.ToUpperInvariant();
+            options.SwaggerEndpoint(url, name);
+        }
+    });
 }
 
 app.UseSerilogRequestLogging();
+
+// Handle non-versioned API requests by rewriting to /api/v1/...
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if (path != null && 
+        path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase) && 
+        !path.StartsWith("/api/v", StringComparison.OrdinalIgnoreCase))
+    {
+        var remainingPath = path["/api/".Length..];
+        context.Request.Path = $"/api/v1/{remainingPath}";
+    }
+    await next();
+});
 
 app.UseCors("AllowFrontend");
 

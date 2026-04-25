@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.DTOs.DeviceDTOs;
+using EnergyOptimizer.Core.DTOs.DeviceDTOs;
 using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
 using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
 using MediatR;
@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class DevicesController : ControllerBase
     {

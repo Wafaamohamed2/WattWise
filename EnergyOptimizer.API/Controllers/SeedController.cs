@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Authorization;
-using EnergyOptimizer.Core.Exceptions; 
+using EnergyOptimizer.Core.Exceptions;
 using ApiResponse = EnergyOptimizer.Core.Features.AI.Commands.ApiResponse;
 
 namespace EnergyOptimizer.API.Controllers
 {
     [Authorize(Roles ="Admin")]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class SeedController : ControllerBase
     {
         private readonly DataSeedingService _seedingService;

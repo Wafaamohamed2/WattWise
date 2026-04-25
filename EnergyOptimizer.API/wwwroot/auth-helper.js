@@ -1,9 +1,9 @@
-﻿
+
 const AuthHelper = {
 
     async checkAuth() {
         try {
-            const res = await fetch('/api/account/me', {
+            const res = await fetch('/api/v1/account/me', {
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -36,7 +36,7 @@ const AuthHelper = {
 
     async logout() {
         try {
-            await fetch('/api/account/logout', {
+            await fetch('/api/v1/account/logout', {
                 method: 'POST',
                 credentials: 'include'
             });

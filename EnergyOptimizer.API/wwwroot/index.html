@@ -941,7 +941,7 @@
 
         async function loadInitialAlerts() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts?pageSize=50&startDate=2020-01-01`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/alerts?pageSize=50&startDate=2020-01-01`);
                 if (!response) return;
 
                 const result = await response.json();
@@ -1057,7 +1057,7 @@
 
         async function markAlertAsRead(alertId) {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/${alertId}/read`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/alerts/${alertId}/read`, {
                     method: 'PATCH',
                 });
 
@@ -1076,7 +1076,7 @@
 
         async function deleteAlert(alertId) {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/${alertId}`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/alerts/${alertId}`, {
                     method: 'DELETE',
                 });
 
@@ -1094,7 +1094,7 @@
 
         async function markAllAlertsAsRead() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/all-read`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/alerts/all-read`, {
                     method: 'POST',
                 });
 
@@ -1112,7 +1112,7 @@
 
         async function deleteAllReadAlerts() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/alerts/clear-read`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/alerts/clear-read`, {
                     method: 'DELETE',
                 });
 
@@ -1130,7 +1130,7 @@
 
         async function fetchDashboardStats() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/overview`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/overview`);
                 if (!response.ok) throw new Error('Failed to fetch stats');
 
                 const result = await response.json();
@@ -1157,7 +1157,7 @@
 
         async function loadTopConsumers() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/Dashboard/top-consumers?count=5`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/top-consumers?count=5`);
                 if (!response.ok) throw new Error('Failed to fetch top consumers');
 
                 const result = await response.json();
@@ -1201,7 +1201,7 @@
 
         async function loadLatestReadings() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=10`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=10`);
                 if (!response.ok) throw new Error('Failed to fetch readings');
 
                 const result = await response.json();
@@ -1310,7 +1310,7 @@
 
         async function loadDeviceControls() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/devices`, {
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/devices`, {
                 });
 
                 const result = await response.json();
@@ -1400,7 +1400,7 @@
             button.textContent = '⏳ Processing...';
 
             try {
-                await AuthHelper.apiCall(`${baseUrl}/api/devices/${deviceId}/toggle`, {
+                await AuthHelper.apiCall(`${baseUrl}/api/v1/devices/${deviceId}/toggle`, {
                     method: 'PATCH'
                 });
             } catch (error) {

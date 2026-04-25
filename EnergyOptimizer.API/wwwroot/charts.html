@@ -540,7 +540,7 @@
                     startDate = new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
                 }
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=5000&startDate=${startDate}&endDate=${endDate}`);
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=5000&startDate=${startDate}&endDate=${endDate}`);
 
                 if (!response) return;
 

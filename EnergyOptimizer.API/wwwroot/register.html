@@ -174,7 +174,7 @@
             btn.textContent = 'Creating account...';
 
             try {
-                const response = await fetch('/api/account/register', {
+                const response = await fetch('/api/v1/account/register', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -187,7 +187,7 @@
                     showMessage('Account created! Signing you in...', 'success');
 
                     // Auto-login after register
-                    const loginResponse = await fetch('/api/account/login', {
+                    const loginResponse = await fetch('/api/v1/account/login', {
                         method: 'POST',
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },

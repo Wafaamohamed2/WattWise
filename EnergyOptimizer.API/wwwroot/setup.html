@@ -405,7 +405,7 @@
             try {
                 // Step 1: Check readings
                 addLog('🔍 Checking system readings...', 'info');
-                const readingsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/readings/latest?limit=100`);
+                const readingsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=100`);
                 const readingsData = await readingsResponse.json();
 
                 const readingsList = readingsData.Details ?? readingsData.details ?? readingsData.data ?? readingsData ?? [];
@@ -423,7 +423,7 @@
                 const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
                 const analysisResponse = await AuthHelper.fetchWithAuth(
-                    `${baseUrl}/api/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
+                    `${baseUrl}/api/v1/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
                     { method: 'POST' }
                 );
 
@@ -439,7 +439,7 @@
                 // Step 3: Generate Recommendations
                 addLog('💡 Fetching generated recommendations...', 'info');
                 const recsResponse = await AuthHelper.fetchWithAuth(
-                    `${baseUrl}/api/AI/recommendations?pageSize=100&isImplemented=false`
+                    `${baseUrl}/api/v1/AI/recommendations?pageSize=100&isImplemented=false`
                 );
 
                 if (recsResponse && recsResponse.ok) {
@@ -458,7 +458,7 @@
 
                 // Step 4: Detect Anomalies
                 addLog('🚨 Detecting consumption anomalies...', 'info');
-                const devicesResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/devices`);
+                const devicesResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/devices`);
                 const devicesData = await devicesResponse.json();
 
                 let totalAnomalies = 0;
@@ -470,7 +470,7 @@
 
                     try {
                         const anomalyResponse = await AuthHelper.fetchWithAuth(
-                            `${baseUrl}/api/AI/detect-anomalies/${device.id}?days=7`,
+                            `${baseUrl}/api/v1/AI/detect-anomalies/${device.id}?days=7`,
                             { method: 'POST' }
                         );
 
@@ -495,7 +495,7 @@
                 addLog('📊 Fetching final statistics...', 'info');
 
                 try {
-                    const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/AI/Statistics`);
+                    const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
 
                     if (!statsResponse.ok) {
                         throw new Error(`Failed to fetch statistics: ${statsResponse.status}`);

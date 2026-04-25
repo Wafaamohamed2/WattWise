@@ -1,4 +1,4 @@
-﻿const connection = new signalR.HubConnectionBuilder()
+const connection = new signalR.HubConnectionBuilder()
     .withUrl("/energyhub", {
         accessTokenFactory: () => localStorage.getItem('token')
     })
