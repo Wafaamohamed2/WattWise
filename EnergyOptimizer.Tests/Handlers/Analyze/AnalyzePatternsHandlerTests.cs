@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Interfaces;

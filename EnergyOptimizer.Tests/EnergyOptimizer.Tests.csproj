@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EnergyOptimizer.API\EnergyOptimizer.API.csproj" />
     <ProjectReference Include="..\EnergyOptimizer.Core\EnergyOptimizer.Core.csproj" />
+    <ProjectReference Include="..\EnergyOptimizer.Service\EnergyOptimizer.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

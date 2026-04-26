@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Exceptions;
+using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
 using EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers;
 using EnergyOptimizer.Core.Interfaces;

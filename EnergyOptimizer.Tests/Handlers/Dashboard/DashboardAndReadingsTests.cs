@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers;
 using EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers;
 using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;

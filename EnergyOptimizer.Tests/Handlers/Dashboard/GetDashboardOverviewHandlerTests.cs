@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers;
 using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using EnergyOptimizer.Core.Interfaces;
@@ -53,7 +53,7 @@ namespace EnergyOptimizer.Tests.Handlers.Dashboard
             result.StatusCode.Should().Be(200);
 
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var json = JsonSerializer.Serialize(result.Details, options); // تمرير الخيارات هنا مهم
+            var json = JsonSerializer.Serialize(result.Details, options);
             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
             data.Should().ContainKey("totalDevices");

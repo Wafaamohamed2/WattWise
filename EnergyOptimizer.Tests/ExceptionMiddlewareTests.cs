@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.API.Middleware;
 using EnergyOptimizer.Core.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Text.Json;
 
-namespace Energy_Optimizer_Test
+namespace EnergyOptimizer.Tests
 {
     public class ExceptionMiddlewareTests
     {

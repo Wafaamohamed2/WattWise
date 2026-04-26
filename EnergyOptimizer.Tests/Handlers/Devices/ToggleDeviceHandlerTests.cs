@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
 using EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers;
@@ -7,7 +7,7 @@ using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using FluentAssertions;
 using Moq;
 
-namespace Energy_Optimizer_Test.Handlers.Devices
+namespace EnergyOptimizer.Tests.Handlers.Devices
 {
     public class ToggleDeviceHandlerTests
     {
@@ -37,7 +37,7 @@ namespace Energy_Optimizer_Test.Handlers.Devices
                 new ToggleDeviceCommand(1),
                 CancellationToken.None);
 
-            // Assert — device flipped from active to inactive
+            // Assert � device flipped from active to inactive
             device.IsActive.Should().BeFalse();
 
             // After 

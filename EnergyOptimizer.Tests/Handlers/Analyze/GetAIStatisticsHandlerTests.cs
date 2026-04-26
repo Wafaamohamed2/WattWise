@@ -1,4 +1,4 @@
-ï»¿using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
@@ -132,7 +132,7 @@ namespace EnergyOptimizer.Tests.Handlers.Analyze
         [Fact]
         public async Task Handle_CountAsync_CalledTwice_ForTotalAndRecent()
         {
-            // Arrange â€” verify the handler calls CountAsync exactly twice:
+            // Arrange — verify the handler calls CountAsync exactly twice:
             // once for total analyses and once for last-30-days analyses
             _mockAnalysis
                 .Setup(r => r.CountAsync(It.IsAny<AnalysisHistoryCountSpec>()))
@@ -149,7 +149,7 @@ namespace EnergyOptimizer.Tests.Handlers.Analyze
             // Act
             await _handler.Handle(new GetAIStatisticsQuery(), CancellationToken.None);
 
-            // Assert â€” CountAsync called twice (total + last30Days)
+            // Assert — CountAsync called twice (total + last30Days)
             _mockAnalysis.Verify(r => r.CountAsync(It.IsAny<AnalysisHistoryCountSpec>()), Times.Exactly(2));
         }
     }

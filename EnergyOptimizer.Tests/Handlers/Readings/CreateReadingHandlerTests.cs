@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
+using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Commands.ReadingsCommans;
 using EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers;

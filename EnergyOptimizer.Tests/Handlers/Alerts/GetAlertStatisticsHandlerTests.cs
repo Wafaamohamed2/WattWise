@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers;
@@ -8,7 +8,7 @@ using EnergyOptimizer.Core.Specifications.AlertSpec;
 using FluentAssertions;
 using Moq;
 
-namespace Energy_Optimizer_Test.Handlers.Alerts
+namespace EnergyOptimizer.Tests.Handlers.Alerts
 {
     public class GetAlertStatisticsHandlerTests
     {

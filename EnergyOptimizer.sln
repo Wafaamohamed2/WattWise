@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Data", "Ene
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOptimizer.Service", "EnergyOptimizer.Service\EnergyOptimizer.Service.csproj", "{1958D460-6876-4218-BE92-D9361CCEC174}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOptimizer.Tests", "Energy-Optimizer-Test\EnergyOptimizer.Tests.csproj", "{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOptimizer.Tests", "EnergyOptimizer.Tests\EnergyOptimizer.Tests.csproj", "{21359FF4-E3E8-4935-ACD9-5DB4F8D178D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

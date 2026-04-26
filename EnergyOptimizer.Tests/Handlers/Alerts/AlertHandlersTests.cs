@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
