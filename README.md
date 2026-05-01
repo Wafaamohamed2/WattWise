@@ -45,21 +45,23 @@
     - Google Gemini API Key
 
 ## Setup
-  Clone the repository:
-  bash
+  **Clone the repository**:
+   - bash
     git clone https://github.com/your-username/Energy-Optimizer.git
     Configure Secrets: The project uses dotnet user-secrets to keep your API keys safe.
-
-  bash
+  --------------------------------------
+  - bash
    cd EnergyOptimizer.API
    dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
-
-  Apply Migrations:
-  bash
+  --------------------------------------
+  
+  **Apply Migrations**:
+   bash
    dotnet ef database update --project ../EnergyOptimizer.Infrastructure --startup-project .
   
-  Run the App:
+  **Run the App**:
   bash
-   dotnet run
+  dotnet run
+  
   Access Swagger UI at: https://localhost:7083/swagger
