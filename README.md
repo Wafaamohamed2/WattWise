@@ -1,4 +1,4 @@
-##### ⚡ WattWise — AI-Powered Energy Management System 
+##### ⚡ WattWise — (formerly Energy Optimizer)
 
 ### Overview
   EnergyOptimizer is a **production-grade** smart energy management system. It doesn't just monitor energy; it **understands** it. By leveraging **Google Gemini AI**, the system detects anomalies, predicts future usage, and provides intelligent recommendations to reduce waste—all broadcasted in real-time via **SignalR WebSockets**.
@@ -63,4 +63,3 @@
   bash
   dotnet run
   
-  **Access Swagger UI at**: https://localhost:7083/swagger
