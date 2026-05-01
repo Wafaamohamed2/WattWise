@@ -20,15 +20,14 @@
 
 
 ## Project Structure (Clean Architecture)
-```text
-EnergyOptimizer/
-├── API Layer              # SignalR Hubs, Controllers, Background Services
-├── Core Layer             # Domain Entities, MediatR CQRS, Interfaces
-├── Infrastructure Layer   # EF Core DBContext, Repository Implementations
-├── Service Layer          # AI Logic, Gemini Integration, JWT Logic
-└── Tests Project          # xUnit & Moq Unit Tests
+        EnergyOptimizer/
+       ├── API Layer              # SignalR Hubs, Controllers, Background Services
+       ├── Core Layer             # Domain Entities, MediatR CQRS, Interfaces
+       ├── Infrastructure Layer   # EF Core DBContext, Repository Implementations
+       ├── Service Layer          # AI Logic, Gemini Integration, JWT Logic
+       └── Tests Project          # xUnit & Moq Unit Tests
 
-
+       
 ### Design Patterns Used
         Pattern                                                    Usage
      CQRS + MediatR                          All business operations separated into Commands/Queries with dedicated Handlers
@@ -38,40 +37,29 @@ EnergyOptimizer/
      Observer (SignalR)                      Real-time event broadcasting to connected clients
 
 
-### Key Background Services
-  1. EnergyReadingSimulatorService
-        Generates realistic energy readings every minute based on device type, time of day, and day of week.
-        Simulates Egyptian household patterns (ACs peak in the afternoon, water heaters peak morning/evening, etc.).
-        Broadcasts to all SignalR clients immediately after saving.
-  2. AlertDetectionService
-        Runs every 30 seconds. Checks for high consumption (150%+ above 5-reading baseline), sudden spikes (200%+ jump), wastage (devices on during off-hours), and device offline conditions.
-        Creates alerts in DB and pushes them via SignalR.
-  3. AIAnalysisBackgroundService
-        Runs the full global AI analysis cycle at a configurable interval (default: every 24 hours). Includes pattern analysis, anomaly detection, and recommendation generation.
 
 ## Getting Started
-Prerequisites:
-.NET 8.0 SDK
-SQL Server (LocalDB or Express)
-Google Gemini API Key
+  Prerequisites:
+    - .NET 8.0 SDK
+    - SQL Server (LocalDB or Express)
+    - Google Gemini API Key
 
 ## Setup
-Clone the repository:
+  Clone the repository:
+  bash
+    git clone https://github.com/your-username/Energy-Optimizer.git
+    Configure Secrets: The project uses dotnet user-secrets to keep your API keys safe.
 
-bash
-git clone https://github.com/your-username/Energy-Optimizer.git
-Configure Secrets: The project uses dotnet user-secrets to keep your API keys safe.
+  bash
+   cd EnergyOptimizer.API
+   dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
 
-bash
-cd EnergyOptimizer.API
-dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
-Apply Migrations:
-
-bash
-dotnet ef database update --project ../EnergyOptimizer.Infrastructure --startup-project .
-Run the App:
-
-bash
-dotnet run
-Access Swagger UI at: https://localhost:7083/swagger
+  Apply Migrations:
+  bash
+   dotnet ef database update --project ../EnergyOptimizer.Infrastructure --startup-project .
+  
+  Run the App:
+  bash
+   dotnet run
+  Access Swagger UI at: https://localhost:7083/swagger
