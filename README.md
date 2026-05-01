@@ -1,62 +1,32 @@
 ##### ⚡ EnergyOptimizer — AI-Powered Energy Management System 
 
 ### Overview
-  EnergyOptimizer is a production-grade smart energy management system that monitors electricity consumption across devices and zones in real time, detects anomalies using AI, and generates actionable recommendations to reduce energy waste — all powered by Google Gemini AI and delivered live via SignalR WebSockets.
-  The system simulates a smart home/building with multiple devices (ACs, water heaters, TVs, lights, etc.), generates realistic energy readings every minute, and continuously runs AI-driven analysis in the background.
+  EnergyOptimizer is a **production-grade** smart energy management system. It doesn't just monitor energy; it **understands** it. By leveraging **Google Gemini AI**, the system detects anomalies, predicts future usage, and provides intelligent recommendations to reduce waste—all broadcasted in real-time via **SignalR WebSockets**.
 
-### Features
-   ## 1- Real-Time Monitoring 
-        - Live energy readings broadcast to all clients via SignalR WebSockets
-        - Real-time dashboard updates: total consumption, active devices, top consumers
-        - Device status change notifications (on/off toggle)
-        - Per-zone live readings through SignalR groups
-   ## 2- AI-Powered Analysis (Google Gemini)
-        - Pattern Analysis — Identifies consumption patterns across devices and time periods
-        - Anomaly Detection — Flags unusual consumption deviations with severity levels (Low / Medium / High / Critical)
-        - Smart Recommendations — Generates actionable energy-saving suggestions
-        - Consumption Prediction — Forecasts future energy usage based on historical data
-        - Automated background analysis cycle (configurable interval)
-   ## 3- Intelligent Alert System
-        - Automatic high-consumption detection 
-        - Sudden spike detection (200%+ increase in one reading cycle)
-        - Wastage alerts (devices running at unusual hours)
-        - Device offline detection
-        - Real-time alert push via SignalR
-   ## 4- Analytics & Charts
-        - Hourly, daily, and zone-based consumption breakdown
-        - Device type distribution 
-        - Top consumers ranking
-        - Consumption trend over time
-        - Exportable charts (PNG download)
-   ## 5- Security
-        - JWT authentication with HttpOnly cookie support + Bearer header fallback
-        - Rate limiting on auth endpoints (10 req/min)
-        - Role-based authorization (Admin for seeding)
-        - Centralized exception middleware with environment-aware error responses
+### Key Features
+   ### 1. AI-Driven Intelligence (Google Gemini)
+- **Pattern Analysis:** Deep analysis of consumption behaviors across devices.
+- **Anomaly Detection:** Real-time flagging of unusual deviations with severity levels.
+- **Smart Recommendations:** Actionable, AI-generated tips to save money and energy.
+- **Usage Forecasting:** Prediction of future consumption using historical trends.
+### 2. Real-Time Ecosystem
+- **Live Dashboard:** Instant updates of total consumption and active device counts.
+- **Smart Alerts:** Immediate push notifications for spikes, wastage, or offline devices.
+- **Zone Control:** Per-zone monitoring using SignalR groups for efficient data broadcasting.
+### 3. Advanced Backend Architecture
+- **Realistic Simulation:** A sophisticated background service that simulates Egyptian household patterns.
+- **Automated Detection:** Continuous background monitoring for consumption spikes and device health.
+- **Clean Architecture:** Strict separation of concerns for maximum maintainability.
 
-### Architecture 
 
-          EnergyOptimizer/
-          ├── API Layer              # Controllers, Hubs, Middleware, Background Services
-      │   ├── Controllers/           # REST endpoints (AI, Alerts, Dashboard, Devices, Readings)
-      │   ├── Hubs/                  # EnergyHub (SignalR)
-      │   ├── Services/              # Background services (Simulator, AlertDetection, AIAnalysis)
-      │   └── Middleware/            # Exception handling
-      │
-      ├── Core Layer                 # Domain entities, interfaces, DTOs, CQRS
-      │   ├── Entities/              # Device, Zone, Building, EnergyReading, Alert, AI analysis models
-      │   ├── Features/              # CQRS: Commands, Queries, Handlers (MediatR)
-      │   ├── Specifications/        # Specification pattern for queries
-      │   ├── Interfaces/            # Repository, service contracts
-      │   └── Exceptions/            # Domain exceptions
-      │
-      ├── Infrastructure Layer       # Data access, repository implementation
-      │   ├── Data/                  # EF Core DbContext
-      │   └── Repositories/          # GenericRepository + SpecificationEvaluator
-      │
-      └── Service Layer              # Business logic
-          └── Services/              # AIAnalysisService, GeminiService, PatternDetectionService,
-                                     # DataCleanupService, JwtTokenService
+## Project Structure (Clean Architecture)
+```text
+EnergyOptimizer/
+├── API Layer              # SignalR Hubs, Controllers, Background Services
+├── Core Layer             # Domain Entities, MediatR CQRS, Interfaces
+├── Infrastructure Layer   # EF Core DBContext, Repository Implementations
+├── Service Layer          # AI Logic, Gemini Integration, JWT Logic
+└── Tests Project          # xUnit & Moq Unit Tests
 
 
 ### Design Patterns Used
@@ -79,12 +49,29 @@
   3. AIAnalysisBackgroundService
         Runs the full global AI analysis cycle at a configurable interval (default: every 24 hours). Includes pattern analysis, anomaly detection, and recommendation generation.
 
+## Getting Started
+Prerequisites:
+.NET 8.0 SDK
+SQL Server (LocalDB or Express)
+Google Gemini API Key
 
-### Data Model Overview
-         Building → Zone → Device → EnergyReading
-                                  → Alert
-         EnergyAnalysis → AnalysisInsight
-                       → EnergyRecommendation
-                       → DetectedAnomaly → Device
-         ConsumptionPrediction
-         UsagePattern
+## Setup
+Clone the repository:
+
+bash
+git clone https://github.com/your-username/Energy-Optimizer.git
+Configure Secrets: The project uses dotnet user-secrets to keep your API keys safe.
+
+bash
+cd EnergyOptimizer.API
+dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
+Apply Migrations:
+
+bash
+dotnet ef database update --project ../EnergyOptimizer.Infrastructure --startup-project .
+Run the App:
+
+bash
+dotnet run
+Access Swagger UI at: https://localhost:7083/swagger
