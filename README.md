@@ -48,12 +48,11 @@
   **Clone the repository**:
    - bash
     git clone https://github.com/your-username/Energy-Optimizer.git
-    Configure Secrets: The project uses dotnet user-secrets to keep your API keys safe.
   --------------------------------------
   - bash
-   cd EnergyOptimizer.API
-   dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
+      - cd EnergyOptimizer.API
+      - dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
+      -  dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_CONNECTION_STRING"
   --------------------------------------
   
   **Apply Migrations**:
@@ -64,4 +63,4 @@
   bash
   dotnet run
   
-  Access Swagger UI at: https://localhost:7083/swagger
+  **Access Swagger UI at**: https://localhost:7083/swagger
