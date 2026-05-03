@@ -47,7 +47,7 @@
 ## Setup
   **Clone the repository**:
    - bash
-    git clone https://github.com/Wafaamohamed2/Energy-Optimizer.git
+    git clone https://github.com/Wafaamohamed2/WattWise.git
   --------------------------------------
   - bash
       - cd EnergyOptimizer.API
