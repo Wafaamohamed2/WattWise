@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
+using MassTransit;
+using EnergyOptimizer.Infrastructure.Consumers;
 using EnergyOptimizer.Service.Services;
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Interfaces;
@@ -108,6 +110,26 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = true;
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
+// MassTransit & RabbitMQ Registration
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<EnergyReadingConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("energy-readings-queue", e =>
+        {
+            e.ConfigureConsumer<EnergyReadingConsumer>(context);
+        });
+    });
 });
 
 // Identity 

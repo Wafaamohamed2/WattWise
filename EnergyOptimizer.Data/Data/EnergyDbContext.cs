@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +81,8 @@ namespace EnergyOptimizer.Infrastructure.Data
 
                 entity.HasIndex(e => e.Timestamp);
                 entity.HasIndex(e => e.DeviceId);
+                entity.HasIndex(e => new { e.DeviceId, e.Timestamp })
+                      .HasDatabaseName("IX_EnergyReadings_DeviceId_Timestamp");
             });
 
             // Alert Configuration

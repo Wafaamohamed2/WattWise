@@ -18,7 +18,7 @@ namespace EnergyOptimizer.Tests.Handlers.Dashboard
         {
             // Arrange
             var mockRepo = new Mock<IGenericRepository<EnergyReading>>();
-            mockRepo.Setup(r => r.ListAsync(It.IsAny<TodayReadingsSpec>())).ReturnsAsync(new List<EnergyReading>());
+            mockRepo.Setup(r => r.ListAsync(It.IsAny<ISpecification<EnergyReading>>())).ReturnsAsync(new List<EnergyReading>());
             var handler = new GetHourlyConsumptionHandler(mockRepo.Object);
             var query = new GetHourlyConsumptionQuery(DateTime.UtcNow.ToString("yyyy-MM-dd"));
 
