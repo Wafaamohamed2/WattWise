@@ -50,12 +50,17 @@ namespace EnergyOptimizer.Service.Services
             DateTime startDate,
             DateTime endDate)
         {
+            if (endDate.TimeOfDay == TimeSpan.Zero)
+            {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            }
+
             try
             {
                 _logger.LogInformation("Starting pattern analysis from {Start} to {End}",
                     startDate, endDate);
 
-                // ===== 1. Perform SQL Aggregations =====
+                // Perform SQL Aggregations 
                 var query = _readingRepo.GetQueryable()
                     .Where(r => r.Timestamp >= startDate && r.Timestamp <= endDate);
 
@@ -69,13 +74,13 @@ namespace EnergyOptimizer.Service.Services
                     };
                 }
 
-                // ===== 2. Create AI input DTO =====
+                //  Create AI input DTO 
                 var (energyPatternData, totalReadingsCount) = await TransformToEnergyPatternDataAsync(query, startDate, endDate);
 
-                // ===== 3. Call Gemini AI =====
+                // Call Gemini AI 
                 var analysisResult = await _geminiService.AnalyzeEnergyPatterns(energyPatternData);
 
-                // ===== 4. Save results to database =====
+                // Save results to database 
                 if (analysisResult.Success)
                 {
                     await SaveAnalysisResults(analysisResult, startDate, endDate, totalReadingsCount);
@@ -158,6 +163,11 @@ namespace EnergyOptimizer.Service.Services
             DateTime startDate,
             DateTime endDate)
         {
+            if (endDate.TimeOfDay == TimeSpan.Zero)
+            {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            }
+
             try
             {
                 // Collect summary data via SQL aggregations
@@ -192,7 +202,6 @@ namespace EnergyOptimizer.Service.Services
                     currentIssues.Add($"{unreadAlerts} unread alerts");
                 }
 
-                // Transform to DTO
                 // Transform to DTO
                 var summary = await TransformToConsumptionSummaryAsync(query, startDate, endDate, currentIssues);
 

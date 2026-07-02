@@ -1,9 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EnergyOptimizer.Core.Entities;
 
 namespace EnergyOptimizer.Core.Specifications.ReadSpec
 {
@@ -20,7 +15,7 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
             int pageSize = 50)
             : base(r =>
                 // Mandatory Date Range
-                r.Timestamp >= startDate && r.Timestamp <= endDate &&
+                r.Timestamp >= startDate && r.Timestamp <= (endDate.TimeOfDay == TimeSpan.Zero ? endDate.Date.AddDays(1).AddTicks(-1) : endDate) &&
 
                 // Optional Filters
                 (!deviceId.HasValue || r.DeviceId == deviceId.Value) &&

@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 
 namespace EnergyOptimizer.Core.Specifications.ReadSpec
 {
@@ -10,7 +10,7 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
            DateTime endDate)
            : base(r => r.DeviceId == deviceId &&
                        r.Timestamp >= startDate &&
-                       r.Timestamp <= endDate)
+                       r.Timestamp <= (endDate.TimeOfDay == TimeSpan.Zero ? endDate.Date.AddDays(1).AddTicks(-1) : endDate))
         {
             AddInclude(r => r.Device);
             ApplyOrderBy(r => r.Timestamp);

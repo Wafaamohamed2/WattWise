@@ -1,9 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EnergyOptimizer.Core.Entities;
 
 namespace EnergyOptimizer.Core.Specifications.ReadSpec
 {
@@ -15,7 +10,7 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
            DateTime endDate)
            : base(r => r.Device.ZoneId == zoneId &&
                        r.Timestamp >= startDate &&
-                       r.Timestamp <= endDate)
+                       r.Timestamp <= (endDate.TimeOfDay == TimeSpan.Zero ? endDate.Date.AddDays(1).AddTicks(-1) : endDate))
         {
             AddInclude(r => r.Device);
             AddInclude("Device.Zone");

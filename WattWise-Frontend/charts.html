@@ -570,7 +570,7 @@
 
                 const filteredData = actualReadings.filter(reading => {
                     if (!reading?.timestamp) return false;
-                    const readingDate = new Date(reading.timestamp).toISOString().split('T')[0];
+                    const readingDate = reading.timestamp.split('T')[0];
                     return readingDate >= startDate && readingDate <= endDate;
                 });
 
@@ -607,7 +607,7 @@
 
         function updateStatistics(data) {
             const totalConsumption = data.reduce((sum, r) => sum + (r.powerConsumptionKW || 0), 0);
-            const days = [...new Set(data.map(r => new Date(r.timestamp).toDateString()))].length || 1;
+            const days = [...new Set(data.map(r => r.timestamp.split('T')[0]))].length || 1;
             const avgDaily = totalConsumption / days;
             const consumptionValues = data.map(r => r.powerConsumptionKW || 0);
             const peakPower = consumptionValues.length > 0 ? Math.max(...consumptionValues) : 0;
@@ -638,7 +638,7 @@
 
             const dailyData = {};
             data.forEach(reading => {
-                const date = new Date(reading.timestamp).toISOString().split('T')[0];
+                const date = reading.timestamp.split('T')[0];
                 dailyData[date] = (dailyData[date] || 0) + reading.powerConsumptionKW;
             });
 
@@ -716,7 +716,7 @@
             const hourlyCounts = Array(24).fill(0);
 
             data.forEach(reading => {
-                const hour = new Date(reading.timestamp).getHours();
+                const hour = parseInt(reading.timestamp.split('T')[1].split(':')[0]);
                 hourlyData[hour] += reading.powerConsumptionKW;
                 hourlyCounts[hour]++;
             });

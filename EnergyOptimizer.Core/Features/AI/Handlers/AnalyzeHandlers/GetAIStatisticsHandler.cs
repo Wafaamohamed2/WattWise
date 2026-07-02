@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
@@ -41,6 +41,7 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
             var doneRecs = allRecs.Count(r => r.IsImplemented);
             var realizedSavings = allRecs.Where(r => r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
             var potentialSavings = allRecs.Where(r => !r.IsImplemented).Sum(r => r.EstimatedSavingsKWh);
+            var highPriorityCount = allRecs.Count(r => !r.IsImplemented && (r.Priority.Equals("High", StringComparison.OrdinalIgnoreCase) || r.Priority.Equals("Critical", StringComparison.OrdinalIgnoreCase)));
 
             // Anomalies
             var allAnomalies = await _anomalyRepo.ListAsync(
@@ -62,10 +63,14 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AnalyzeHandlers
                 },
                 recommendations = new
                 {
+                    total = allRecs.Count,
                     active = activeRecs,
                     implemented = doneRecs,
+                    highPriority = highPriorityCount,
                     totalRealizedSavings = realizedSavings,
-                    totalPotentialSavings = potentialSavings
+                    totalPotentialSavings = potentialSavings,
+                    totalSavings = potentialSavings,
+                    potentialSavings = potentialSavings
                 },
                 anomalies = new
                 {
