@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,20 +29,20 @@
             background: white;
             padding: 25px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-            .header h1 {
-                color: #667eea;
-                font-size: 2em;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .header-actions {
             display: flex;
@@ -67,26 +68,26 @@
             border: 2px solid #667eea;
         }
 
-            .btn-secondary:hover {
-                background: #667eea;
-                color: white;
-            }
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
 
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
         }
 
-            .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
 
         .filters-bar {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: flex;
             gap: 15px;
@@ -100,13 +101,14 @@
             gap: 5px;
         }
 
-            .filter-group label {
-                font-size: 0.85em;
-                color: #6b7280;
-                font-weight: 600;
-            }
+        .filter-group label {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-weight: 600;
+        }
 
-        .filter-select, .filter-input {
+        .filter-select,
+        .filter-input {
             padding: 8px 12px;
             border: 2px solid #e5e7eb;
             border-radius: 6px;
@@ -114,53 +116,54 @@
             min-width: 150px;
         }
 
-            .filter-select:focus, .filter-input:focus {
-                outline: none;
-                border-color: #667eea;
-            }
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
         .timeline {
             position: relative;
             padding-left: 40px;
         }
 
-            .timeline::before {
-                content: '';
-                position: absolute;
-                left: 15px;
-                top: 0;
-                bottom: 0;
-                width: 3px;
-                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
 
         .timeline-item {
             position: relative;
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
             transition: all 0.3s;
         }
 
-            .timeline-item:hover {
-                transform: translateX(5px);
-                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            }
+        .timeline-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
 
-            .timeline-item::before {
-                content: '';
-                position: absolute;
-                left: -28px;
-                top: 30px;
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background: white;
-                border: 4px solid #667eea;
-                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
-            }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
 
         .analysis-header {
             display: flex;
@@ -371,18 +374,18 @@
             color: white;
         }
 
-            .action-btn-view:hover {
-                background: #5568d3;
-            }
+        .action-btn-view:hover {
+            background: #5568d3;
+        }
 
         .action-btn-export {
             background: #10b981;
             color: white;
         }
 
-            .action-btn-export:hover {
-                background: #059669;
-            }
+        .action-btn-export:hover {
+            background: #059669;
+        }
 
         .pagination {
             display: flex;
@@ -403,22 +406,23 @@
             transition: all 0.3s;
         }
 
-            .page-btn:hover:not(:disabled) {
-                background: #667eea;
-                color: white;
-            }
+        .page-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
 
-            .page-btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-            .page-btn.active {
-                background: #667eea;
-                color: white;
-            }
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
 
-        .loading, .empty-state {
+        .loading,
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
@@ -458,16 +462,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             overflow-y: auto;
         }
 
-            .modal.show {
-                display: flex;
-            }
+        .modal.show {
+            display: flex;
+        }
 
         .modal-content {
             background: white;
@@ -477,7 +481,7 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             margin: 20px;
         }
 
@@ -508,58 +512,59 @@
             transition: all 0.3s;
         }
 
-            .close-btn:hover {
-                background: #d1d5db;
-                transform: rotate(90deg);
-            }
+        .close-btn:hover {
+            background: #d1d5db;
+            transform: rotate(90deg);
+        }
+
         /* ===== Navigation Menu ===== */
         .main-nav {
             background: white;
             padding: 18px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
         }
 
-            .main-nav ul {
-                display: flex;
-                justify-content: center;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
+        .main-nav ul {
+            display: flex;
+            justify-content: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-            .main-nav li a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 1.1em;
-                padding: 12px 24px;
-                border-radius: 12px;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                position: relative;
-            }
+        .main-nav li a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
 
-                .main-nav li a:hover {
-                    background: #667eea;
-                    color: white;
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-                }
+        .main-nav li a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
 
-                .main-nav li a.active {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    transform: translateY(-3px);
-                }
+        .main-nav li a.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+        }
 
         /* Responsive */
         @media (max-width: 900px) {
@@ -586,6 +591,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Navigation Menu -->
@@ -665,7 +671,7 @@
     </div>
 
     <script>
-        const baseUrl = window.location.origin;
+        const baseUrl = AuthHelper.API_BASE_URL;
         let currentPage = 1;
         let totalPages = 1;
         let currentFilters = {
@@ -1047,4 +1053,5 @@
         });
     </script>
 </body>
+
 </html>

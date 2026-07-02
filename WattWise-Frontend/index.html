@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +35,7 @@
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .status {
@@ -42,19 +43,19 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-            .status.connected {
-                border-left: 5px solid #10b981;
-            }
+        .status.connected {
+            border-left: 5px solid #10b981;
+        }
 
-            .status.disconnected {
-                border-left: 5px solid #ef4444;
-            }
+        .status.disconnected {
+            border-left: 5px solid #ef4444;
+        }
 
         .status-dot {
             width: 12px;
@@ -72,7 +73,9 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 1;
             }
 
@@ -92,17 +95,17 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-            .card h2 {
-                color: #667eea;
-                margin-bottom: 15px;
-                font-size: 1.3em;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
         .reading {
             padding: 15px;
@@ -114,9 +117,9 @@
             transition: transform 0.2s;
         }
 
-            .reading:hover {
-                transform: translateX(5px);
-            }
+        .reading:hover {
+            transform: translateX(5px);
+        }
 
         @keyframes slideIn {
             from {
@@ -168,13 +171,13 @@
             padding: 25px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
-            .dashboard-update h2 {
-                color: white;
-                margin-bottom: 20px;
-            }
+        .dashboard-update h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
 
         .dashboard-stats {
             display: grid;
@@ -266,31 +269,35 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 1.5em;
             z-index: 999;
             transition: all 0.3s;
         }
 
-            .alerts-bell:hover {
-                transform: scale(1.1);
-                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            }
+        .alerts-bell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
 
-            .alerts-bell.has-alerts {
-                animation: bellRing 1s ease-in-out infinite;
-            }
+        .alerts-bell.has-alerts {
+            animation: bellRing 1s ease-in-out infinite;
+        }
 
         @keyframes bellRing {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: rotate(0deg);
             }
 
-            10%, 30% {
+            10%,
+            30% {
                 transform: rotate(-10deg);
             }
 
-            20%, 40% {
+            20%,
+            40% {
                 transform: rotate(10deg);
             }
         }
@@ -320,16 +327,16 @@
             max-height: 600px;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             z-index: 1000;
             display: none;
         }
 
-            .alerts-panel.show {
-                display: block;
-                animation: slideInRight 0.3s ease-out;
-            }
+        .alerts-panel.show {
+            display: block;
+            animation: slideInRight 0.3s ease-out;
+        }
 
         @keyframes slideInRight {
             from {
@@ -352,10 +359,10 @@
             align-items: center;
         }
 
-            .alerts-header h3 {
-                margin: 0;
-                font-size: 1.2em;
-            }
+        .alerts-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
 
         .close-alerts {
             background: rgba(255, 255, 255, 0.2);
@@ -371,9 +378,9 @@
             justify-content: center;
         }
 
-            .close-alerts:hover {
-                background: rgba(255, 255, 255, 0.3);
-            }
+        .close-alerts:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
 
         .alerts-body {
             max-height: 500px;
@@ -475,20 +482,20 @@
             font-weight: 500;
         }
 
-            .alert-badge.critical {
-                background: #fee2e2;
-                color: #991b1b;
-            }
+        .alert-badge.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
-            .alert-badge.warning {
-                background: #fef3c7;
-                color: #92400e;
-            }
+        .alert-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
 
-            .alert-badge.info {
-                background: #dbeafe;
-                color: #1e40af;
-            }
+        .alert-badge.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
 
         .empty-alerts {
             text-align: center;
@@ -508,7 +515,7 @@
             background: white;
             padding: 15px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -519,45 +526,45 @@
             border-left: 4px solid #3b82f6;
         }
 
-            .toast.show {
-                transform: translateX(0);
-            }
+        .toast.show {
+            transform: translateX(0);
+        }
 
-            .toast.toast-success {
-                border-left-color: #10b981;
-            }
+        .toast.toast-success {
+            border-left-color: #10b981;
+        }
 
-                .toast.toast-success::before {
-                    content: "✅";
-                    font-size: 1.2em;
-                }
+        .toast.toast-success::before {
+            content: "✅";
+            font-size: 1.2em;
+        }
 
-            .toast.toast-info {
-                border-left-color: #3b82f6;
-            }
+        .toast.toast-info {
+            border-left-color: #3b82f6;
+        }
 
-                .toast.toast-info::before {
-                    content: "ℹ️";
-                    font-size: 1.2em;
-                }
+        .toast.toast-info::before {
+            content: "ℹ️";
+            font-size: 1.2em;
+        }
 
-            .toast.toast-warning {
-                border-left-color: #f59e0b;
-            }
+        .toast.toast-warning {
+            border-left-color: #f59e0b;
+        }
 
-                .toast.toast-warning::before {
-                    content: "⚠️";
-                    font-size: 1.2em;
-                }
+        .toast.toast-warning::before {
+            content: "⚠️";
+            font-size: 1.2em;
+        }
 
-            .toast.toast-error {
-                border-left-color: #ef4444;
-            }
+        .toast.toast-error {
+            border-left-color: #ef4444;
+        }
 
-                .toast.toast-error::before {
-                    content: "❌";
-                    font-size: 1.2em;
-                }
+        .toast.toast-error::before {
+            content: "❌";
+            font-size: 1.2em;
+        }
 
         .device-controls-grid {
             display: grid;
@@ -573,21 +580,21 @@
             transition: all 0.2s;
         }
 
-            .device-control-card:hover {
-                border-color: #667eea;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
+        .device-control-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-            .device-control-card.active {
-                border-color: #10b981;
-                background: #f0fdf4;
-            }
+        .device-control-card.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
 
-            .device-control-card.inactive {
-                border-color: #ef4444;
-                background: #fef2f2;
-            }
+        .device-control-card.inactive {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
 
         .device-control-header {
             font-weight: bold;
@@ -604,14 +611,14 @@
             display: inline-block;
         }
 
-            .device-status-indicator.active {
-                background: #10b981;
-                box-shadow: 0 0 8px #10b981;
-            }
+        .device-status-indicator.active {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
 
-            .device-status-indicator.inactive {
-                background: #ef4444;
-            }
+        .device-status-indicator.inactive {
+            background: #ef4444;
+        }
 
         .device-control-info {
             font-size: 0.85em;
@@ -629,28 +636,28 @@
             transition: all 0.2s;
         }
 
-            .device-toggle-btn.active {
-                background: #ef4444;
-                color: white;
-            }
+        .device-toggle-btn.active {
+            background: #ef4444;
+            color: white;
+        }
 
-                .device-toggle-btn.active:hover {
-                    background: #dc2626;
-                }
+        .device-toggle-btn.active:hover {
+            background: #dc2626;
+        }
 
-            .device-toggle-btn.inactive {
-                background: #10b981;
-                color: white;
-            }
+        .device-toggle-btn.inactive {
+            background: #10b981;
+            color: white;
+        }
 
-                .device-toggle-btn.inactive:hover {
-                    background: #059669;
-                }
+        .device-toggle-btn.inactive:hover {
+            background: #059669;
+        }
 
-            .device-toggle-btn:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-            }
+        .device-toggle-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
         .alert-actions {
             display: flex;
@@ -669,23 +676,23 @@
             font-weight: 500;
         }
 
-            .alert-action-btn.mark-read {
-                background: #10b981;
-                color: white;
-            }
+        .alert-action-btn.mark-read {
+            background: #10b981;
+            color: white;
+        }
 
-                .alert-action-btn.mark-read:hover {
-                    background: #059669;
-                }
+        .alert-action-btn.mark-read:hover {
+            background: #059669;
+        }
 
-            .alert-action-btn.delete {
-                background: #ef4444;
-                color: white;
-            }
+        .alert-action-btn.delete {
+            background: #ef4444;
+            color: white;
+        }
 
-                .alert-action-btn.delete:hover {
-                    background: #dc2626;
-                }
+        .alert-action-btn.delete:hover {
+            background: #dc2626;
+        }
 
         .alerts-actions {
             display: flex;
@@ -698,48 +705,48 @@
             background: white;
             padding: 18px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
         }
 
-            .main-nav ul {
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
+        .main-nav ul {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-            .main-nav li a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 1.1em;
-                padding: 12px 24px;
-                border-radius: 12px;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                position: relative;
-            }
+        .main-nav li a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
 
-                .main-nav li a:hover {
-                    background: #667eea;
-                    color: white;
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-                }
+        .main-nav li a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
 
-                .main-nav li a.active {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    transform: translateY(-3px);
-                }
+        .main-nav li a.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+        }
 
         @media (max-width: 900px) {
             .main-nav ul {
@@ -765,6 +772,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>⚡ Energy Optimizer - Live Monitor</h1>
@@ -868,11 +876,11 @@
 
     <script>
 
-        const baseUrl = window.location.origin;
+        const baseUrl = AuthHelper.API_BASE_URL;
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/energyhub", {
-                withCredentials: true  
+            .withUrl(AuthHelper.API_BASE_URL + "/energyhub", {
+                withCredentials: true
             })
             .withAutomaticReconnect()
             .build();
@@ -1549,4 +1557,5 @@
         });
     </script>
 </body>
+
 </html>

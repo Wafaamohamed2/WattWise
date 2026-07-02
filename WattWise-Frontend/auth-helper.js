@@ -1,9 +1,10 @@
 
 const AuthHelper = {
+    API_BASE_URL: 'http://localhost:5167',
 
     async checkAuth() {
         try {
-            const res = await fetch('/api/v1/account/me', {
+            const res = await fetch(this.API_BASE_URL + '/api/v1/account/me', {
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -19,7 +20,8 @@ const AuthHelper = {
     },
 
     async fetchWithAuth(url, options = {}) {
-        const response = await fetch(url, {
+        const absoluteUrl = url.startsWith('/') ? (this.API_BASE_URL + url) : url;
+        const response = await fetch(absoluteUrl, {
             ...options,
             credentials: 'include',
             headers: {
@@ -36,7 +38,7 @@ const AuthHelper = {
 
     async logout() {
         try {
-            await fetch('/api/v1/account/logout', {
+            await fetch(this.API_BASE_URL + '/api/v1/account/logout', {
                 method: 'POST',
                 credentials: 'include'
             });

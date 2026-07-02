@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,20 +29,20 @@
             background: white;
             padding: 25px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-            .header h1 {
-                color: #667eea;
-                font-size: 2em;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .btn {
             padding: 10px 20px;
@@ -62,16 +63,16 @@
             border: 2px solid #667eea;
         }
 
-            .btn-secondary:hover {
-                background: #667eea;
-                color: white;
-            }
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
 
         .stats-bar {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -91,21 +92,21 @@
             margin-bottom: 5px;
         }
 
-            .stat-value.critical {
-                color: #dc2626;
-            }
+        .stat-value.critical {
+            color: #dc2626;
+        }
 
-            .stat-value.high {
-                color: #f59e0b;
-            }
+        .stat-value.high {
+            color: #f59e0b;
+        }
 
-            .stat-value.medium {
-                color: #3b82f6;
-            }
+        .stat-value.medium {
+            color: #3b82f6;
+        }
 
-            .stat-value.resolved {
-                color: #10b981;
-            }
+        .stat-value.resolved {
+            color: #10b981;
+        }
 
         .stat-label {
             color: #6b7280;
@@ -116,7 +117,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: flex;
             gap: 15px;
@@ -130,13 +131,14 @@
             gap: 5px;
         }
 
-            .filter-group label {
-                font-size: 0.85em;
-                color: #6b7280;
-                font-weight: 600;
-            }
+        .filter-group label {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-weight: 600;
+        }
 
-        .filter-select, .filter-input {
+        .filter-select,
+        .filter-input {
             padding: 8px 12px;
             border: 2px solid #e5e7eb;
             border-radius: 6px;
@@ -144,16 +146,17 @@
             min-width: 150px;
         }
 
-            .filter-select:focus, .filter-input:focus {
-                outline: none;
-                border-color: #667eea;
-            }
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
         .content-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .anomalies-list {
@@ -170,36 +173,36 @@
             background: #fafafa;
         }
 
-            .anomaly-card.critical {
-                border-left: 6px solid #dc2626;
-                background: #fef2f2;
-            }
+        .anomaly-card.critical {
+            border-left: 6px solid #dc2626;
+            background: #fef2f2;
+        }
 
-            .anomaly-card.high {
-                border-left: 6px solid #f59e0b;
-                background: #fffbeb;
-            }
+        .anomaly-card.high {
+            border-left: 6px solid #f59e0b;
+            background: #fffbeb;
+        }
 
-            .anomaly-card.medium {
-                border-left: 6px solid #3b82f6;
-                background: #eff6ff;
-            }
+        .anomaly-card.medium {
+            border-left: 6px solid #3b82f6;
+            background: #eff6ff;
+        }
 
-            .anomaly-card.low {
-                border-left: 6px solid #10b981;
-                background: #f0fdf4;
-            }
+        .anomaly-card.low {
+            border-left: 6px solid #10b981;
+            background: #f0fdf4;
+        }
 
-            .anomaly-card.resolved {
-                opacity: 0.7;
-                border-color: #d1d5db;
-                background: #f9fafb;
-            }
+        .anomaly-card.resolved {
+            opacity: 0.7;
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
 
-            .anomaly-card:hover:not(.resolved) {
-                transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            }
+        .anomaly-card:hover:not(.resolved) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
 
         .anomaly-header {
             display: flex;
@@ -263,7 +266,7 @@
             line-height: 1.6;
             margin-bottom: 15px;
             padding: 15px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.5);
             border-radius: 8px;
         }
 
@@ -272,7 +275,7 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             padding: 15px;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255, 255, 255, 0.7);
             border-radius: 8px;
             margin-bottom: 15px;
         }
@@ -317,11 +320,11 @@
             padding-left: 20px;
         }
 
-            .causes-list li {
-                color: #4b5563;
-                margin-bottom: 5px;
-                line-height: 1.5;
-            }
+        .causes-list li {
+            color: #4b5563;
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
 
         .resolution-section {
             background: #f0fdf4;
@@ -349,7 +352,7 @@
             justify-content: space-between;
             align-items: center;
             padding-top: 15px;
-            border-top: 2px solid rgba(0,0,0,0.1);
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
         }
 
         .anomaly-timestamps {
@@ -382,20 +385,20 @@
             color: white;
         }
 
-            .action-btn-resolve:hover {
-                background: #059669;
-                transform: translateY(-2px);
-            }
+        .action-btn-resolve:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
 
         .action-btn-delete {
             background: #ef4444;
             color: white;
         }
 
-            .action-btn-delete:hover {
-                background: #dc2626;
-                transform: translateY(-2px);
-            }
+        .action-btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
 
         .resolved-badge {
             display: flex;
@@ -415,15 +418,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
 
-            .modal.show {
-                display: flex;
-            }
+        .modal.show {
+            display: flex;
+        }
 
         .modal-content {
             background: white;
@@ -431,7 +434,7 @@
             border-radius: 15px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
@@ -449,27 +452,27 @@
             margin-bottom: 15px;
         }
 
-            .form-group label {
-                display: block;
-                font-weight: 600;
-                color: #4b5563;
-                margin-bottom: 8px;
-            }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
 
-            .form-group textarea {
-                width: 100%;
-                padding: 12px;
-                border: 2px solid #e5e7eb;
-                border-radius: 8px;
-                font-family: inherit;
-                resize: vertical;
-                min-height: 100px;
-            }
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
 
-                .form-group textarea:focus {
-                    outline: none;
-                    border-color: #667eea;
-                }
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
         .modal-footer {
             display: flex;
@@ -482,18 +485,18 @@
             color: #4b5563;
         }
 
-            .btn-cancel:hover {
-                background: #d1d5db;
-            }
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
 
         .btn-confirm {
             background: #10b981;
             color: white;
         }
 
-            .btn-confirm:hover {
-                background: #059669;
-            }
+        .btn-confirm:hover {
+            background: #059669;
+        }
 
         .pagination {
             display: flex;
@@ -514,22 +517,23 @@
             transition: all 0.3s;
         }
 
-            .page-btn:hover:not(:disabled) {
-                background: #667eea;
-                color: white;
-            }
+        .page-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
 
-            .page-btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-            .page-btn.active {
-                background: #667eea;
-                color: white;
-            }
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
 
-        .loading, .empty-state {
+        .loading,
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
@@ -560,54 +564,55 @@
             margin-bottom: 15px;
             opacity: 0.5;
         }
+
         /* ===== Navigation Menu ===== */
         .main-nav {
             background: white;
             padding: 18px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
         }
 
-            .main-nav ul {
-                display: flex;
-                justify-content: center;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
+        .main-nav ul {
+            display: flex;
+            justify-content: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-            .main-nav li a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 1.1em;
-                padding: 12px 24px;
-                border-radius: 12px;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                position: relative;
-            }
+        .main-nav li a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
 
-                .main-nav li a:hover {
-                    background: #667eea;
-                    color: white;
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-                }
+        .main-nav li a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
 
-                .main-nav li a.active {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    transform: translateY(-3px);
-                }
+        .main-nav li a.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+        }
 
         /* Responsive */
         @media (max-width: 900px) {
@@ -634,6 +639,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Navigation Menu -->
@@ -755,7 +761,7 @@
         </div>
     </div>
     <script>
-        const baseUrl = window.location.origin;
+        const baseUrl = AuthHelper.API_BASE_URL;
         let currentPage = 1;
         let totalPages = 1;
         let currentAnomalyId = null;
@@ -966,4 +972,5 @@
         window.addEventListener('DOMContentLoaded', async () => { await AuthHelper.checkAuth(); loadAnomalies(); });
     </script>
 </body>
+
 </html>

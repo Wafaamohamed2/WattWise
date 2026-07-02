@@ -225,11 +225,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfiles));
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
     .Get<string[]>()
-    ?? new[] { "https://localhost:7083", "http://localhost:5167" };
+    ?? new[] { "http://localhost:3000", "http://localhost:4200" };
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("EnergyOptimizerCorsPolicy", policy =>
     {
         policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
@@ -273,13 +273,10 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseCors("AllowFrontend");
+app.UseCors("EnergyOptimizerCorsPolicy");
 
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 app.UseRateLimiter();
 

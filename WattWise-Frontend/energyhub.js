@@ -1,5 +1,5 @@
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/energyhub", {
+    .withUrl(AuthHelper.API_BASE_URL + "/energyhub", {
         accessTokenFactory: () => localStorage.getItem('token')
     })
     .withAutomaticReconnect()

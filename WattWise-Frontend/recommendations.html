@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,20 +29,20 @@
             background: white;
             padding: 25px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-            .header h1 {
-                color: #667eea;
-                font-size: 2em;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .btn {
             padding: 10px 20px;
@@ -62,16 +63,16 @@
             border: 2px solid #667eea;
         }
 
-            .btn-secondary:hover {
-                background: #667eea;
-                color: white;
-            }
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
 
         .stats-bar {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -101,7 +102,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: flex;
             gap: 15px;
@@ -115,11 +116,11 @@
             gap: 5px;
         }
 
-            .filter-group label {
-                font-size: 0.85em;
-                color: #6b7280;
-                font-weight: 600;
-            }
+        .filter-group label {
+            font-size: 0.85em;
+            color: #6b7280;
+            font-weight: 600;
+        }
 
         .filter-select {
             padding: 8px 12px;
@@ -130,16 +131,16 @@
             min-width: 150px;
         }
 
-            .filter-select:focus {
-                outline: none;
-                border-color: #667eea;
-            }
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
         .content-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .recommendations-list {
@@ -156,11 +157,11 @@
             background: #fafafa;
         }
 
-            .recommendation-card:hover {
-                border-color: #667eea;
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
-                transform: translateY(-2px);
-            }
+        .recommendation-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
 
         .rec-header {
             display: flex;
@@ -261,7 +262,8 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
-        .loading, .empty-state {
+        .loading,
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
@@ -306,48 +308,48 @@
             background: white;
             padding: 18px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
         }
 
-            .main-nav ul {
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
+        .main-nav ul {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-            .main-nav li a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 1.1em;
-                padding: 12px 24px;
-                border-radius: 12px;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                position: relative;
-            }
+        .main-nav li a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
 
-                .main-nav li a:hover {
-                    background: #667eea;
-                    color: white;
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-                }
+        .main-nav li a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
 
-                .main-nav li a.active {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    transform: translateY(-3px);
-                }
+        .main-nav li a.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+        }
 
         @media (max-width: 900px) {
             .main-nav ul {
@@ -373,6 +375,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <nav class="main-nav">
@@ -456,7 +459,7 @@
     </div>
 
     <script>
-        const baseUrl = window.location.origin;
+        const baseUrl = AuthHelper.API_BASE_URL;
         let currentFilters = {
             isImplemented: 'false',
             priority: '',
@@ -674,4 +677,5 @@
         });
     </script>
 </body>
+
 </html>

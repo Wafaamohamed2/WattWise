@@ -1,10 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Login - Energy Optimizer</title>
+    <script src="auth-helper.js"></script>
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -26,7 +30,7 @@
             padding: 40px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .brand {
@@ -34,17 +38,17 @@
             margin-bottom: 32px;
         }
 
-            .brand h2 {
-                font-size: 1.8em;
-                color: #667eea;
-                font-weight: 700;
-                margin-bottom: 6px;
-            }
+        .brand h2 {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
 
-            .brand p {
-                color: #6b7280;
-                font-size: 0.95em;
-            }
+        .brand p {
+            color: #6b7280;
+            font-size: 0.95em;
+        }
 
         .form-group {
             margin-bottom: 18px;
@@ -69,9 +73,9 @@
             outline: none;
         }
 
-            input:focus {
-                border-color: #667eea;
-            }
+        input:focus {
+            border-color: #667eea;
+        }
 
         .btn {
             width: 100%;
@@ -88,14 +92,14 @@
             transition: opacity 0.2s;
         }
 
-            .btn:hover:not(:disabled) {
-                opacity: 0.9;
-            }
+        .btn:hover:not(:disabled) {
+            opacity: 0.9;
+        }
 
-            .btn:disabled {
-                opacity: 0.65;
-                cursor: not-allowed;
-            }
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
 
         .message {
             margin-top: 14px;
@@ -105,9 +109,9 @@
             color: #dc2626;
         }
 
-            .message.success {
-                color: #16a34a;
-            }
+        .message.success {
+            color: #16a34a;
+        }
 
         .footer-link {
             text-align: center;
@@ -116,13 +120,14 @@
             font-size: 0.9em;
         }
 
-            .footer-link a {
-                color: #667eea;
-                font-weight: 600;
-                text-decoration: none;
-            }
+        .footer-link a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
     </style>
 </head>
+
 <body>
     <div class="card">
         <div class="brand">
@@ -159,9 +164,9 @@
             msg.innerText = '';
 
             try {
-                const res = await fetch('/api/v1/account/login', {
+                const res = await fetch(AuthHelper.API_BASE_URL + '/api/v1/account/login', {
                     method: 'POST',
-                    credentials: 'include',   
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
@@ -194,4 +199,5 @@
         document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
     </script>
 </body>
+
 </html>
