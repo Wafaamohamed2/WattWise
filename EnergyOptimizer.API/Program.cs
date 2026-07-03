@@ -1,14 +1,13 @@
-using Microsoft.EntityFrameworkCore;
+using EnergyOptimizer.Core;
+using EnergyOptimizer.Infrastructure;
+using EnergyOptimizer.Service;
 using FluentValidation;
 using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
-using MassTransit;
-using EnergyOptimizer.Infrastructure.Consumers;
 using EnergyOptimizer.Service.Services;
 using EnergyOptimizer.API.Services;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Infrastructure.Repositories;
 using EnergyOptimizer.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -16,15 +15,12 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.Service.Services.Abstract;
-using EnergyOptimizer.Service.Services.Implementation;
 using EnergyOptimizer.API.Helpers;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
 using EnergyOptimizer.API.Middleware;
-using Asp.Versioning;
 using EnergyOptimizer.API.Swagger;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -93,17 +89,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
 
-// Generic Repository 
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-// Database 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-builder.Services.AddDbContextFactory<EnergyDbContext>(options =>
-    options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
-
-builder.Services.AddDbContext<EnergyDbContext>(options =>
-    options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
+// Register Infrastructure Services (DB, Repositories, MassTransit)
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // SignalR 
 builder.Services.AddSignalR(options =>
@@ -113,25 +100,7 @@ builder.Services.AddSignalR(options =>
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });
 
-// MassTransit & RabbitMQ Registration
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<EnergyReadingConsumer>();
 
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host("localhost", "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
-
-        cfg.ReceiveEndpoint("energy-readings-queue", e =>
-        {
-            e.ConfigureConsumer<EnergyReadingConsumer>(context);
-        });
-    });
-});
 
 // Identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -215,15 +184,8 @@ builder.Services.Configure<AIAnalysisOptions>(
 builder.Services.Configure<SimulationOptions>(
     builder.Configuration.GetSection(SimulationOptions.SectionName));
 
-// MediatR 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
-    cfg.AddOpenBehavior(typeof(EnergyOptimizer.Core.Behaviors.ValidationBehavior<,>));
-});
-
-// FluentValidation
-builder.Services.AddValidatorsFromAssembly(typeof(EnergyOptimizer.Core.Behaviors.ValidationBehavior<,>).Assembly);
+// Register Core Services (MediatR, FluentValidation, Behaviors)
+builder.Services.AddCoreServices();
 
 // Background Services 
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
@@ -232,18 +194,11 @@ builder.Services.AddHostedService<AIAnalysisBackgroundService>();
 
 // Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-builder.Services.AddTransient<DataSeedingService>();
-
-// Gemini / AI
-builder.Services.Configure<GeminiSettings>(
-    builder.Configuration.GetSection("Gemini"));
+// Register Application Services (Gemini AI, Seeding)
+builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<IGeminiService, GeminiService>();
-builder.Services.AddScoped<IPatternDetectionService, PatternDetectionService>();
-builder.Services.AddScoped<IAIAnalysisService, AIAnalysisService>();
-builder.Services.AddScoped<IDataCleanupService, DataCleanupService>();
 
 //  AutoMapper 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
