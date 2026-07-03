@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Exceptions;
+using EnergyOptimizer.Core.Exceptions;
 using System.Net;
 using System.Text.Json;
 
@@ -22,6 +22,21 @@ namespace EnergyOptimizer.API.Middleware
             try
             {
                 await _next(context);
+            }
+            catch (FluentValidation.ValidationException validationEx)
+            {
+                _logger.LogWarning("Validation failed: {Errors}", string.Join(", ", validationEx.Errors.Select(e => e.ErrorMessage)));
+
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                var errors = validationEx.Errors.Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse((int)HttpStatusCode.BadRequest, "Validation Failed", errors);
+
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var json = JsonSerializer.Serialize(response, options);
+
+                await context.Response.WriteAsync(json);
             }
             catch (Exception ex)
             {

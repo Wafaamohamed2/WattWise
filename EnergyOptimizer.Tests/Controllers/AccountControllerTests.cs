@@ -33,11 +33,16 @@ namespace EnergyOptimizer.Tests.Controllers
             _mockEnv = new Mock<IWebHostEnvironment>();
             _mockEnv.Setup(e => e.EnvironmentName).Returns("Development");
 
+            var registerValidator = new EnergyOptimizer.Core.Validators.RegisterDtoValidator();
+            var loginValidator = new EnergyOptimizer.Core.Validators.LoginDtoValidator();
+
             _controller = new AccountController(
                 _mockUserManager.Object,
                 _mockMapper.Object,
                 _mockTokenService.Object,
-                _mockEnv.Object);
+                _mockEnv.Object,
+                registerValidator,
+                loginValidator);
 
             _controller.ControllerContext = new ControllerContext
             {
@@ -49,7 +54,7 @@ namespace EnergyOptimizer.Tests.Controllers
         public async Task Register_ValidData_ReturnsOk()
         {
             // Arrange
-            var registerDto = new RegisterDto("test@example.com", "Password123!", "Wafaa Mohamed");
+            var registerDto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
             var user = new ApplicationUser { Email = registerDto.Email };
 
             _mockMapper.Setup(m => m.Map<ApplicationUser>(registerDto)).Returns(user);
@@ -70,7 +75,7 @@ namespace EnergyOptimizer.Tests.Controllers
         public async Task Register_DuplicateEmail_ThrowsBadRequest()
         {
             // Arrange
-            var registerDto = new RegisterDto("existing@example.com", "Password123!", "Any Name");
+            var registerDto = new RegisterDto("Any Name", "existing@example.com", "Password123!");
             var user = new ApplicationUser { Email = registerDto.Email };
 
             _mockMapper.Setup(m => m.Map<ApplicationUser>(registerDto)).Returns(user);

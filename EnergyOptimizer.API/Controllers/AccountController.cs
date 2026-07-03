@@ -19,25 +19,32 @@ namespace EnergyOptimizer.API.Controllers
         private readonly IJwtTokenService _tokenService;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
+        private readonly FluentValidation.IValidator<RegisterDto> _registerValidator;
+        private readonly FluentValidation.IValidator<LoginDto> _loginValidator;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             IMapper mapper,
             IJwtTokenService tokenService,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            FluentValidation.IValidator<RegisterDto> registerValidator,
+            FluentValidation.IValidator<LoginDto> loginValidator)
         {
             _userManager = userManager;
             _mapper = mapper;
             _tokenService = tokenService;
             _env = env;
+            _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
         }
 
         [HttpPost("register")]
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            if (!ModelState.IsValid)
-                throw new BadRequestException("Invalid input data");
+            var validationResult = await _registerValidator.ValidateAsync(model);
+            if (!validationResult.IsValid)
+                throw new FluentValidation.ValidationException(validationResult.Errors);
 
             var user = _mapper.Map<ApplicationUser>(model);
 
@@ -84,6 +91,10 @@ namespace EnergyOptimizer.API.Controllers
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login(LoginDto model)
         {
+            var validationResult = await _loginValidator.ValidateAsync(model);
+            if (!validationResult.IsValid)
+                throw new FluentValidation.ValidationException(validationResult.Errors);
+
             var user = await _userManager.FindByEmailAsync(model.Email);
 
             if (user == null)

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using EnergyOptimizer.Infrastructure.Data;
 using Serilog;
 using EnergyOptimizer.API.Hubs;
@@ -218,7 +219,11 @@ builder.Services.Configure<SimulationOptions>(
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(RunGlobalAnalysisCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(EnergyOptimizer.Core.Behaviors.ValidationBehavior<,>));
 });
+
+// FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(EnergyOptimizer.Core.Behaviors.ValidationBehavior<,>).Assembly);
 
 // Background Services 
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
