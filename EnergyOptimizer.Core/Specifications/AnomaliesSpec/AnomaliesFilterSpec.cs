@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 
 namespace EnergyOptimizer.Core.Specifications.AnomaliesSpec
 {
@@ -15,7 +15,7 @@ namespace EnergyOptimizer.Core.Specifications.AnomaliesSpec
                 (string.IsNullOrEmpty(severity) || a.Severity == severity) &&
                 (!deviceId.HasValue || a.DeviceId == deviceId.Value))
         {
-            AddInclude(a => a.Device);
+            AddInclude("Device.Zone");
             ApplyOrderByDescending(a => a.DetectedAt);
             ApplyPaging((page - 1) * pageSize, pageSize);
         }

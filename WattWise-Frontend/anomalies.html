@@ -883,7 +883,7 @@
                                                 <div class="device-info">
                                                     <div class="device-name">⚠️ ${dev.name}</div>
                                                     <div class="device-meta">
-                                                        <span>📍 ${dev.zone}</span>
+                                                        <span>📍 ${typeof dev.zone === 'object' && dev.zone ? (dev.zone.name || dev.zone.Name || 'Unknown Zone') : (dev.zone || 'Unknown Zone')}</span>
                                                         <span>🕐 ${new Date(a.anomalyTimestamp || a.detectedAt).toLocaleString()}</span>
                                                     </div>
                                                 </div>

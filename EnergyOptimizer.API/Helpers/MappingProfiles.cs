@@ -1,8 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Enums;
-using static EnergyOptimizer.API.DTOs.AuthDto;
+using static EnergyOptimizer.Core.DTOs.AuthDto;
 
 namespace EnergyOptimizer.API.Helpers
 {

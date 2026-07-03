@@ -1,12 +1,12 @@
-using AutoMapper;
-using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Service.Services;
-using Microsoft.AspNetCore.Identity;
+using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Features.Auth.Commands;
+using EnergyOptimizer.Core.Features.Auth.Queries;
+using EnergyOptimizer.Core.Features.Auth.Handlers;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using static EnergyOptimizer.API.DTOs.AuthDto;
-using static EnergyOptimizer.API.Middleware.ExceptionMiddleware;
+using System.Security.Claims;
+using static EnergyOptimizer.Core.DTOs.AuthDto;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -15,75 +15,36 @@ namespace EnergyOptimizer.API.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IJwtTokenService _tokenService;
-        private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
         private readonly IWebHostEnvironment _env;
-        private readonly FluentValidation.IValidator<RegisterDto> _registerValidator;
-        private readonly FluentValidation.IValidator<LoginDto> _loginValidator;
 
-        public AccountController(
-            UserManager<ApplicationUser> userManager,
-            IMapper mapper,
-            IJwtTokenService tokenService,
-            IWebHostEnvironment env,
-            FluentValidation.IValidator<RegisterDto> registerValidator,
-            FluentValidation.IValidator<LoginDto> loginValidator)
+        public AccountController(IMediator mediator, IWebHostEnvironment env)
         {
-            _userManager = userManager;
-            _mapper = mapper;
-            _tokenService = tokenService;
+            _mediator = mediator;
             _env = env;
-            _registerValidator = registerValidator;
-            _loginValidator = loginValidator;
         }
 
         [HttpPost("register")]
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            var validationResult = await _registerValidator.ValidateAsync(model);
-            if (!validationResult.IsValid)
-                throw new FluentValidation.ValidationException(validationResult.Errors);
-
-            var user = _mapper.Map<ApplicationUser>(model);
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new BadRequestException(errors);
-            }
-
-            return Ok(new ApiResponse(200, "User registered successfully!"));
+            var result = await _mediator.Send(new RegisterCommand(model));
+            return Ok(result);
         }
 
         [HttpGet("me")]
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = _userManager.GetUserId(User);
-            if (userId == null)
-                throw new UnauthorizedException("Not authenticated");
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                throw new UnauthorizedException("User not found");
-
-            return Ok(new ApiResponse(200, "Success", new { user.Id, user.FullName, user.Email }));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _mediator.Send(new GetCurrentUserQuery(userId));
+            return Ok(result);
         }
 
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            Response.Cookies.Delete("access_token", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = !_env.IsDevelopment(),
-                SameSite = SameSiteMode.Strict,
-                Path = "/"
-            });
+            DeleteTokenCookie();
             return Ok(new ApiResponse(200, "Logged out successfully"));
         }
 
@@ -91,22 +52,16 @@ namespace EnergyOptimizer.API.Controllers
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login(LoginDto model)
         {
-            var validationResult = await _loginValidator.ValidateAsync(model);
-            if (!validationResult.IsValid)
-                throw new FluentValidation.ValidationException(validationResult.Errors);
+            var result = await _mediator.Send(new LoginCommand(model));
+            var details = (LoginResultDetails)result.Details!;
+            SetTokenCookie(details.Token);
+            return Ok(new ApiResponse(200, "Login successful", new { User = details.User }));
+        }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+        #region Private Helpers
 
-            if (user == null)
-                throw new BadRequestException("Invalid email or password");
-
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-
-            if (!isPasswordValid)
-                throw new UnauthorizedException("Invalid email or password");
-
-            var token = _tokenService.GenerateToken(user);
-
+        private void SetTokenCookie(string token)
+        {
             Response.Cookies.Append("access_token", token, new CookieOptions
             {
                 HttpOnly = true,
@@ -115,11 +70,19 @@ namespace EnergyOptimizer.API.Controllers
                 Expires = DateTimeOffset.UtcNow.AddHours(8),
                 Path = "/"
             });
-
-            return Ok(new ApiResponse(200, "Login successful", new
-            {
-                User = new { user.Id, user.FullName, user.Email }
-            }));
         }
+
+        private void DeleteTokenCookie()
+        {
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !_env.IsDevelopment(),
+                SameSite = SameSiteMode.Strict,
+                Path = "/"
+            });
+        }
+
+        #endregion
     }
 }

@@ -4,7 +4,7 @@ namespace EnergyOptimizer.Core.DTOs.DeviceDTOs
 {
     public class CreateDeviceDto
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int ZoneId { get; set; }
         public DeviceType Type { get; set; }
         public decimal RatedPowerKW { get; set; }

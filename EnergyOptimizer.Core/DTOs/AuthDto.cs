@@ -1,4 +1,4 @@
-namespace EnergyOptimizer.API.DTOs
+namespace EnergyOptimizer.Core.DTOs
 {
     public class AuthDto
     {

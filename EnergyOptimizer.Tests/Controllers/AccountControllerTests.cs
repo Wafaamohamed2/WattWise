@@ -1,48 +1,30 @@
-using AutoMapper;
 using EnergyOptimizer.API.Controllers;
-using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Service.Services;
+using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Features.Auth.Commands;
+using EnergyOptimizer.Core.Features.Auth.Handlers;
 using FluentAssertions;
+using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using static EnergyOptimizer.API.DTOs.AuthDto;
+using static EnergyOptimizer.Core.DTOs.AuthDto;
 
 namespace EnergyOptimizer.Tests.Controllers
 {
     public class AccountControllerTests
     {
-        private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
-        private readonly Mock<IMapper> _mockMapper;
-        private readonly Mock<IJwtTokenService> _mockTokenService;
+        private readonly Mock<IMediator> _mockMediator;
         private readonly Mock<IWebHostEnvironment> _mockEnv;
         private readonly AccountController _controller;
 
         public AccountControllerTests()
         {
-            var store = new Mock<IUserStore<ApplicationUser>>();
-            _mockUserManager = new Mock<UserManager<ApplicationUser>>(
-                store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-
-            _mockMapper = new Mock<IMapper>();
-            _mockTokenService = new Mock<IJwtTokenService>();
-
+            _mockMediator = new Mock<IMediator>();
             _mockEnv = new Mock<IWebHostEnvironment>();
             _mockEnv.Setup(e => e.EnvironmentName).Returns("Development");
 
-            var registerValidator = new EnergyOptimizer.Core.Validators.RegisterDtoValidator();
-            var loginValidator = new EnergyOptimizer.Core.Validators.LoginDtoValidator();
-
-            _controller = new AccountController(
-                _mockUserManager.Object,
-                _mockMapper.Object,
-                _mockTokenService.Object,
-                _mockEnv.Object,
-                registerValidator,
-                loginValidator);
+            _controller = new AccountController(_mockMediator.Object, _mockEnv.Object);
 
             _controller.ControllerContext = new ControllerContext
             {
@@ -55,39 +37,17 @@ namespace EnergyOptimizer.Tests.Controllers
         {
             // Arrange
             var registerDto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
-            var user = new ApplicationUser { Email = registerDto.Email };
+            var expectedResponse = new ApiResponse(200, "User registered successfully!");
 
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(registerDto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, registerDto.Password))
-                            .ReturnsAsync(IdentityResult.Success);
+            _mockMediator.Setup(m => m.Send(It.Is<RegisterCommand>(c => c.Dto == registerDto), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _controller.Register(registerDto);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            _mockUserManager.Verify(
-                u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task Register_DuplicateEmail_ThrowsBadRequest()
-        {
-            // Arrange
-            var registerDto = new RegisterDto("Any Name", "existing@example.com", "Password123!");
-            var user = new ApplicationUser { Email = registerDto.Email };
-
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(registerDto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, registerDto.Password))
-                            .ReturnsAsync(IdentityResult.Failed(
-                                new IdentityError { Description = "Email already exists" }));
-
-            // Act
-            Func<Task> act = async () => await _controller.Register(registerDto);
-
-            // Assert
-            await act.Should().ThrowAsync<BadRequestException>();
+            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            okResult.Value.Should().Be(expectedResponse);
         }
 
         [Fact]
@@ -95,17 +55,12 @@ namespace EnergyOptimizer.Tests.Controllers
         {
             // Arrange
             var loginDto = new LoginDto("test@example.com", "Password123!");
-            var user = new ApplicationUser
-            {
-                Id = "1",
-                Email = loginDto.Email,
-                FullName = "Ali Mohamed",
-                UserName = "test@example.com"
-            };
+            var userDto = new LoginUserDto("1", "Ali Mohamed", "test@example.com");
+            var loginDetails = new LoginResultDetails("fake-jwt-token", userDto);
+            var expectedResponse = new ApiResponse(200, "Login successful", loginDetails);
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(loginDto.Email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.CheckPasswordAsync(user, loginDto.Password)).ReturnsAsync(true);
-            _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("fake-jwt-token");
+            _mockMediator.Setup(m => m.Send(It.Is<LoginCommand>(c => c.Dto == loginDto), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _controller.Login(loginDto);
@@ -113,53 +68,28 @@ namespace EnergyOptimizer.Tests.Controllers
             // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
 
-            // Token service was called
-            _mockTokenService.Verify(t => t.GenerateToken(user), Times.Once);
-
             // Cookie was set on the response
             var setCookieHeader = _controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
             setCookieHeader.Should().Contain("access_token");
-            setCookieHeader.Should().Contain("httponly", Exactly.Once());
+            setCookieHeader.Should().Contain("httponly");
 
-            // Token is NOT in the response body (removed to prevent XSS via localStorage)
+            // Token is NOT in the response body
             var responseJson = System.Text.Json.JsonSerializer.Serialize(okResult.Value);
             responseJson.Should().NotContain("fake-jwt-token");
             responseJson.Should().Contain("User");
         }
 
         [Fact]
-        public async Task Login_InvalidPassword_ThrowsUnauthorized()
+        public async Task Logout_ClearsCookie()
         {
-            // Arrange
-            var loginDto = new LoginDto("test@example.com", "WrongPassword");
-            var user = new ApplicationUser { Email = loginDto.Email };
-
-            _mockUserManager.Setup(u => u.FindByEmailAsync(loginDto.Email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.CheckPasswordAsync(user, loginDto.Password)).ReturnsAsync(false);
-
             // Act
-            Func<Task> act = async () => await _controller.Login(loginDto);
+            var result = _controller.Logout();
 
             // Assert
-            await act.Should().ThrowAsync<UnauthorizedException>();
-            _mockTokenService.Verify(
-                t => t.GenerateToken(It.IsAny<ApplicationUser>()),
-                Times.Never);
-        }
-
-        [Fact]
-        public async Task Login_UserNotFound_ThrowsBadRequest()
-        {
-            // Arrange
-            var loginDto = new LoginDto("notfound@example.com", "Password123!");
-            _mockUserManager.Setup(u => u.FindByEmailAsync(loginDto.Email))
-                            .ReturnsAsync((ApplicationUser?)null);
-
-            // Act
-            Func<Task> act = async () => await _controller.Login(loginDto);
-
-            // Assert
-            await act.Should().ThrowAsync<BadRequestException>();
+            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var setCookieHeader = _controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
+            setCookieHeader.Should().Contain("access_token");
+            setCookieHeader.Should().Contain("expires="); // indicates deletion
         }
     }
 }

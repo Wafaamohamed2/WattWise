@@ -1,4 +1,5 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -50,9 +51,5 @@ namespace EnergyOptimizer.Service.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-    }
-    public interface IJwtTokenService
-    {
-        string GenerateToken(ApplicationUser user);
     }
 }

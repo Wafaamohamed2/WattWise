@@ -7,7 +7,6 @@ using EnergyOptimizer.Core.Features.AI.Queries.Reco;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.Core.Exceptions;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -53,9 +52,6 @@ namespace EnergyOptimizer.API.Controllers
             int deviceId,
             [FromQuery] int days = 7)
         {
-            if (days < 1 || days > 30)
-                throw new BadRequestException("Days must be between 1 and 30");
-
             var result = await _mediator.Send(new DetectDeviceAnomaliesCommand(deviceId, days));
             return Ok(result);
         }
@@ -73,9 +69,6 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> PredictConsumption(
            [FromQuery] int days = 7)
         {
-            if (days < 1 || days > 30)
-                throw new BadRequestException("Days must be between 1 and 30");
-
             var result = await _mediator.Send(new PredictConsumptionQuery(days));
             return Ok(result);
         }
@@ -83,9 +76,6 @@ namespace EnergyOptimizer.API.Controllers
         [HttpPost("ask")]
         public async Task<IActionResult> AskQuestion([FromBody] AskQuestionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Question))
-                throw new BadRequestException("Question is required");
-
             var answer = await _mediator.Send(new AskAIQuestionQuery(request.Question, request.Context));
             return Ok(answer);
         }
@@ -94,15 +84,13 @@ namespace EnergyOptimizer.API.Controllers
         #region Analysis Endpoints
         [HttpGet("analysis-history")]
         public async Task<IActionResult> GetAnalysisHistory(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string? analysisType = null,
-        [FromQuery] string? startDate = null,
-        [FromQuery] string? endDate = null)
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? analysisType = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
-            DateTime? start =  DateTime.TryParse(startDate, out var s) ? s : null;
-            DateTime? end =  DateTime.TryParse(endDate, out var e) ? e : null;
-            var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, start, end));
+            var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, startDate, endDate));
             return Ok(result);
         }
 
@@ -113,8 +101,7 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("Statistics")]
-        [HttpGet("recommendations/statistics")]
+        [HttpGet("statistics")]
         public async Task<IActionResult> GetAIStatistics()
         {
             var result = await _mediator.Send(new GetAIStatisticsQuery());

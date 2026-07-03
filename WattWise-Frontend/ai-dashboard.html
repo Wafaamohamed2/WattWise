@@ -802,7 +802,7 @@
                                         </div>
                                         <div class="item-description">${anomaly.description || ''}</div>
                                         <div class="item-meta">
-                                            <span>📍 ${anomaly.device?.zone || anomaly.zoneName || '—'}</span>
+                                            <span>📍 ${typeof anomaly.device?.zone === 'object' && anomaly.device?.zone ? (anomaly.device.zone.name || anomaly.device.zone.Name || '—') : (anomaly.device?.zone || anomaly.zoneName || '—')}</span>
                                             <span>⚠️ ${anomaly.deviationPercent != null ? anomaly.deviationPercent.toFixed(1) + '%' : '—'} deviation</span>
                                             <span>📅 ${new Date(anomaly.detectedAt).toLocaleDateString()}</span>
                                         </div>
