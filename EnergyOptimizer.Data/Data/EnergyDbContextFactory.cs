@@ -2,13 +2,16 @@ using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-public class EnergyDbContextFactory : IDesignTimeDbContextFactory<EnergyDbContext>
+namespace EnergyOptimizer.Data
 {
-    public EnergyDbContext CreateDbContext(string[] args)
+    public class EnergyDbContextFactory : IDesignTimeDbContextFactory<EnergyDbContext>
     {
-        var optionsBuilder = new DbContextOptionsBuilder<EnergyDbContext>();
-        optionsBuilder.UseSqlServer("Server=localhost;Database=EnergyOptimizerDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"); 
+        public EnergyDbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<EnergyDbContext>();
+            optionsBuilder.UseSqlServer("Server=localhost;Database=EnergyOptimizerDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True");
 
-        return new EnergyDbContext(optionsBuilder.Options);
+            return new EnergyDbContext(optionsBuilder.Options);
+        }
     }
 }

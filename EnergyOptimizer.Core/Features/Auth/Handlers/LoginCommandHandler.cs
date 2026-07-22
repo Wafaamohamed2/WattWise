@@ -12,11 +12,16 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtTokenService _tokenService;
+        private readonly IRefreshTokenService _refreshTokenService;
 
-        public LoginCommandHandler(UserManager<ApplicationUser> userManager, IJwtTokenService tokenService)
+        public LoginCommandHandler(
+            UserManager<ApplicationUser> userManager,
+            IJwtTokenService tokenService,
+            IRefreshTokenService refreshTokenService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
+            _refreshTokenService = refreshTokenService;
         }
 
         public async Task<ApiResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -32,12 +37,14 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
                 throw new UnauthorizedException("Invalid email or password");
 
             var token = _tokenService.GenerateToken(user);
-            var details = new LoginResultDetails(token, new LoginUserDto(user.Id, user.FullName, user.Email ?? string.Empty));
+            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(user.Id, request.IpAddress);
+
+            var details = new LoginResultDetails(token, refreshToken, new LoginUserDto(user.Id, user.FullName, user.Email ?? string.Empty));
 
             return new ApiResponse(200, "Login successful", details);
         }
     }
 
-    public record LoginResultDetails(string Token, LoginUserDto User);
+    public record LoginResultDetails(string Token, string RefreshToken, LoginUserDto User);
     public record LoginUserDto(string Id, string FullName, string Email);
 }

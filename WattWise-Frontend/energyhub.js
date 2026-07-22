@@ -1,6 +1,6 @@
 const connection = new signalR.HubConnectionBuilder()
     .withUrl(AuthHelper.API_BASE_URL + "/energyhub", {
-        accessTokenFactory: () => localStorage.getItem('token')
+        withCredentials: true
     })
     .withAutomaticReconnect()
     .build();
@@ -25,17 +25,18 @@ connection.on("ReceiveReadings", (readings) => {
     AuthHelper.broadcastEvent('new-readings', readings);
 });
 
-async function startSignalR() {
+async function initSignalR() {
     try {
-        await connection.start();
-        console.log("SignalR Connected.");
+        const isAuthenticated = await AuthHelper.checkAuth();
+        if (isAuthenticated) {
+            await connection.start();
+            console.log("SignalR Connected Successfully via Cookies!");
+        } else {
+            console.warn("SignalR Connection Aborted: User is not authenticated.");
+        }
     } catch (err) {
         console.error("SignalR Connection Error: ", err);
-        setTimeout(startSignalR, 5000);
     }
 }
 
-// Start SignalR if token exists - no /me check needed
-if (localStorage.getItem('token')) {
-    startSignalR();
-}
+initSignalR();

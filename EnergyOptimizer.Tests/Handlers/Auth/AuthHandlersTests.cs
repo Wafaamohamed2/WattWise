@@ -16,6 +16,7 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<IJwtTokenService> _mockTokenService;
+        private readonly Mock<IRefreshTokenService> _mockRefreshTokenService;
 
         public AuthHandlersTests()
         {
@@ -25,6 +26,7 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
 
             _mockMapper = new Mock<IMapper>();
             _mockTokenService = new Mock<IJwtTokenService>();
+            _mockRefreshTokenService = new Mock<IRefreshTokenService>();
         }
 
         [Fact]
@@ -70,18 +72,19 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         }
 
         [Fact]
-        public async Task LoginHandler_ValidCredentials_ReturnsTokenAndUser()
+        public async Task LoginHandler_ValidCredentials_ReturnsTokensAndUser()
         {
             // Arrange
             var dto = new LoginDto("test@example.com", "Password123!");
-            var command = new LoginCommand(dto);
+            var command = new LoginCommand(dto, "127.0.0.1");
             var user = new ApplicationUser { Id = "1", Email = dto.Email, FullName = "Ali Mohamed" };
 
             _mockUserManager.Setup(u => u.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
             _mockUserManager.Setup(u => u.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(true);
             _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("fake-jwt-token");
+            _mockRefreshTokenService.Setup(r => r.GenerateRefreshTokenAsync(user.Id, "127.0.0.1")).ReturnsAsync("fake-refresh-token");
 
-            var handler = new LoginCommandHandler(_mockUserManager.Object, _mockTokenService.Object);
+            var handler = new LoginCommandHandler(_mockUserManager.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -90,8 +93,51 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             result.StatusCode.Should().Be(200);
             var details = result.Details.Should().BeOfType<LoginResultDetails>().Subject;
             details.Token.Should().Be("fake-jwt-token");
+            details.RefreshToken.Should().Be("fake-refresh-token");
             details.User.Id.Should().Be("1");
             details.User.FullName.Should().Be("Ali Mohamed");
+        }
+
+        [Fact]
+        public async Task RefreshTokenHandler_ValidToken_ReturnsNewTokens()
+        {
+            // Arrange
+            var user = new ApplicationUser { Id = "1", Email = "test@example.com" };
+            var command = new RefreshTokenCommand("old-refresh-token", "127.0.0.1");
+            var rotationResult = new RefreshTokenRotationResult("new-refresh-token", user);
+
+            _mockRefreshTokenService.Setup(r => r.RotateRefreshTokenAsync("old-refresh-token", "127.0.0.1"))
+                                    .ReturnsAsync(rotationResult);
+            _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("new-access-token");
+
+            var handler = new RefreshTokenCommandHandler(_mockRefreshTokenService.Object, _mockTokenService.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            var details = result.Details.Should().BeOfType<RefreshTokenResultDetails>().Subject;
+            details.Token.Should().Be("new-access-token");
+            details.RefreshToken.Should().Be("new-refresh-token");
+        }
+
+        [Fact]
+        public async Task RevokeTokenHandler_ValidToken_RevokesSuccessfully()
+        {
+            // Arrange
+            var command = new RevokeTokenCommand("valid-refresh-token");
+            _mockRefreshTokenService.Setup(r => r.RevokeRefreshTokenAsync("valid-refresh-token"))
+                                    .Returns(Task.CompletedTask);
+
+            var handler = new RevokeTokenCommandHandler(_mockRefreshTokenService.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Token revoked successfully");
         }
     }
 }

@@ -24,6 +24,7 @@ namespace EnergyOptimizer.Infrastructure.Data
         public DbSet<ConsumptionPrediction> ConsumptionPredictions { get; set; }
         public DbSet<UsagePattern> UsagePatterns { get; set; }
         public DbSet<AIMetrics> AIMetrics { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         #endregion
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -230,7 +231,21 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasIndex(m => m.MetricType);
             });
 
-
+            // RefreshToken Configuration
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.ReplacedByToken).HasMaxLength(256);
+                entity.Property(e => e.CreatedByIp).HasMaxLength(50);
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.RefreshTokens)
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => e.TokenHash).IsUnique();
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => new { e.UserId, e.RevokedOn });
+            });
 
 
 

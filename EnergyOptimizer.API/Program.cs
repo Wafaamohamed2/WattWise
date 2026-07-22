@@ -133,7 +133,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = ctx =>
         {
-            // 1. Try HttpOnly cookie first (browser pages)
+            // 1. Try HttpOnly cookie first (browser pages & WebSockets with credentials)
             if (ctx.Request.Cookies.TryGetValue("access_token", out var cookieToken)
                 && !string.IsNullOrEmpty(cookieToken))
             {
@@ -149,19 +149,14 @@ builder.Services.AddAuthentication(options =>
                 return Task.CompletedTask;
             }
 
-            // 3. SignalR sends token as query param
-            var accessToken = ctx.Request.Query["access_token"];
-            var path = ctx.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/energyhub"))
-                ctx.Token = accessToken;
-
             return Task.CompletedTask;
         }
     };
 });
 
-// IJwtTokenService 
+// IJwtTokenService & IRefreshTokenService
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
 // Rate Limiting 
 builder.Services.AddRateLimiter(options =>

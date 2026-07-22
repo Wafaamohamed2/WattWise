@@ -4,5 +4,5 @@ using static EnergyOptimizer.Core.DTOs.AuthDto;
 
 namespace EnergyOptimizer.Core.Features.Auth.Commands
 {
-    public record LoginCommand(LoginDto Dto) : IRequest<ApiResponse>;
+    public record LoginCommand(LoginDto Dto, string? IpAddress = null) : IRequest<ApiResponse>;
 }
