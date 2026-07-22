@@ -186,6 +186,7 @@ builder.Services.AddCoreServices();
 builder.Services.AddHostedService<EnergyReadingSimulatorService>();
 builder.Services.AddHostedService<AlertDetectionService>();
 builder.Services.AddHostedService<AIAnalysisBackgroundService>();
+builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 // Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
