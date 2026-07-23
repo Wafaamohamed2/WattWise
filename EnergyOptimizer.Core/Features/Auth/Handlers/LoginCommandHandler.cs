@@ -36,6 +36,9 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
             if (!isPasswordValid)
                 throw new UnauthorizedException("Invalid email or password");
 
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+                throw new UnauthorizedException("Please confirm your email address before logging in.");
+
             var token = _tokenService.GenerateToken(user);
             var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(user.Id, request.IpAddress);
 

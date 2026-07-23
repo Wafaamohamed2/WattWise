@@ -144,6 +144,11 @@
         </div>
         <button class="btn" id="loginBtn" onclick="doLogin()">Sign In</button>
         <div class="message" id="message"></div>
+        <div id="resendContainer" style="display:none; text-align:center; margin-top:10px;">
+            <a href="#" id="resendBtn" onclick="resendVerification(event)" style="color:#667eea; font-weight:600; font-size:0.9em; text-decoration:none;">
+                📩 Didn't receive verification email? Click to resend
+            </a>
+        </div>
         <div class="footer-link">
             Don't have an account? <a href="register.html">Create one</a>
         </div>
@@ -155,6 +160,7 @@
             const password = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
             const msg = document.getElementById('message');
+            const resendBox = document.getElementById('resendContainer');
 
             if (!email || !password) { showMsg('Please fill in all fields.', false); return; }
 
@@ -162,6 +168,7 @@
             btn.textContent = 'Signing in...';
             msg.className = 'message';
             msg.innerText = '';
+            resendBox.style.display = 'none';
 
             try {
                 const res = await fetch(AuthHelper.API_BASE_URL + '/api/v1/account/login', {
@@ -174,9 +181,14 @@
                 const body = await res.json();
 
                 if (!res.ok) {
-                    showMsg(body.message ?? body.Message ?? 'Login failed', false);
+                    const errorText = body.message ?? body.Message ?? 'Login failed';
+                    showMsg(errorText, false);
                     btn.disabled = false;
                     btn.textContent = 'Sign In';
+
+                    if (errorText.toLowerCase().includes('confirm') || errorText.toLowerCase().includes('email')) {
+                        resendBox.style.display = 'block';
+                    }
                     return;
                 }
 
@@ -187,6 +199,35 @@
                 showMsg('Connection error: ' + err.message, false);
                 btn.disabled = false;
                 btn.textContent = 'Sign In';
+            }
+        }
+
+        async function resendVerification(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const resendBtn = document.getElementById('resendBtn');
+            if (!email) {
+                showMsg('Please enter your email address first.', false);
+                return;
+            }
+
+            resendBtn.innerText = 'Sending verification link...';
+            resendBtn.style.pointerEvents = 'none';
+
+            try {
+                const res = await fetch(AuthHelper.API_BASE_URL + '/api/v1/account/resend-confirmation-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const body = await res.json();
+                showMsg(body.message ?? body.Message ?? 'Verification email sent!', true);
+            } catch (err) {
+                showMsg('Failed to send verification email: ' + err.message, false);
+            } finally {
+                resendBtn.innerText = '📩 Didn\'t receive verification email? Click to resend';
+                resendBtn.style.pointerEvents = 'auto';
             }
         }
 

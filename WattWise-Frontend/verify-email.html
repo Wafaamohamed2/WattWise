@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification - WattWise</title>
+    <script src="auth-helper.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card" id="card">
+        <div class="spinner" id="spinner"></div>
+        <h2 id="statusTitle">Verifying your email...</h2>
+        <p id="statusDesc">Please wait while we confirm your email address.</p>
+        <a href="login.html" class="btn" id="loginLink" style="display: none;">Go to Login</a>
+    </div>
+
+    <script>
+        async function verifyEmail() {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('userId');
+            const token = params.get('token');
+
+            const spinner = document.getElementById('spinner');
+            const title = document.getElementById('statusTitle');
+            const desc = document.getElementById('statusDesc');
+            const btn = document.getElementById('loginLink');
+
+            if (!userId || !token) {
+                spinner.style.display = 'none';
+                title.innerText = '❌ Invalid Verification Link';
+                desc.innerText = 'The verification link is incomplete or corrupted. Please request a new verification email from the login page.';
+                btn.style.display = 'inline-block';
+                return;
+            }
+
+            try {
+                const res = await fetch(AuthHelper.API_BASE_URL + '/api/v1/account/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, token })
+                });
+
+                const body = await res.json();
+                spinner.style.display = 'none';
+
+                if (res.ok) {
+                    title.innerText = '✅ Email Verified!';
+                    desc.innerText = body.message ?? body.Message ?? 'Your email address has been successfully verified. You can now sign in to your account.';
+                } else {
+                    title.innerText = '⚠️ Verification Failed';
+                    desc.innerText = body.message ?? body.Message ?? 'Failed to verify email. The link may have expired or already been used.';
+                }
+            } catch (err) {
+                spinner.style.display = 'none';
+                title.innerText = '📡 Connection Error';
+                desc.innerText = 'Could not connect to the server: ' + err.message;
+            } finally {
+                btn.style.display = 'inline-block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', verifyEmail);
+    </script>
+</body>
+
+</html>

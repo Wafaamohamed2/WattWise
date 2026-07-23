@@ -40,13 +40,20 @@ namespace EnergyOptimizer.API.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception: {Message}", ex.Message);
-
-                context.Response.ContentType = "application/json";
-
                 var statusCode = ex is BaseException baseEx
                     ? baseEx.StatusCode
                     : (int)HttpStatusCode.InternalServerError;
+
+                if (statusCode >= 500)
+                {
+                    _logger.LogError(ex, "Server Exception: {Message}", ex.Message);
+                }
+                else
+                {
+                    _logger.LogWarning("Domain Exception ({StatusCode}): {Message}", statusCode, ex.Message);
+                }
+
+                context.Response.ContentType = "application/json";
 
                 context.Response.StatusCode = statusCode;
                 var response = _env.IsDevelopment()

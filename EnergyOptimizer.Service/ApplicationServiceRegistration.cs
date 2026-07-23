@@ -16,6 +16,9 @@ namespace EnergyOptimizer.Service
             services.AddScoped<IPatternDetectionService, PatternDetectionService>();
             services.AddScoped<IAIAnalysisService, AIAnalysisService>();
             services.AddScoped<IDataCleanupService, DataCleanupService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
             services.AddTransient<DataSeedingService>();
 

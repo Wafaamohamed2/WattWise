@@ -35,6 +35,22 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("verify-email")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
+        {
+            var result = await _mediator.Send(new VerifyEmailCommand(dto.UserId, dto.Token));
+            return Ok(result);
+        }
+
+        [HttpPost("resend-confirmation-email")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        {
+            var result = await _mediator.Send(new ResendConfirmationEmailCommand(dto.Email));
+            return Ok(result);
+        }
+
         [HttpGet("me")]
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> GetCurrentUser()
@@ -144,4 +160,6 @@ namespace EnergyOptimizer.API.Controllers
     }
 
     public record RefreshTokenRequestDto(string? RefreshToken);
+    public record VerifyEmailDto(string UserId, string Token);
+    public record ResendConfirmationEmailDto(string Email);
 }

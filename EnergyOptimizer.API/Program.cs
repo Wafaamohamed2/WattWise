@@ -154,10 +154,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// IJwtTokenService & IRefreshTokenService
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-
 // Rate Limiting 
 builder.Services.AddRateLimiter(options =>
 {
@@ -190,7 +186,7 @@ builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 // Application Services 
 builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-// Register Application Services (Gemini AI, Seeding)
+// Register Application Services (Gemini AI, Seeding, EmailService)
 builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddMemoryCache();
@@ -218,6 +214,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -234,8 +231,6 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
-
-app.UseSerilogRequestLogging();
 
 // Handle non-versioned API requests by rewriting to /api/v1/...
 app.Use(async (context, next) =>

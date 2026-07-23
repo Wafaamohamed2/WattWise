@@ -47,7 +47,7 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
 
             // Assert
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("User registered successfully!");
+            result.Message.Should().Be("User registered successfully! Please check your email to verify your account.");
         }
 
         [Fact]
@@ -72,6 +72,32 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         }
 
         [Fact]
+        public async Task RegisterHandler_EmailServiceFails_ReturnsWarningMessage()
+        {
+            // Arrange
+            var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
+            var command = new RegisterCommand(dto);
+            var user = new ApplicationUser { Id = "user-1", Email = dto.Email, FullName = dto.FullName };
+            var mockEmailService = new Mock<IEmailService>();
+
+            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
+            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password)).ReturnsAsync(IdentityResult.Success);
+            _mockUserManager.Setup(u => u.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("token");
+
+            mockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                            .ThrowsAsync(new Exception("SMTP server down"));
+
+            var handler = new RegisterCommandHandler(_mockUserManager.Object, _mockMapper.Object, mockEmailService.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Contain("failed to send the verification email");
+        }
+
+        [Fact]
         public async Task LoginHandler_ValidCredentials_ReturnsTokensAndUser()
         {
             // Arrange
@@ -81,6 +107,7 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
 
             _mockUserManager.Setup(u => u.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
             _mockUserManager.Setup(u => u.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(true);
+            _mockUserManager.Setup(u => u.IsEmailConfirmedAsync(user)).ReturnsAsync(true);
             _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("fake-jwt-token");
             _mockRefreshTokenService.Setup(r => r.GenerateRefreshTokenAsync(user.Id, "127.0.0.1")).ReturnsAsync("fake-refresh-token");
 
@@ -123,21 +150,108 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         }
 
         [Fact]
-        public async Task RevokeTokenHandler_ValidToken_RevokesSuccessfully()
+        public async Task LoginHandler_UnconfirmedEmail_ThrowsUnauthorized()
         {
             // Arrange
-            var command = new RevokeTokenCommand("valid-refresh-token");
-            _mockRefreshTokenService.Setup(r => r.RevokeRefreshTokenAsync("valid-refresh-token"))
-                                    .Returns(Task.CompletedTask);
+            var dto = new LoginDto("unconfirmed@example.com", "Password123!");
+            var command = new LoginCommand(dto, "127.0.0.1");
+            var user = new ApplicationUser { Id = "1", Email = dto.Email, FullName = "Ali Mohamed", EmailConfirmed = false };
 
-            var handler = new RevokeTokenCommandHandler(_mockRefreshTokenService.Object);
+            _mockUserManager.Setup(u => u.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(true);
+            _mockUserManager.Setup(u => u.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
+
+            var handler = new LoginCommandHandler(_mockUserManager.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
+
+            // Act
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<UnauthorizedException>()
+                .WithMessage("Please confirm your email address before logging in.");
+        }
+
+        [Fact]
+        public async Task VerifyEmailHandler_ValidToken_ConfirmsEmailSuccessfully()
+        {
+            // Arrange
+            var user = new ApplicationUser { Id = "user-123", Email = "test@example.com", EmailConfirmed = false };
+            var rawToken = "sample-email-token";
+            var encodedToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(rawToken));
+            var command = new VerifyEmailCommand(user.Id, encodedToken);
+
+            _mockUserManager.Setup(u => u.FindByIdAsync(user.Id)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.ConfirmEmailAsync(user, rawToken)).ReturnsAsync(IdentityResult.Success);
+
+            var handler = new VerifyEmailCommandHandler(_mockUserManager.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Token revoked successfully");
+            result.Message.Should().Be("Email verified successfully.");
+        }
+
+        [Fact]
+        public async Task VerifyEmailHandler_InvalidUser_ThrowsNotFoundException()
+        {
+            // Arrange
+            var command = new VerifyEmailCommand("invalid-id", "some-token");
+            _mockUserManager.Setup(u => u.FindByIdAsync("invalid-id")).ReturnsAsync((ApplicationUser?)null);
+
+            var handler = new VerifyEmailCommandHandler(_mockUserManager.Object);
+
+            // Act
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<NotFoundException>().WithMessage("User not found.");
+        }
+
+        [Fact]
+        public async Task ResendConfirmationEmailHandler_UnconfirmedUser_SendsEmailAndReturnsGenericMessage()
+        {
+            // Arrange
+            var email = "unconfirmed@example.com";
+            var user = new ApplicationUser { Id = "user-1", Email = email, FullName = "Test User", EmailConfirmed = false };
+            var mockEmailService = new Mock<IEmailService>();
+            var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("new-token");
+
+            var handler = new ResendConfirmationEmailCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+
+            // Act
+            var result = await handler.Handle(new ResendConfirmationEmailCommand(email), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("If an account with that email exists, a verification link has been sent.");
+            mockEmailService.Verify(e => e.SendEmailAsync(email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ResendConfirmationEmailHandler_AlreadyConfirmedUser_ReturnsGenericMessageWithoutSendingEmail()
+        {
+            // Arrange
+            var email = "confirmed@example.com";
+            var user = new ApplicationUser { Id = "user-2", Email = email, FullName = "Test User", EmailConfirmed = true };
+            var mockEmailService = new Mock<IEmailService>();
+            var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+
+            var handler = new ResendConfirmationEmailCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+
+            // Act
+            var result = await handler.Handle(new ResendConfirmationEmailCommand(email), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("If an account with that email exists, a verification link has been sent.");
+            mockEmailService.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }
