@@ -13,6 +13,21 @@ namespace EnergyOptimizer.Core.DTOs
             string Password
         );
 
+        public record ForgotPasswordDto(
+            string Email
+        );
+
+        public record ResetPasswordDto(
+            string Email,
+            string Token,
+            string NewPassword
+        );
+
+        public record ChangePasswordDto(
+            string CurrentPassword,
+            string NewPassword
+        );
+
         public record AuthResponseDto(
             bool IsSuccess,
             string Message,

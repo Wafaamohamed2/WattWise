@@ -253,5 +253,139 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             result.Message.Should().Be("If an account with that email exists, a verification link has been sent.");
             mockEmailService.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
+
+        [Fact]
+        public async Task ForgotPasswordHandler_ExistingUser_SendsEmailAndReturnsGenericMessage()
+        {
+            // Arrange
+            var email = "forgot@example.com";
+            var user = new ApplicationUser { Id = "user-10", Email = email, FullName = "Forgot User" };
+            var mockEmailService = new Mock<IEmailService>();
+            var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token-123");
+
+            var handler = new ForgotPasswordCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+
+            // Act
+            var result = await handler.Handle(new ForgotPasswordCommand(email), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("If an account with that email exists, a password reset link has been sent.");
+            mockEmailService.Verify(e => e.SendEmailAsync(email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ForgotPasswordHandler_NonExistingUser_ReturnsGenericMessageWithoutSendingEmail()
+        {
+            // Arrange
+            var email = "nonexisting@example.com";
+            var mockEmailService = new Mock<IEmailService>();
+            var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync((ApplicationUser?)null);
+
+            var handler = new ForgotPasswordCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+
+            // Act
+            var result = await handler.Handle(new ForgotPasswordCommand(email), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("If an account with that email exists, a password reset link has been sent.");
+            mockEmailService.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ResetPasswordHandler_ValidToken_ResetsPasswordAndRevokesTokens()
+        {
+            // Arrange
+            var email = "reset@example.com";
+            var user = new ApplicationUser { Id = "user-20", Email = email };
+            var token = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes("valid-token"));
+            var newPassword = "NewPassword123!";
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.ResetPasswordAsync(user, "valid-token", newPassword)).ReturnsAsync(IdentityResult.Success);
+
+            var handler = new ResetPasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+
+            // Act
+            var result = await handler.Handle(new ResetPasswordCommand(email, token, newPassword), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Password reset successfully. You can now login with your new password.");
+            _mockRefreshTokenService.Verify(r => r.RevokeAllUserTokensAsync(user.Id), Times.Once);
+        }
+
+        [Fact]
+        public async Task ResetPasswordHandler_FailedReset_ThrowsBadRequestException()
+        {
+            // Arrange
+            var email = "reset@example.com";
+            var user = new ApplicationUser { Id = "user-20", Email = email };
+            var token = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes("invalid-token"));
+            var newPassword = "NewPassword123!";
+
+            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.ResetPasswordAsync(user, "invalid-token", newPassword))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+            var handler = new ResetPasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+
+            // Act
+            Func<Task> act = async () => await handler.Handle(new ResetPasswordCommand(email, token, newPassword), CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<BadRequestException>().WithMessage("*Failed to reset password*");
+        }
+
+        [Fact]
+        public async Task ChangePasswordHandler_ValidPasswords_ChangesPasswordAndRevokesTokens()
+        {
+            // Arrange
+            var userId = "user-30";
+            var user = new ApplicationUser { Id = userId };
+            var currentPassword = "OldPassword123!";
+            var newPassword = "NewPassword123!";
+
+            _mockUserManager.Setup(u => u.FindByIdAsync(userId)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.ChangePasswordAsync(user, currentPassword, newPassword)).ReturnsAsync(IdentityResult.Success);
+
+            var handler = new ChangePasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+
+            // Act
+            var result = await handler.Handle(new ChangePasswordCommand(userId, currentPassword, newPassword), CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Password changed successfully.");
+            _mockRefreshTokenService.Verify(r => r.RevokeAllUserTokensAsync(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task ChangePasswordHandler_IncorrectCurrentPassword_ThrowsBadRequestException()
+        {
+            // Arrange
+            var userId = "user-30";
+            var user = new ApplicationUser { Id = userId };
+            var currentPassword = "WrongPassword123!";
+            var newPassword = "NewPassword123!";
+
+            _mockUserManager.Setup(u => u.FindByIdAsync(userId)).ReturnsAsync(user);
+            _mockUserManager.Setup(u => u.ChangePasswordAsync(user, currentPassword, newPassword))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Incorrect password" }));
+
+            var handler = new ChangePasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+
+            // Act
+            Func<Task> act = async () => await handler.Handle(new ChangePasswordCommand(userId, currentPassword, newPassword), CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<BadRequestException>().WithMessage("*Failed to change password*");
+        }
     }
 }

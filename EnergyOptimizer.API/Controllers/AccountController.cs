@@ -51,6 +51,31 @@ namespace EnergyOptimizer.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("forgot-password")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var result = await _mediator.Send(new ForgotPasswordCommand(dto.Email));
+            return Ok(result);
+        }
+
+        [HttpPost("reset-password")]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _mediator.Send(new ResetPasswordCommand(dto.Email, dto.Token, dto.NewPassword));
+            return Ok(result);
+        }
+
+        [HttpPost("change-password")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _mediator.Send(new ChangePasswordCommand(userId, dto.CurrentPassword, dto.NewPassword));
+            return Ok(result);
+        }
+
         [HttpGet("me")]
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> GetCurrentUser()
