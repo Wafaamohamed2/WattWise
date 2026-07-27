@@ -190,6 +190,22 @@ builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
 builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddMemoryCache();
+
+// Distributed Cache (Redis Cloud with In-Memory fallback)
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "WattWise_";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
 builder.Services.AddHttpClient();
 
 //  AutoMapper 

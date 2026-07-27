@@ -16,7 +16,9 @@ namespace EnergyOptimizer.Core
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(assembly);
+                cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+                cfg.AddOpenBehavior(typeof(CacheInvalidationBehavior<,>));
             });
 
             return services;

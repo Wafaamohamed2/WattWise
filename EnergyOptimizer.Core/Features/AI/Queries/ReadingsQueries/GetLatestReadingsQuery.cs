@@ -1,8 +1,13 @@
-﻿using MediatR;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries
 {
-public record GetLatestReadingsQuery(int Limit, string? StartDate = null, string? EndDate = null) 
-    : IRequest<ApiResponse>;
+    public record GetLatestReadingsQuery(int Limit, string? StartDate = null, string? EndDate = null) 
+        : ICacheableRequest<ApiResponse>
+    {
+        public string CacheKey => $"LatestReadings_{Limit}_{StartDate ?? "none"}_{EndDate ?? "none"}";
+        public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(5);
+        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromMinutes(30);
+    }
 }
