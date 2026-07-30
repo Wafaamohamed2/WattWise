@@ -149,6 +149,15 @@ builder.Services.AddAuthentication(options =>
                 return Task.CompletedTask;
             }
 
+            // 3. Fallback to access_token query parameter for SignalR WebSockets
+            var accessToken = ctx.Request.Query["access_token"];
+            var path = ctx.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
+            {
+                ctx.Token = accessToken;
+                return Task.CompletedTask;
+            }
+
             return Task.CompletedTask;
         }
     };
@@ -275,5 +284,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<EnergyHub>("/energyhub");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

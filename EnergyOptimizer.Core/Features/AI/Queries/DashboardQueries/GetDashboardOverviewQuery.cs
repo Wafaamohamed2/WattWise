@@ -6,7 +6,7 @@ namespace EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries
     public record GetDashboardOverviewQuery : ICacheableRequest<ApiResponse>
     {
         public string CacheKey => "Dashboard_Overview";
-        public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(15);
-        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1);
+        public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(1);
+        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromMinutes(3);
     }
 }

@@ -2,7 +2,6 @@ using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Hosting;
-using System.Text.Json;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
 using Microsoft.Extensions.Logging;
@@ -57,7 +56,7 @@ namespace EnergyOptimizer.Service.Services
             using var scope = _serviceProvider.CreateScope();
             var deviceRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Device>>();
             var alertRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Alert>>();
-            var hubService = scope.ServiceProvider.GetRequiredService<IEnergyHubService>();
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
             var now = DateTime.UtcNow;
             var fiveMinutesAgo = now.AddMinutes(-5);
@@ -106,7 +105,7 @@ namespace EnergyOptimizer.Service.Services
                 _logger.LogInformation("New Alert Detected: {AlertType} for {DeviceName} in {ZoneName} - {Message}",
                     alert.Type, deviceName, zoneName, alert.Message);
 
-                await BroadcastAlert(hubService, alert, deviceName, zoneName);
+                await BroadcastAlert(notificationService, alert, deviceName, zoneName);
             }
         }
 
@@ -148,12 +147,10 @@ namespace EnergyOptimizer.Service.Services
             if (previousReading == null)
                 return null;
 
-            var alertSettings = _alertSettingsMonitor.CurrentValue;
-
-            // Check for sudden spike (200% increase in 1 minute)
+            // Check for sudden spike (200% increase)
             if (previousReading.PowerConsumptionKW > 0 &&
                 latestReading.PowerConsumptionKW > previousReading.PowerConsumptionKW * 2 &&
-                latestReading.PowerConsumptionKW > (decimal)1.0)
+                latestReading.PowerConsumptionKW > 1.0m)
             {
                 return new Alert
                 {
@@ -169,74 +166,37 @@ namespace EnergyOptimizer.Service.Services
             return null;
         }
 
-        // 3. Wastage Detection (Device running at unusual times)
+        // 3. Wastage Detection
         private Alert? CheckWastage(Device device, EnergyReading latestReading, DateTime now)
         {
             var alertSettings = _alertSettingsMonitor.CurrentValue;
             var hour = now.Hour;
             var isNightTime = hour >= alertSettings.WastageDetection.NoUseTimeRangeStart || hour <= alertSettings.WastageDetection.NoUseTimeRangeEnd; 
 
-            switch (device.Type)
+            if (isNightTime && latestReading.PowerConsumptionKW > (decimal)alertSettings.WastageDetection.ThresholdKW)
             {
-                case DeviceType.TV:
-                    if (isNightTime && (double) latestReading.PowerConsumptionKW > alertSettings.WastageDetection.ThresholdKW)
-                    {
-                        return new Alert
-                        {
-                            DeviceId = device.Id,
-                            Type = AlertType.Wastage,
-                            Severity = AlertSeverity.Warning, 
-                            Message = $"{device.Name} is ON at {now:HH:mm}. Consider turning it off to save energy.",
-                            CreatedAt = DateTime.UtcNow,
-                            IsRead = false
-                        };
-                    }
-                    break;
-                case DeviceType.Lights:
-                    if (isNightTime && (double)latestReading.PowerConsumptionKW > alertSettings.WastageDetection.ThresholdKW)
-                    {
-                        return new Alert
-                        {
-                            DeviceId = device.Id,
-                            Type = AlertType.Wastage,
-                            Severity = AlertSeverity.Info,
-                            Message = $"{device.Name} is still ON at {now:HH:mm}. Remember to turn off lights when not needed.",
-                            CreatedAt = DateTime.UtcNow,
-                            IsRead = false
-                        };
-                    }
-                    break;
-                case DeviceType.WashingMachine:
-                    if (hour >= alertSettings.WastageDetection.NoUseTimeRangeStart || hour <= alertSettings.WastageDetection.NoUseTimeRangeEnd)
-                    {
-                        if ((double)latestReading.PowerConsumptionKW > alertSettings.WastageDetection.WashingMachineThresholdKW)
-                        {
-                            return new Alert
-                            {
-                                DeviceId = device.Id,
-                                Type = AlertType.Wastage,
-                                Severity = AlertSeverity.Info, 
-                                Message = $"{device.Name} is running during off-peak hours. Good job on saving energy costs!",
-                                CreatedAt = DateTime.UtcNow,
-                                IsRead = false
-                            };
-                        }
-                    }
-                    break;
-
+                return new Alert
+                {
+                    DeviceId = device.Id,
+                    Type = AlertType.Wastage,
+                    Severity = AlertSeverity.Info,
+                    Message = $"{device.Name} is running during off-hours ({now:HH:mm}) consuming {latestReading.PowerConsumptionKW:F2} kW.",
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = false
+                };
             }
+
             return null;
         }
 
-
-        // 4. Device Offline Detection
+        // 4. Device Offline Check
         private async Task<Alert?> CheckDeviceOffline(IGenericRepository<Alert> alertRepo, Device device, DateTime now)
         {
-            // Skip check if device is intentionally turned off
             if (!device.IsActive)
                 return null;
 
             var tenMinutesAgo = now.AddMinutes(-10);
+
             var hasExistingAlert = await alertRepo.
                 AnyAsync(new AlertOfflineCheckSpec(device.Id, tenMinutesAgo));
 
@@ -255,7 +215,7 @@ namespace EnergyOptimizer.Service.Services
         }
 
         // Broadcast Alert via SignalR
-        private async Task BroadcastAlert(IEnergyHubService hubService,Alert alert,string deviceName,string zoneName)
+        private async Task BroadcastAlert(INotificationService notificationService, Alert alert, string deviceName, string zoneName)
         {     
                 try
                 {
@@ -266,12 +226,12 @@ namespace EnergyOptimizer.Service.Services
                         ZoneName = zoneName,
                         AlertType = alert.Type.ToString(),
                         Message = alert.Message,
-                        Severity =alert.Severity,
+                        Severity = alert.Severity,
                         CreatedAt = alert.CreatedAt,
                         IsRead = alert.IsRead
                     };
 
-                    await hubService.SendAlertNotification(JsonSerializer.Serialize(alertDto));
+                    await notificationService.BroadcastAlertAsync(alertDto);
                 }
                 catch (Exception ex)
                 {

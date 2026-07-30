@@ -19,6 +19,7 @@ namespace EnergyOptimizer.Service
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<INotificationService, SignalRNotificationService>();
 
             services.AddTransient<DataSeedingService>();
 

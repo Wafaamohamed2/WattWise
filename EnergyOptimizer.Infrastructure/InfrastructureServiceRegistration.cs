@@ -22,23 +22,41 @@ namespace EnergyOptimizer.Infrastructure
             services.AddDbContext<EnergyDbContext>(options =>
                 options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
 
+            var rabbitHost = configuration["RabbitMQ:Host"] ?? "localhost";
+            var rabbitUser = configuration["RabbitMQ:Username"] ?? "guest";
+            var rabbitPass = configuration["RabbitMQ:Password"] ?? "guest";
+            var useInMemory = bool.TryParse(configuration["RabbitMQ:UseInMemoryFallback"], out var result) && result;
+
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<EnergyReadingConsumer>();
 
-                x.UsingRabbitMq((context, cfg) =>
+                if (useInMemory)
                 {
-                    cfg.Host("localhost", "/", h =>
+                    x.UsingInMemory((context, cfg) =>
                     {
-                        h.Username("guest");
-                        h.Password("guest");
+                        cfg.ReceiveEndpoint("energy-readings-queue", e =>
+                        {
+                            e.ConfigureConsumer<EnergyReadingConsumer>(context);
+                        });
                     });
+                }
+                else
+                {
+                    x.UsingRabbitMq((context, cfg) =>
+                    {
+                        cfg.Host(rabbitHost, "/", h =>
+                        {
+                            h.Username(rabbitUser);
+                            h.Password(rabbitPass);
+                        });
 
-                    cfg.ReceiveEndpoint("energy-readings-queue", e =>
-                    {
-                        e.ConfigureConsumer<EnergyReadingConsumer>(context);
+                        cfg.ReceiveEndpoint("energy-readings-queue", e =>
+                        {
+                            e.ConfigureConsumer<EnergyReadingConsumer>(context);
+                        });
                     });
-                });
+                }
             });
 
             return services;

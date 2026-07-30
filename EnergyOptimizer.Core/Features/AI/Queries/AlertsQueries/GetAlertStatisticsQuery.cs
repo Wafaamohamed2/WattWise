@@ -1,10 +1,12 @@
-﻿using MediatR;
 using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries
 {
-    public record GetAlertStatisticsQuery(string? StartDate, int Days) : IRequest<ApiResponse>;
-
-
-
+    public record GetAlertStatisticsQuery(string? StartDate, int Days) : ICacheableRequest<ApiResponse>
+    {
+        public string CacheKey => $"AlertStats_{Days}_{StartDate ?? "none"}";
+        public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(10);
+        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1);
+    }
 }

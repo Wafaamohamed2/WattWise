@@ -7,7 +7,7 @@ namespace EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries
         : ICacheableRequest<ApiResponse>
     {
         public string CacheKey => $"LatestReadings_{Limit}_{StartDate ?? "none"}_{EndDate ?? "none"}";
-        public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(5);
-        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromMinutes(30);
+        public TimeSpan? SlidingExpiration => TimeSpan.FromSeconds(5);
+        public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromSeconds(15);
     }
 }
