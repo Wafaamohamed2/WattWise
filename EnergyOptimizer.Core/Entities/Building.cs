@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EnergyOptimizer.Core.Entities
 {
@@ -8,6 +8,10 @@ namespace EnergyOptimizer.Core.Entities
 
         [Required, MaxLength(200)]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+        public virtual ApplicationUser User { get; set; } = null!;
 
         [MaxLength(500)]
         public string? Address { get; set; }

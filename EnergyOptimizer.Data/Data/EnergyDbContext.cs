@@ -38,6 +38,11 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Address).HasMaxLength(500);
 
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasMany(e => e.Zones)
                       .WithOne(e => e.Building)
                       .HasForeignKey(e => e.BuildingId)
