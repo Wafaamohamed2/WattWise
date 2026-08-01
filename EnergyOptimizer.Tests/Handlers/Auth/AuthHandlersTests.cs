@@ -51,6 +51,37 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         }
 
         [Fact]
+        public async Task RegisterHandler_ValidData_AutoProvisionsBuildingAndZone()
+        {
+            // Arrange
+            var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
+            var command = new RegisterCommand(dto);
+            var user = new ApplicationUser { Id = "user-123", FullName = dto.FullName, Email = dto.Email };
+
+            var mockBuildingRepo = new Mock<IGenericRepository<Building>>();
+            var mockZoneRepo = new Mock<IGenericRepository<Zone>>();
+
+            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
+            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password)).ReturnsAsync(IdentityResult.Success);
+
+            var handler = new RegisterCommandHandler(
+                _mockUserManager.Object,
+                _mockMapper.Object,
+                emailService: null,
+                config: null,
+                buildingRepo: mockBuildingRepo.Object,
+                zoneRepo: mockZoneRepo.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.StatusCode.Should().Be(200);
+            mockBuildingRepo.Verify(repo => repo.Add(It.Is<Building>(bld => bld.UserId == "user-123" && bld.Zones.Count == 1)), Times.Once);
+            mockBuildingRepo.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
         public async Task RegisterHandler_FailedCreation_ThrowsBadRequest()
         {
             // Arrange
