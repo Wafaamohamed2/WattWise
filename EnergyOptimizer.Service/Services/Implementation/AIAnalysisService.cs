@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.DTOs.AlertsDTOs;
+using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Enums;
@@ -52,7 +52,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
         private async Task DetectAnomalies(CancellationToken cancellationToken)
         {
-            var activeDevices = await _deviceRepo.ListAsync(new ActiveDevicesWithZoneSpec(true));
+            var activeDevices = await _deviceRepo.ListAsync(new AllActiveDevicesForSystemSpec(true));
 
             foreach (var device in activeDevices)
             {

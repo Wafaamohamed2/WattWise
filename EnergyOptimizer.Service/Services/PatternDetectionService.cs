@@ -388,25 +388,33 @@ namespace EnergyOptimizer.Service.Services
 
         private async Task SaveRecommendations(List<Recommendation> recommendations)
         {
-            foreach (var rec in recommendations)
-            {
-                var entity = new EnergyRecommendation
-                {
-                    Title = rec.Title,
-                    Description = rec.Description,
-                    Category = rec.Category,
-                    Priority = rec.Priority,
-                    EstimatedSavingsKWh = rec.PotentialSavingsKWh,
-                    ActionItems = System.Text.Json.JsonSerializer.Serialize(rec.ActionItems),
-                    CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddDays(30)
-                };
+            if (!recommendations.Any()) return;
 
-                _recommendationRepo.Add(entity);
+            const int batchSize = 10;
+            for (int i = 0; i < recommendations.Count; i += batchSize)
+            {
+                var batch = recommendations.Skip(i).Take(batchSize);
+                foreach (var rec in batch)
+                {
+                    var entity = new EnergyRecommendation
+                    {
+                        Title = rec.Title,
+                        Description = rec.Description,
+                        Category = rec.Category,
+                        Priority = rec.Priority,
+                        EstimatedSavingsKWh = rec.PotentialSavingsKWh,
+                        ActionItems = System.Text.Json.JsonSerializer.Serialize(rec.ActionItems),
+                        CreatedAt = DateTime.UtcNow,
+                        ExpiresAt = DateTime.UtcNow.AddDays(30)
+                    };
+
+                    _recommendationRepo.Add(entity);
+                }
+
+                await _recommendationRepo.SaveChangesAsync();
             }
 
-            await _recommendationRepo.SaveChangesAsync();
-            _logger.LogInformation("Saved {Count} recommendations", recommendations.Count);
+            _logger.LogInformation("Saved {Count} recommendations in batches", recommendations.Count);
         }
 
         private async Task SavePrediction(PredictionResult result)

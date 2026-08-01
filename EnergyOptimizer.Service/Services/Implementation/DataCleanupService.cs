@@ -1,4 +1,3 @@
-﻿
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
@@ -40,6 +39,7 @@ namespace EnergyOptimizer.Service.Services.Implementation
             await MarkExpiredRecommendations(ct);
             _logger.LogInformation("Data cleanup tasks completed");
         }
+
         public async Task CleanupOldAnalyses(int daysToKeep, CancellationToken cancellationToken)
         {
             var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
@@ -49,9 +49,14 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (oldAnalyses.Any())
             {
-                _analysisRepo.DeleteRange(oldAnalyses);
-                await _analysisRepo.SaveChangesAsync();
-                _logger.LogInformation("Deleted {Count} old analyses", oldAnalyses.Count);
+                const int batchSize = 15;
+                for (int i = 0; i < oldAnalyses.Count; i += batchSize)
+                {
+                    var batch = oldAnalyses.Skip(i).Take(batchSize).ToList();
+                    _analysisRepo.DeleteRange(batch);
+                    await _analysisRepo.SaveChangesAsync();
+                }
+                _logger.LogInformation("Deleted {Count} old analyses in batches", oldAnalyses.Count);
             }
         }
 
@@ -68,9 +73,14 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (oldAlerts.Any())
             {
-                _alertRepo.DeleteRange(oldAlerts);
-                await _alertRepo.SaveChangesAsync();
-                _logger.LogInformation("Deleted {Count} old alerts", oldAlerts.Count);
+                const int batchSize = 15;
+                for (int i = 0; i < oldAlerts.Count; i += batchSize)
+                {
+                    var batch = oldAlerts.Skip(i).Take(batchSize).ToList();
+                    _alertRepo.DeleteRange(batch);
+                    await _alertRepo.SaveChangesAsync();
+                }
+                _logger.LogInformation("Deleted {Count} old alerts in batches", oldAlerts.Count);
             }
         }
 
@@ -84,21 +94,23 @@ namespace EnergyOptimizer.Service.Services.Implementation
 
             if (expiredRecs.Any())
             {
-                foreach (var rec in expiredRecs)
+                const int batchSize = 15;
+                int totalUpdated = 0;
+
+                for (int i = 0; i < expiredRecs.Count; i += batchSize)
                 {
-                    rec.ExpiresAt = DateTime.UtcNow;
+                    var batch = expiredRecs.Skip(i).Take(batchSize).ToList();
+                    foreach (var rec in batch)
+                    {
+                        rec.ExpiresAt = DateTime.UtcNow;
+                    }
+
+                    _recommendationRepo.UpdateRange(batch);
+                    totalUpdated += await _recommendationRepo.SaveChangesAsync();
                 }
 
-                _recommendationRepo.UpdateRange(expiredRecs);
-                int updatedCount = await _recommendationRepo.SaveChangesAsync();
-                _logger.LogInformation("Updated {Count} expired recommendations", updatedCount);
+                _logger.LogInformation("Updated {Count} expired recommendations in batches", totalUpdated);
             }
         }
-
-
-
-
     }
-
-
 }
