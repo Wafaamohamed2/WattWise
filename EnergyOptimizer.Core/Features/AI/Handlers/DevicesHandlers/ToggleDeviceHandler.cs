@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Exceptions; 
@@ -12,16 +12,21 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
     {
         private readonly IGenericRepository<Device> _deviceRepo;
         private readonly IEnergyHubService _hubService;
+        private readonly ICurrentUserService _currentUser;
 
-        public ToggleDeviceHandler(IGenericRepository<Device> deviceRepo, IEnergyHubService hubService)
+        public ToggleDeviceHandler(
+            IGenericRepository<Device> deviceRepo, 
+            IEnergyHubService hubService, 
+            ICurrentUserService currentUser)
         {
             _deviceRepo = deviceRepo;
             _hubService = hubService;
+            _currentUser = currentUser;
         }
 
         public async Task<ApiResponse> Handle(ToggleDeviceCommand request, CancellationToken ct)
         {
-            var spec = new DeviceWithDetailsSpec(request.Id);
+            var spec = new DeviceWithDetailsSpec(request.Id, _currentUser.RequireUserId());
             var device = await _deviceRepo.GetEntityWithSpec(spec);
 
             if (device == null)

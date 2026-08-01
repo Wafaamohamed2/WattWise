@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Exceptions;
@@ -13,16 +13,22 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers
     {
         private readonly IGenericRepository<EnergyReading> _readingRepo;
         private readonly IGenericRepository<Device> _deviceRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public GetDeviceStatisticsHandler(IGenericRepository<EnergyReading> readingRepo, IGenericRepository<Device> deviceRepo)
+        public GetDeviceStatisticsHandler(
+            IGenericRepository<EnergyReading> readingRepo, 
+            IGenericRepository<Device> deviceRepo,
+            ICurrentUserService currentUser)
         {
             _readingRepo = readingRepo;
             _deviceRepo = deviceRepo;
+            _currentUser = currentUser;
         }
 
         public async Task<ApiResponse> Handle(GetDeviceStatisticsQuery request, CancellationToken ct)
         {
-            var device = await _deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(request.DeviceId));
+            var userId = _currentUser.RequireUserId();
+            var device = await _deviceRepo.GetEntityWithSpec(new DeviceWithDetailsSpec(request.DeviceId, userId));
 
             if (device == null)
                 throw new NotFoundException($"Device with ID {request.DeviceId} not found");
