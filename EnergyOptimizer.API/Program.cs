@@ -91,6 +91,8 @@ builder.Services.AddSwaggerGen();
 
 // Register Infrastructure Services (DB, Repositories, MassTransit)
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<EnergyOptimizer.Core.Interfaces.ICurrentUserService, EnergyOptimizer.Infrastructure.Services.CurrentUserService>();
 
 // SignalR 
 builder.Services.AddSignalR(options =>
@@ -285,5 +287,18 @@ app.MapControllers();
 
 app.MapHub<EnergyHub>("/energyhub");
 app.MapHub<NotificationHub>("/hubs/notifications");
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var seedingService = services.GetRequiredService<EnergyOptimizer.Service.Services.DataSeedingService>();
+        await seedingService.SeedAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 app.Run();

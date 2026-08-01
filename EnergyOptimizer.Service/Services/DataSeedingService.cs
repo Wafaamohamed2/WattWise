@@ -1,9 +1,10 @@
-using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EnergyOptimizer.Core.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace EnergyOptimizer.Service.Services
 {
@@ -12,14 +13,24 @@ namespace EnergyOptimizer.Service.Services
         private readonly IGenericRepository<Building> _buildingRepo;
         private readonly IGenericRepository<Zone> _zoneRepo;
         private readonly IGenericRepository<Device> _deviceRepo;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration? _config;
         private readonly ILogger<DataSeedingService> _logger;
 
-        public DataSeedingService(IGenericRepository<Building> buildingRepo, IGenericRepository<Zone> zoneRepo, IGenericRepository<Device> deviceRepo, ILogger<DataSeedingService> logger)
+        public DataSeedingService(
+            IGenericRepository<Building> buildingRepo, 
+            IGenericRepository<Zone> zoneRepo, 
+            IGenericRepository<Device> deviceRepo, 
+            UserManager<ApplicationUser> userManager,
+            ILogger<DataSeedingService> logger,
+            IConfiguration? config = null)
         {
             _buildingRepo = buildingRepo;
             _zoneRepo = zoneRepo;
             _deviceRepo = deviceRepo;
+            _userManager = userManager;
             _logger = logger;
+            _config = config;
         }
 
         public async Task SeedAsync()
@@ -35,10 +46,34 @@ namespace EnergyOptimizer.Service.Services
 
                 _logger.LogInformation("Starting data seeding...");
 
+                var defaultUser = await _userManager.Users.FirstOrDefaultAsync();
+                if (defaultUser == null)
+                {
+                    var adminEmail = _config?["AdminUser:Email"] ?? "admin@wattwise.com";
+                    var adminPassword = _config?["AdminUser:Password"] ?? "Admin@123456";
+
+                    defaultUser = new ApplicationUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        FullName = "WattWise Admin",
+                        EmailConfirmed = true
+                    };
+                    var createResult = await _userManager.CreateAsync(defaultUser, adminPassword);
+
+                    if (!createResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                        _logger.LogError("Failed to create default admin user during seeding: {Errors}", errors);
+                        throw new InvalidOperationException($"DataSeeding failed to create default user: {errors}");
+                    }
+                }
+
                 // Create Building
                 var building = new Building
                 {
                     Name = "My Smart Home",
+                    UserId = defaultUser.Id,
                     Address = "123 Main Street, Cairo",
                     TotalArea = 200,
                     NumberOfRooms = 5,

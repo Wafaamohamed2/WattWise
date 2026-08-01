@@ -1,6 +1,7 @@
 using System.Text;
 using AutoMapper;
 using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Enums;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.Auth.Commands;
@@ -17,6 +18,8 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly IGenericRepository<Building>? _buildingRepo;
+        private readonly IGenericRepository<Zone>? _zoneRepo;
         private readonly IEmailService? _emailService;
         private readonly IConfiguration? _config;
         private readonly ILogger<RegisterCommandHandler>? _logger;
@@ -26,12 +29,16 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
             IMapper mapper,
             IEmailService? emailService = null,
             IConfiguration? config = null,
+            IGenericRepository<Building>? buildingRepo = null,
+            IGenericRepository<Zone>? zoneRepo = null,
             ILogger<RegisterCommandHandler>? logger = null)
         {
             _userManager = userManager;
             _mapper = mapper;
             _emailService = emailService;
             _config = config;
+            _buildingRepo = buildingRepo;
+            _zoneRepo = zoneRepo;
             _logger = logger;
         }
 
@@ -45,6 +52,38 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new BadRequestException(errors);
+            }
+
+            // Auto-provision default Building and Zone for the new user
+            if (_buildingRepo != null)
+            {
+                try
+                {
+                    var building = new Building
+                    {
+                        Name = $"{user.FullName}'s Smart Home",
+                        UserId = user.Id,
+                        Address = "Primary Residence",
+                        TotalArea = 150,
+                        NumberOfRooms = 4,
+                        CreatedAt = DateTime.UtcNow,
+                        Zones = new List<Zone>
+                        {
+                            new Zone
+                            {
+                                Name = "Living Room",
+                                Type = ZoneType.LivingRoom,
+                                Area = 35
+                            }
+                        }
+                    };
+                    _buildingRepo.Add(building);
+                    await _buildingRepo.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Failed to auto-provision default building and zone for user {UserId}", user.Id);
+                }
             }
 
             if (_emailService != null)
