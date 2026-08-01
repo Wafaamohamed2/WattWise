@@ -11,6 +11,7 @@ namespace EnergyOptimizer.Core.Behaviors
         where TRequest : ICacheableRequest<TResponse>
     {
         private readonly IDistributedCache _cache;
+        private readonly ICurrentUserService? _currentUserService;
         private readonly ILogger<CachingBehavior<TRequest, TResponse>> _logger;
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
@@ -19,20 +20,27 @@ namespace EnergyOptimizer.Core.Behaviors
             ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
         };
 
-        public CachingBehavior(IDistributedCache cache, ILogger<CachingBehavior<TRequest, TResponse>> logger)
+        public CachingBehavior(
+            IDistributedCache cache, 
+            ILogger<CachingBehavior<TRequest, TResponse>> logger,
+            ICurrentUserService? currentUserService = null)
         {
             _cache = cache;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            var cacheKey = request.CacheKey;
+            var rawCacheKey = request.CacheKey;
 
-            if (string.IsNullOrWhiteSpace(cacheKey))
+            if (string.IsNullOrWhiteSpace(rawCacheKey))
             {
                 return await next();
             }
+
+            var userId = _currentUserService?.UserId ?? "anonymous";
+            var cacheKey = $"{rawCacheKey}_{userId}";
 
             // Fast Path: Try reading from Distributed Cache without acquiring lock
             var cachedResponse = await TryGetFromCacheAsync(cacheKey, cancellationToken);

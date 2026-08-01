@@ -10,11 +10,16 @@ namespace EnergyOptimizer.Core.Behaviors
     {
         private readonly IDistributedCache _cache;
         private readonly ILogger<CacheInvalidationBehavior<TRequest, TResponse>> _logger;
+        private readonly ICurrentUserService? _currentUserService;
 
-        public CacheInvalidationBehavior(IDistributedCache cache, ILogger<CacheInvalidationBehavior<TRequest, TResponse>> logger)
+        public CacheInvalidationBehavior(
+            IDistributedCache cache, 
+            ILogger<CacheInvalidationBehavior<TRequest, TResponse>> logger,
+            ICurrentUserService? currentUserService = null)
         {
             _cache = cache;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -23,18 +28,22 @@ namespace EnergyOptimizer.Core.Behaviors
 
             if (request.CacheKeysToInvalidate != null && request.CacheKeysToInvalidate.Length > 0)
             {
-                foreach (var key in request.CacheKeysToInvalidate)
+                var userId = _currentUserService?.UserId ?? "anonymous";
+
+                foreach (var rawKey in request.CacheKeysToInvalidate)
                 {
-                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    if (string.IsNullOrWhiteSpace(rawKey)) continue;
+
+                    var keyWithUser = $"{rawKey}_{userId}";
 
                     try
                     {
-                        await _cache.RemoveAsync(key, cancellationToken);
-                        _logger.LogInformation("Invalidated Cache Key -> '{CacheKey}'", key);
+                        await _cache.RemoveAsync(keyWithUser, cancellationToken);
+                        _logger.LogInformation("Invalidated Cache Key -> '{CacheKey}'", keyWithUser);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to invalidate Cache Key -> '{CacheKey}'", key);
+                        _logger.LogWarning(ex, "Failed to invalidate Cache Key -> '{CacheKey}'", keyWithUser);
                     }
                 }
             }
