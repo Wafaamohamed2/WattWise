@@ -1368,29 +1368,39 @@
         }
 
         function createDeviceControlCard(device) {
-            const div = document.createElement('div');
-            div.className = `device-control-card ${device.isActive ? 'active' : 'inactive'}`;
-            div.id = `device-${device.id}`;
+            const id = device.id ?? device.Id ?? device.deviceId;
+            const name = device.name ?? device.Name ?? device.deviceName ?? 'Unknown Device';
+            const zoneName = device.zoneName ?? device.ZoneName ?? device.zone?.name ?? device.zone?.Name ?? (device.Zone ? (device.Zone.name || device.Zone.Name) : 'Unknown Zone');
+            const powerRatingRaw = device.ratedPowerKW ?? device.RatedPowerKW ?? device.ratedPower ?? 0;
+            const powerRating = typeof powerRatingRaw === 'number' ? powerRatingRaw : (parseFloat(powerRatingRaw) || 0);
+            const isActive = device.isActive ?? device.IsActive ?? false;
 
-            const powerRating = device.ratedPowerKW || 0;
+            if (!id || id === 'undefined') {
+                console.warn('Skipping card with invalid device id:', device);
+                return document.createComment('Invalid Device');
+            }
+
+            const div = document.createElement('div');
+            div.className = `device-control-card ${isActive ? 'active' : 'inactive'}`;
+            div.id = `device-${id}`;
 
             div.innerHTML = `
                                     <div class="device-control-header">
-                                        <span class="device-status-indicator ${device.isActive ? 'active' : 'inactive'}"></span>
-                                        ${device.name}
+                                        <span class="device-status-indicator ${isActive ? 'active' : 'inactive'}"></span>
+                                        ${name}
                                     </div>
                                     <div class="device-control-info">
-                                        📍 ${device.zone?.name || 'Unknown Zone'}<br>
+                                        📍 ${zoneName}<br>
                                         ⚡ ${powerRating.toFixed(2)} kW (rated)<br>
-                                        <span id="device-${device.id}-current" style="color: ${device.isActive ? '#667eea' : '#9ca3af'};">
-                                            ${device.isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
+                                        <span id="device-${id}-current" style="color: ${isActive ? '#667eea' : '#9ca3af'};">
+                                            ${isActive ? '🔄 Waiting for data...' : '💤 Device OFF'}
                                         </span>
                                     </div>
                                     <button
-                                        class="device-toggle-btn ${device.isActive ? 'active' : 'inactive'}"
-                                        onclick="toggleDeviceControl(${device.id})"
+                                        class="device-toggle-btn ${isActive ? 'active' : 'inactive'}"
+                                        onclick="toggleDeviceControl(${id})"
                                     >
-                                        ${device.isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
+                                        ${isActive ? '🔴 Turn OFF' : '🟢 Turn ON'}
                                     </button>
                                 `;
 
@@ -1398,8 +1408,14 @@
         }
 
         async function toggleDeviceControl(deviceId) {
+            if (!deviceId || deviceId === 'undefined' || deviceId === 'null') {
+                console.error('Invalid deviceId provided to toggleDeviceControl:', deviceId);
+                return;
+            }
 
             const card = document.getElementById(`device-${deviceId}`);
+            if (!card) return;
+
             const button = card.querySelector('.device-toggle-btn');
             const isCurrentlyActive = card.classList.contains('active');
 
@@ -1413,7 +1429,9 @@
                 });
             } catch (error) {
                 button.disabled = false;
+                button.style.opacity = '1';
                 button.innerHTML = isCurrentlyActive ? '🔴 Turn OFF' : '🟢 Turn ON';
+                console.error('Failed to toggle device:', error);
             }
         }
         window.addEventListener('device-status-change', (e) => {
