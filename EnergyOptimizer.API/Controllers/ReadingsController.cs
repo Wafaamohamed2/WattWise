@@ -1,8 +1,9 @@
+using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
+using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.Core.Exceptions;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -26,7 +27,7 @@ namespace EnergyOptimizer.API.Controllers
            [FromQuery] string? endDate = null)
         {
             var result = await _mediator.Send(new GetLatestReadingsQuery(limit, startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("device/{deviceId}")]
@@ -37,7 +38,7 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] int limit = 100)
         {
             var result = await _mediator.Send(new GetDeviceReadingsQuery(deviceId, startDate, endDate, limit));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("statistics/{deviceId}")]
@@ -50,7 +51,7 @@ namespace EnergyOptimizer.API.Controllers
             if (DateTime.TryParse(startDate, out var d)) start = d;
 
             var result = await _mediator.Send(new GetDeviceStatisticsQuery(deviceId, start, days));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("export")]
@@ -66,6 +67,5 @@ namespace EnergyOptimizer.API.Controllers
 
             return File(exportData.Content, "text/csv", exportData.FileName);
         }
-        public record ExportResultDto(byte[] Content, string FileName);
     }
 }

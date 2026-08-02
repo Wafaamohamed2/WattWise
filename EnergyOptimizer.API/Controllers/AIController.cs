@@ -27,14 +27,14 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> RunAnalysis()
         {
             var result = await _mediator.Send(new RunGlobalAnalysisCommand());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("cleanup")]
         public async Task<IActionResult> RunCleanup()
         {
             var result = await _mediator.Send(new RunAllCleanupTasksCommand());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         #region Action Endpoints
@@ -44,7 +44,7 @@ namespace EnergyOptimizer.API.Controllers
           [FromQuery] DateTime? endDate = null)
         {
             var result = await _mediator.Send(new AnalyzePatternsQuery(startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("detect-anomalies/{deviceId}")]
@@ -53,7 +53,7 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] int days = 7)
         {
             var result = await _mediator.Send(new DetectDeviceAnomaliesCommand(deviceId, days));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("generate-recommendations")]
@@ -62,7 +62,7 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] DateTime? endDate = null)
         {
             var result = await _mediator.Send(new GenerateRecommendationsCommand(startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("predict-consumption")]
@@ -70,14 +70,14 @@ namespace EnergyOptimizer.API.Controllers
            [FromQuery] int days = 7)
         {
             var result = await _mediator.Send(new PredictConsumptionQuery(days));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("ask")]
         public async Task<IActionResult> AskQuestion([FromBody] AskQuestionRequest request)
         {
-            var answer = await _mediator.Send(new AskAIQuestionQuery(request.Question, request.Context));
-            return Ok(answer);
+            var result = await _mediator.Send(new AskAIQuestionQuery(request.Question, request.Context));
+            return StatusCode(result.StatusCode, result);
         }
         #endregion
 
@@ -91,21 +91,21 @@ namespace EnergyOptimizer.API.Controllers
             [FromQuery] DateTime? endDate = null)
         {
             var result = await _mediator.Send(new GetAnalysisHistoryQuery(page, pageSize, analysisType, startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("analysis/{id}")]
         public async Task<IActionResult> GetAnalysisById(int id)
         {
             var result = await _mediator.Send(new GetAnalysisByIdQuery(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("statistics")]
         public async Task<IActionResult> GetAIStatistics()
         {
             var result = await _mediator.Send(new GetAIStatisticsQuery());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
         #endregion
 
@@ -115,21 +115,21 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] bool? isImplemented = null)
         {
             var result = await _mediator.Send(new GetRecommendationsQuery(isImplemented));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPatch("recommendations/{id}/implement")]
         public async Task<IActionResult> ImplementRecommendation(int id)
         {
             var result = await _mediator.Send(new ImplementRecommendationCommand(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("recommendations/{id}")]
         public async Task<IActionResult> DeleteRecommendation(int id)
         {
             var result = await _mediator.Send(new DeleteRecommendationCommand(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
         #endregion
 
@@ -143,14 +143,14 @@ namespace EnergyOptimizer.API.Controllers
         [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAnomaliesQuery(isResolved, severity, deviceId, page, pageSize));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("anomalies/{id}")]
         public async Task<IActionResult> GetAnomalyById(int id)
         {
             var result = await _mediator.Send(new GetAnomalyByIdQuery(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPatch("anomalies/{id}/resolve")]
@@ -159,14 +159,14 @@ namespace EnergyOptimizer.API.Controllers
            [FromBody] ResolveAnomalyRequest request)
         {
             var result = await _mediator.Send(new ResolveAnomalyCommand(id, request.ResolutionNotes));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("anomalies/{id}")]
         public async Task<IActionResult> DeleteAnomaly(int id)
         {
             var result = await _mediator.Send(new DeleteAnomalyCommand(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
         #endregion
     }

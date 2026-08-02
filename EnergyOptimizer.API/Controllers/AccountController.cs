@@ -32,7 +32,7 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> Register(RegisterDto model)
         {
             var result = await _mediator.Send(new RegisterCommand(model));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("verify-email")]
@@ -40,7 +40,7 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
         {
             var result = await _mediator.Send(new VerifyEmailCommand(dto.UserId, dto.Token));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("resend-confirmation-email")]
@@ -48,7 +48,7 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
         {
             var result = await _mediator.Send(new ResendConfirmationEmailCommand(dto.Email));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("forgot-password")]
@@ -56,7 +56,7 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
             var result = await _mediator.Send(new ForgotPasswordCommand(dto.Email));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("reset-password")]
@@ -64,7 +64,7 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var result = await _mediator.Send(new ResetPasswordCommand(dto.Email, dto.Token, dto.NewPassword));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("change-password")]
@@ -73,7 +73,7 @@ namespace EnergyOptimizer.API.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var result = await _mediator.Send(new ChangePasswordCommand(userId, dto.CurrentPassword, dto.NewPassword));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("me")]
@@ -82,7 +82,7 @@ namespace EnergyOptimizer.API.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var result = await _mediator.Send(new GetCurrentUserQuery(userId));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("login")]
@@ -96,7 +96,7 @@ namespace EnergyOptimizer.API.Controllers
             SetAccessTokenCookie(details.Token);
             SetRefreshTokenCookie(details.RefreshToken);
 
-            return Ok(new ApiResponse(200, "Login successful", new { User = details.User }));
+            return StatusCode(result.StatusCode, new ApiResponse(200, "Login successful", new { User = details.User }));
         }
 
         [HttpPost("refresh-token")]
@@ -114,7 +114,7 @@ namespace EnergyOptimizer.API.Controllers
             SetAccessTokenCookie(details.Token);
             SetRefreshTokenCookie(details.RefreshToken);
 
-            return Ok(new ApiResponse(200, "Token refreshed successfully"));
+            return StatusCode(result.StatusCode, new ApiResponse(200, "Token refreshed successfully"));
         }
 
         [HttpPost("logout")]
@@ -128,7 +128,7 @@ namespace EnergyOptimizer.API.Controllers
             }
 
             DeleteTokenCookies();
-            return Ok(new ApiResponse(200, "Logged out successfully"));
+            return StatusCode(200, new ApiResponse(200, "Logged out successfully"));
         }
 
         #region Private Helpers

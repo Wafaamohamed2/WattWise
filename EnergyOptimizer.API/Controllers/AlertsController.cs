@@ -19,14 +19,14 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> GetAlerts([FromQuery] GetAlertsQuery query)
         {
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("unread-count")]
         public async Task<IActionResult> GetUnreadCount()
         {
             var result = await _mediator.Send(new GetUnreadAlertsCountQuery());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("statistics")]
@@ -35,42 +35,42 @@ namespace EnergyOptimizer.API.Controllers
            [FromQuery] int days = 7)
         {
             var result = await _mediator.Send(new GetAlertStatisticsQuery(startDate, days));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAlert(int id)
         {
             var result = await _mediator.Send(new GetAlertByIdQuery(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPatch("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             var result = await _mediator.Send(new MarkAlertAsReadCommand(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("all-read")]
         public async Task<IActionResult> MarkAllAsRead()
         {
             var result = await _mediator.Send(new MarkAllAlertsAsReadCommand());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAlert(int id)
         {
             var result = await _mediator.Send(new DeleteAlertCommand(id));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("clear-read")]
         public async Task<IActionResult> ClearReadAlerts()
         {
             var result = await _mediator.Send(new ClearReadAlertsCommand());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

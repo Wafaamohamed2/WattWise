@@ -2,7 +2,6 @@ using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static EnergyOptimizer.Core.Features.AI.Commands.ApiResponse;
 
 namespace EnergyOptimizer.API.Controllers
 {
@@ -23,42 +22,42 @@ namespace EnergyOptimizer.API.Controllers
         public async Task<IActionResult> GetOverview()
         {
             var result = await _mediator.Send(new GetDashboardOverviewQuery());
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("consumption-by-zone")]
         public async Task<IActionResult> GetConsumptionByZone([FromQuery] string? startDate = null, [FromQuery] string? endDate = null)
         {
             var result = await _mediator.Send(new GetConsumptionByZoneQuery(startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("consumption-by-device")]
         public async Task<IActionResult> GetConsumptionByDevice([FromQuery] string? startDate = null, [FromQuery] string? endDate = null)
         {
             var result = await _mediator.Send(new GetConsumptionByDeviceQuery(startDate, endDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("hourly-consumption")]
         public async Task<IActionResult> GetHourlyConsumption([FromQuery] string? date = null)
         {
             var result = await _mediator.Send(new GetHourlyConsumptionQuery(date));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("consumption-trend")]
         public async Task<IActionResult> GetConsumptionTrend([FromQuery] int hours = 24)
         {
             var result = await _mediator.Send(new GetConsumptionTrendQuery(hours));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("top-consumers")]
         public async Task<IActionResult> GetTopConsumers([FromQuery] int count = 5, [FromQuery] string? startDate = null)
         {
             var result = await _mediator.Send(new GetTopConsumersQuery(count, startDate));
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
