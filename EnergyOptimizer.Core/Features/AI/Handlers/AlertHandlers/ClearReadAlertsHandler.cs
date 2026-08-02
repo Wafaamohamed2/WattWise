@@ -1,32 +1,37 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Commands.AlertsCommans;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Specifications.AlertSpec;
 using MediatR;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
     public class ClearReadAlertsHandler : IRequestHandler<ClearReadAlertsCommand, ApiResponse>
     {
         private readonly IGenericRepository<Alert> _alertRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public ClearReadAlertsHandler(IGenericRepository<Alert> alertRepo)
-            => _alertRepo = alertRepo;
+        public ClearReadAlertsHandler(IGenericRepository<Alert> alertRepo, ICurrentUserService currentUser)
+        {
+            _alertRepo = alertRepo;
+            _currentUser = currentUser;
+        }
 
         public async Task<ApiResponse> Handle(ClearReadAlertsCommand request, CancellationToken ct)
         {
-            var spec = new AlertCountSpec(isRead: true);
-            var readAlerts = await _alertRepo.ListAsync(spec);
+            var userId = _currentUser.RequireUserId();
 
-            if (!readAlerts.Any())
+            var deletedRows = await _alertRepo.GetQueryable()
+                .Where(a => a.IsRead &&
+                            a.Device != null && a.Device.Zone != null && a.Device.Zone.Building != null &&
+                            a.Device.Zone.Building.UserId == userId)
+                .ExecuteDeleteAsync(ct);
+
+            if (deletedRows == 0)
                 return new ApiResponse(200, "No read alerts to clear");
 
-            _alertRepo.DeleteRange(readAlerts);
-            await _alertRepo.SaveChangesAsync();
-
-            return new ApiResponse(200, $"{readAlerts.Count} read alerts cleared");
+            return new ApiResponse(200, $"{deletedRows} read alerts cleared");
         }
     }
 }

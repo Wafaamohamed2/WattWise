@@ -1,15 +1,17 @@
-﻿using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
 
 namespace EnergyOptimizer.Core.Specifications.AlertSpec
 {
     public class AlertsWithFiltersSpec : BaseSpecifcation<Alert>
     {
-        public AlertsWithFiltersSpec(bool? isRead, int? severity, int? deviceId, DateTime start, DateTime end, int? page = null, int? pageSize = null)
+        public AlertsWithFiltersSpec(bool? isRead, int? severity, int? deviceId, DateTime start, DateTime end, string userId, int? page = null, int? pageSize = null)
             : base(a => (a.CreatedAt >= start && a.CreatedAt <= end) &&
                         (!isRead.HasValue || a.IsRead == isRead.Value) &&
                         (!severity.HasValue || a.Severity == (AlertSeverity)severity.Value) &&
-                        (!deviceId.HasValue || a.DeviceId == deviceId.Value))
+                        (!deviceId.HasValue || a.DeviceId == deviceId.Value) &&
+                        a.Device != null && a.Device.Zone != null && a.Device.Zone.Building != null &&
+                        a.Device.Zone.Building.UserId == userId)
         {
             AddInclude(a => a.Device);
             AddInclude("Device.Zone");

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
@@ -13,15 +13,19 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
     {
         private readonly IGenericRepository<Alert> _alertRepo;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUser;
 
-        public GetAlertsHandler(IGenericRepository<Alert> alertRepo , IMapper mapper)
+        public GetAlertsHandler(IGenericRepository<Alert> alertRepo, IMapper mapper, ICurrentUserService currentUser)
         {
             _alertRepo = alertRepo;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
         public async Task<ApiResponse> Handle(GetAlertsQuery request, CancellationToken ct)
         {
+            var userId = _currentUser.RequireUserId();
+
             DateTime start = string.IsNullOrEmpty(request.StartDate)
                 ? DateTime.UtcNow.AddDays(-7).Date
                 : DateTime.Parse(request.StartDate);
@@ -30,12 +34,12 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
                 ? DateTime.UtcNow
                 : DateTime.Parse(request.EndDate).AddDays(1).AddSeconds(-1);
 
-            var countSpec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end);
+            var countSpec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end, userId);
             var total = await _alertRepo.CountAsync(countSpec);
 
             var pagedSpec = new AlertsWithFiltersSpec(
                request.IsRead, request.Severity, request.DeviceId,
-               start, end,
+               start, end, userId,
                page: request.Page, pageSize: request.PageSize);
 
             var alerts = await _alertRepo.ListAsync(pagedSpec);

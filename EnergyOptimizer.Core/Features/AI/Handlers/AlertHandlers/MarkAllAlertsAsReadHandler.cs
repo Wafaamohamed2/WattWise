@@ -2,35 +2,36 @@ using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Core.Features.AI.Commands.AlertsCommans;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Specifications.AlertSpec;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers
 {
     public class MarkAllAlertsAsReadHandler : IRequestHandler<MarkAllAlertsAsReadCommand, ApiResponse>
     {
         private readonly IGenericRepository<Alert> _alertRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public MarkAllAlertsAsReadHandler(IGenericRepository<Alert> alertRepo)
-            => _alertRepo = alertRepo;
+        public MarkAllAlertsAsReadHandler(IGenericRepository<Alert> alertRepo, ICurrentUserService currentUser)
+        {
+            _alertRepo = alertRepo;
+            _currentUser = currentUser;
+        }
 
         public async Task<ApiResponse> Handle(MarkAllAlertsAsReadCommand request, CancellationToken ct)
         {
-            var spec = new AlertCountSpec(isRead: false);
-            var unreadAlerts = await _alertRepo.ListAsync(spec);
+            var userId = _currentUser.RequireUserId();
 
-            if (!unreadAlerts.Any())
+            var updatedRows = await _alertRepo.GetQueryable()
+                .Where(a => !a.IsRead &&
+                            a.Device != null && a.Device.Zone != null && a.Device.Zone.Building != null &&
+                            a.Device.Zone.Building.UserId == userId)
+                .ExecuteUpdateAsync(s => s.SetProperty(a => a.IsRead, true), ct);
+
+            if (updatedRows == 0)
                 return new ApiResponse(200, "No unread alerts to mark");
 
-            foreach (var alert in unreadAlerts)
-            {
-                alert.IsRead = true;
-                _alertRepo.Update(alert);
-            }
-
-            await _alertRepo.SaveChangesAsync();
-
-            return new ApiResponse(200, "All alerts marked as read successfully");
+            return new ApiResponse(200, $"{updatedRows} alerts marked as read successfully");
         }
     }
 }
