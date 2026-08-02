@@ -17,6 +17,7 @@ namespace EnergyOptimizer.Tests.Handlers.Dashboard
         private readonly Mock<IGenericRepository<EnergyReading>> _mockReadingRepo;
         private readonly Mock<IGenericRepository<Alert>> _mockAlertRepo;
         private readonly Mock<IGenericRepository<Zone>> _mockZoneRepo;
+        private readonly Mock<ICurrentUserService> _mockUserService;
         private readonly GetDashboardOverviewHandler _handler;
 
         public GetDashboardOverviewHandlerTests()
@@ -25,10 +26,13 @@ namespace EnergyOptimizer.Tests.Handlers.Dashboard
             _mockReadingRepo = new Mock<IGenericRepository<EnergyReading>>();
             _mockAlertRepo = new Mock<IGenericRepository<Alert>>();
             _mockZoneRepo = new Mock<IGenericRepository<Zone>>();
+            _mockUserService = new Mock<ICurrentUserService>();
+            _mockUserService.Setup(u => u.RequireUserId()).Returns("user-123");
 
             _handler = new GetDashboardOverviewHandler(
                 _mockDeviceRepo.Object, _mockReadingRepo.Object,
-                _mockAlertRepo.Object, _mockZoneRepo.Object);
+                _mockAlertRepo.Object, _mockZoneRepo.Object,
+                _mockUserService.Object);
         }
 
         [Fact]

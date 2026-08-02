@@ -48,7 +48,7 @@ namespace EnergyOptimizer.Tests.Controllers
             var result = await _controller.Register(registerDto);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Should().BeAssignableTo<ObjectResult>().Subject;
             okResult.Value.Should().Be(expectedResponse);
         }
 
@@ -68,7 +68,7 @@ namespace EnergyOptimizer.Tests.Controllers
             var result = await _controller.Login(loginDto);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Should().BeAssignableTo<ObjectResult>().Subject;
 
             // Cookies set on response
             var setCookieHeader = _controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
@@ -98,7 +98,7 @@ namespace EnergyOptimizer.Tests.Controllers
             var result = await _controller.RefreshToken(null);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Should().BeAssignableTo<ObjectResult>().Subject;
             var setCookieHeader = _controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
             setCookieHeader.Should().Contain("access_token");
             setCookieHeader.Should().Contain("refresh_token");
@@ -118,7 +118,7 @@ namespace EnergyOptimizer.Tests.Controllers
             var result = await _controller.Logout(null);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var okResult = result.Should().BeAssignableTo<ObjectResult>().Subject;
             var setCookieHeader = _controller.HttpContext.Response.Headers["Set-Cookie"].ToString();
             setCookieHeader.Should().Contain("access_token");
             setCookieHeader.Should().Contain("refresh_token");

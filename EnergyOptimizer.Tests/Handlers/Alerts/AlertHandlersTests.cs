@@ -15,11 +15,14 @@ namespace EnergyOptimizer.Tests.Handlers.Alerts
     {
         private readonly Mock<IGenericRepository<Alert>> _mockAlertRepo;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ICurrentUserService> _mockUserService;
 
         public AlertHandlersTests()
         {
             _mockAlertRepo = new Mock<IGenericRepository<Alert>>();
             _mockMapper = new Mock<IMapper>();
+            _mockUserService = new Mock<ICurrentUserService>();
+            _mockUserService.Setup(u => u.RequireUserId()).Returns("user-123");
         }
 
         [Fact]
@@ -31,7 +34,7 @@ namespace EnergyOptimizer.Tests.Handlers.Alerts
             _mockMapper.Setup(m => m.Map<List<AlertDto>>(alerts)).Returns(new List<AlertDto> { new AlertDto { Id = 1 } });
 
             var query = new GetAlertsQuery(null, null, null, null, null, 1, 10);
-            var handler = new GetAlertsHandler(_mockAlertRepo.Object, _mockMapper.Object);
+            var handler = new GetAlertsHandler(_mockAlertRepo.Object, _mockMapper.Object, _mockUserService.Object);
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);
@@ -45,8 +48,8 @@ namespace EnergyOptimizer.Tests.Handlers.Alerts
         public async Task GetAlertById_NotFound_ThrowsException()
         {
             // Arrange
-            _mockAlertRepo.Setup(r => r.ListAsync(It.IsAny<AlertsWithFiltersSpec>())).ReturnsAsync(new List<Alert>());
-            var handler = new GetAlertByIdHandler(_mockAlertRepo.Object, _mockMapper.Object);
+            _mockAlertRepo.Setup(r => r.GetEntityWithSpec(It.IsAny<AlertOwnedByUserSpec>())).ReturnsAsync((Alert?)null);
+            var handler = new GetAlertByIdHandler(_mockAlertRepo.Object, _mockMapper.Object, _mockUserService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(new GetAlertByIdQuery(99), CancellationToken.None);
