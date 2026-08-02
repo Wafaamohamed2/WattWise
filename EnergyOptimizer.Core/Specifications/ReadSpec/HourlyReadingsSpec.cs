@@ -1,17 +1,14 @@
-﻿using EnergyOptimizer.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EnergyOptimizer.Core.Entities;
 
 namespace EnergyOptimizer.Core.Specifications.ReadSpec
 {
     public class HourlyReadingsSpec : BaseSpecifcation<EnergyReading>
     {
-        public HourlyReadingsSpec(DateTime date)
+        public HourlyReadingsSpec(DateTime date, string userId)
            : base(r => r.Timestamp >= date.Date &&
-                       r.Timestamp < date.Date.AddDays(1))
+                       r.Timestamp < date.Date.AddDays(1) &&
+                       r.Device != null && r.Device.Zone != null && r.Device.Zone.Building != null &&
+                       r.Device.Zone.Building.UserId == userId)
         {
             AddInclude(r => r.Device);
             ApplyOrderBy(r => r.Timestamp);

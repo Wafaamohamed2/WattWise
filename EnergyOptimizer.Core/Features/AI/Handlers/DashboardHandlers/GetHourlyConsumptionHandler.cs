@@ -1,9 +1,9 @@
-﻿using MediatR;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
@@ -11,23 +11,39 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers
     public class GetHourlyConsumptionHandler : IRequestHandler<GetHourlyConsumptionQuery, ApiResponse>
     {
         private readonly IGenericRepository<EnergyReading> _readingRepo;
-        public GetHourlyConsumptionHandler(IGenericRepository<EnergyReading> readingRepo) => _readingRepo = readingRepo;
+        private readonly ICurrentUserService _currentUser;
+
+        public GetHourlyConsumptionHandler(IGenericRepository<EnergyReading> readingRepo, ICurrentUserService currentUser)
+        {
+            _readingRepo = readingRepo;
+            _currentUser = currentUser;
+        }
 
         public async Task<ApiResponse> Handle(GetHourlyConsumptionQuery request, CancellationToken ct)
         {
+            var userId = _currentUser.RequireUserId();
+
             if (!DateTime.TryParse(request.Date, out DateTime targetDate)) targetDate = DateTime.UtcNow.Date;
 
-            var readings = await _readingRepo.ListAsync(new HourlyReadingsSpec(targetDate));
+            var nextDay = targetDate.Date.AddDays(1);
 
-            var hourlyData = Enumerable.Range(0, 24).Select(hour =>
-            {
-                var hourReadings = readings.Where(r => r.Timestamp.Hour == hour).ToList();
-                return new HourlyConsumptionDto
+            var dbHourlyStats = await _readingRepo.GetQueryable()
+                .Where(r => r.Timestamp >= targetDate.Date && r.Timestamp < nextDay &&
+                            r.Device != null && r.Device.Zone != null && r.Device.Zone.Building != null &&
+                            r.Device.Zone.Building.UserId == userId)
+                .GroupBy(r => r.Timestamp.Hour)
+                .Select(g => new
                 {
-                    Hour = hour,
-                    TimeLabel = $"{hour:D2}:00",
-                    TotalConsumption = Math.Round(hourReadings.Sum(r => r.PowerConsumptionKW), 2)
-                };
+                    Hour = g.Key,
+                    TotalConsumption = g.Sum(r => r.PowerConsumptionKW)
+                })
+                .ToDictionaryAsync(x => x.Hour, x => x.TotalConsumption, ct);
+
+            var hourlyData = Enumerable.Range(0, 24).Select(hour => new HourlyConsumptionDto
+            {
+                Hour = hour,
+                TimeLabel = $"{hour:D2}:00",
+                TotalConsumption = Math.Round(dbHourlyStats.TryGetValue(hour, out var val) ? val : 0m, 2)
             }).ToList();
 
             return new ApiResponse(200, "Hourly consumption retrieved", hourlyData);

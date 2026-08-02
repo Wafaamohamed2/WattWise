@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
@@ -10,24 +10,27 @@ namespace EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers
     public class GetLatestReadingsHandler : IRequestHandler<GetLatestReadingsQuery, ApiResponse>
     {
         private readonly IGenericRepository<EnergyReading> _readingRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public GetLatestReadingsHandler(IGenericRepository<EnergyReading> readingRepo)
+        public GetLatestReadingsHandler(IGenericRepository<EnergyReading> readingRepo, ICurrentUserService currentUser)
         {
             _readingRepo = readingRepo;
+            _currentUser = currentUser;
         }
 
         public async Task<ApiResponse> Handle(GetLatestReadingsQuery request, CancellationToken ct)
         {
+            var userId = _currentUser.RequireUserId();
             IReadOnlyList<EnergyReading> readings;
 
             if (!string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start)
                 && !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end))
             {
-                readings = await _readingRepo.ListAsync(new ReadingsByDateRangeSpec(start, end));
+                readings = await _readingRepo.ListAsync(new ReadingsByDateRangeSpec(start, end, userId));
             }
             else
             {
-                readings = await _readingRepo.ListAsync(new LatestReadingsSpec(request.Limit));
+                readings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, request.Limit));
             }
 
             var result = readings.Select(r => new
