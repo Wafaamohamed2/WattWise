@@ -1,7 +1,7 @@
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers;
-using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
+using EnergyOptimizer.Core.Features.Devices.Handlers;
+using EnergyOptimizer.Core.Features.Devices.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Infrastructure.Repositories;

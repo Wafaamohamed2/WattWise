@@ -1,5 +1,5 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.AnalysisSpec;

@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

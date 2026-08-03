@@ -1,5 +1,5 @@
 using EnergyOptimizer.API.Controllers;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Features.Auth.Handlers;
 using FluentAssertions;

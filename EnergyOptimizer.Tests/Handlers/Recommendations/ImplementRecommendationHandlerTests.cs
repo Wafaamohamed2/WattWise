@@ -1,5 +1,5 @@
 using EnergyOptimizer.Core.Entities.AI_Analysis;
-using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
+using EnergyOptimizer.Core.Features.Recommendations.Commands;
 using EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers;
 using EnergyOptimizer.Core.Interfaces;
 using FluentAssertions;

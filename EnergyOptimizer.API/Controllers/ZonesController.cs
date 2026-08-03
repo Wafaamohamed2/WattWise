@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.ZoneDTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.ZoneCommands;
-using EnergyOptimizer.Core.Features.AI.Queries.ZoneQueries;
+using EnergyOptimizer.Core.Features.Zones.Commands;
+using EnergyOptimizer.Core.Features.Zones.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

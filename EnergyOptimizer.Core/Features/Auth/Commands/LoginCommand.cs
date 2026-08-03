@@ -1,4 +1,4 @@
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using MediatR;
 using static EnergyOptimizer.Core.DTOs.AuthDto;
 

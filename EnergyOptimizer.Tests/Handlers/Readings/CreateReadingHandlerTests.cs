@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.ReadingsCommans;
-using EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers;
+using EnergyOptimizer.Core.Features.Readings.Commands;
+using EnergyOptimizer.Core.Features.Readings.Handlers;
 using EnergyOptimizer.Core.Contracts;
 using MassTransit;
 using FluentAssertions;

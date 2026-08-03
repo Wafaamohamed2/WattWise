@@ -1,8 +1,8 @@
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Handlers.DashboardHandlers;
-using EnergyOptimizer.Core.Features.AI.Handlers.ReadingsHandlers;
-using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
-using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
+using EnergyOptimizer.Core.Features.Dashboard.Handlers;
+using EnergyOptimizer.Core.Features.Readings.Handlers;
+using EnergyOptimizer.Core.Features.Dashboard.Queries;
+using EnergyOptimizer.Core.Features.Readings.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.ReadSpec;
 using EnergyOptimizer.Tests.Helpers;

@@ -1,4 +1,4 @@
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using MediatR;
 
 namespace EnergyOptimizer.Core.Features.Auth.Queries

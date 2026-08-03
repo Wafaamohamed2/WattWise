@@ -1,6 +1,6 @@
 using System.Text;
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;

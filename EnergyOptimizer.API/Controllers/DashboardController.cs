@@ -1,4 +1,4 @@
-using EnergyOptimizer.Core.Features.AI.Queries.DashboardQueries;
+using EnergyOptimizer.Core.Features.Dashboard.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

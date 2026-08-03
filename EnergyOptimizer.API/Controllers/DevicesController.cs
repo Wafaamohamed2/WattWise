@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.DeviceDTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
-using EnergyOptimizer.Core.Features.AI.Queries.DevicesQueries;
+using EnergyOptimizer.Core.Features.Devices.Commands;
+using EnergyOptimizer.Core.Features.Devices.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

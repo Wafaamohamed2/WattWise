@@ -1,4 +1,5 @@
-﻿using MediatR;
+using EnergyOptimizer.Core.Contracts;
+using MediatR;
 
 namespace EnergyOptimizer.Core.Features.AI.Commands
 {

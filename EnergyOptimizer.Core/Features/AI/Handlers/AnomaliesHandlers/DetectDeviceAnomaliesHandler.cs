@@ -1,5 +1,6 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Interfaces;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.AI.Commands;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers

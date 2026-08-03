@@ -2,7 +2,7 @@ using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Specifications.AnalysisSpec;
 using EnergyOptimizer.Core.Specifications.RecommendationSpec;
 using EnergyOptimizer.Core.Specifications.AnomaliesSpec;

@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.ReadingsDTOs;
 using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Queries.ReadingsQueries;
+using EnergyOptimizer.Core.Features.Readings.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

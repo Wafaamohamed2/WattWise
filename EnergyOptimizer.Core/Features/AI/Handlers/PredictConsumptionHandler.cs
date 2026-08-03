@@ -1,8 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Exceptions;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers
 {

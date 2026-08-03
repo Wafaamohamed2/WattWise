@@ -1,5 +1,5 @@
-﻿using MediatR;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using MediatR;
+using EnergyOptimizer.Core.Contracts;
 
 namespace EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries
 {

@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.Entities;
-using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
-using EnergyOptimizer.Core.Features.AI.Handlers.DevicesHandlers;
+using EnergyOptimizer.Core.Features.Devices.Commands;
+using EnergyOptimizer.Core.Features.Devices.Handlers;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.DeviceSpec;
 using FluentAssertions;

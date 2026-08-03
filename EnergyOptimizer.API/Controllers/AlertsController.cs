@@ -1,5 +1,5 @@
-using EnergyOptimizer.Core.Features.AI.Commands.AlertsCommans;
-using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
+using EnergyOptimizer.Core.Features.Alerts.Commands;
+using EnergyOptimizer.Core.Features.Alerts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

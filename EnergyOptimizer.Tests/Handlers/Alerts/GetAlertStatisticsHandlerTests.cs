@@ -1,8 +1,8 @@
 using EnergyOptimizer.Core.DTOs.AlertsDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Enums;
-using EnergyOptimizer.Core.Features.AI.Handlers.AlertHandlers;
-using EnergyOptimizer.Core.Features.AI.Queries.AlertsQueries;
+using EnergyOptimizer.Core.Features.Alerts.Handlers;
+using EnergyOptimizer.Core.Features.Alerts.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.AlertSpec;
 using FluentAssertions;

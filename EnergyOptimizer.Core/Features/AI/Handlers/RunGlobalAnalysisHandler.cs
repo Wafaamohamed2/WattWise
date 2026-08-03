@@ -1,4 +1,5 @@
-﻿using MediatR;
+using MediatR;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.AI.Commands;
 using EnergyOptimizer.Service.Services.Abstract;
 

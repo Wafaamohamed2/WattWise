@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.DeviceDTOs;
 using EnergyOptimizer.Core.Enums;
-using EnergyOptimizer.Core.Features.AI.Commands.DevicesCommans;
+using EnergyOptimizer.Core.Features.Devices.Commands;
 using FluentAssertions;
 
 namespace EnergyOptimizer.Tests.Validators

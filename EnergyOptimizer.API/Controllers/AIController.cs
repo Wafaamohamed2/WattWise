@@ -1,5 +1,5 @@
 using EnergyOptimizer.Core.Features.AI.Commands;
-using EnergyOptimizer.Core.Features.AI.Commands.RecommendationCommans;
+using EnergyOptimizer.Core.Features.Recommendations.Commands;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;

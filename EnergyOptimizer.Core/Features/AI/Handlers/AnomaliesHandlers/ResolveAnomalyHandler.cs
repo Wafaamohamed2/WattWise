@@ -1,9 +1,9 @@
-﻿using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Exceptions; 
 using MediatR;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 
 namespace EnergyOptimizer.Core.Features.AI.Handlers.AnomaliesHandlers
 {

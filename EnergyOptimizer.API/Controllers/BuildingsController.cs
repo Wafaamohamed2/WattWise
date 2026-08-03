@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.DTOs.BuildingDTOs;
-using EnergyOptimizer.Core.Features.AI.Commands.BuildingCommands;
-using EnergyOptimizer.Core.Features.AI.Queries.BuildingQueries;
+using EnergyOptimizer.Core.Features.Buildings.Commands;
+using EnergyOptimizer.Core.Features.Buildings.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

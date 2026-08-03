@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
 using EnergyOptimizer.API.Helpers;
-using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;

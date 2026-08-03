@@ -1,6 +1,10 @@
-using EnergyOptimizer.Core.Exceptions;
 using System.Net;
 using System.Text.Json;
+using EnergyOptimizer.Core.Contracts;
+using EnergyOptimizer.Core.Exceptions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace EnergyOptimizer.API.Middleware
 {
@@ -66,6 +70,5 @@ namespace EnergyOptimizer.API.Middleware
                 await context.Response.WriteAsync(json);
             }
         }
-        public record ApiResponse(int StatusCode, string Message, object? Details = null);
     }
 }

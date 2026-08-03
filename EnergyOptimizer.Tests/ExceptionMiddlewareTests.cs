@@ -1,4 +1,5 @@
 using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -100,12 +101,12 @@ namespace EnergyOptimizer.Tests
             responseBody.Details.Should().NotBeNull();
         }
 
-        private async Task<ExceptionMiddleware.ApiResponse> ReadResponseBody()
+        private async Task<ApiResponse> ReadResponseBody()
         {
             _context.Response.Body.Seek(0, SeekOrigin.Begin);
             using var reader = new StreamReader(_context.Response.Body);
             var json = await reader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<ExceptionMiddleware.ApiResponse>(json,
+            return JsonSerializer.Deserialize<ApiResponse>(json,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })!;
         }
         private class MockBaseException : BaseException

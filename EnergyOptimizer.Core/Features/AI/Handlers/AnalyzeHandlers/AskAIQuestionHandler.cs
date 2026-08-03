@@ -1,4 +1,4 @@
-﻿using EnergyOptimizer.Core.Features.AI.Commands;
+using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
