@@ -1,11 +1,10 @@
-using AutoMapper;
+using EnergyOptimizer.Core.DTOs.AuthDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Features.Auth.Handlers;
 using EnergyOptimizer.Core.Interfaces;
 using FluentAssertions;
-using Microsoft.AspNetCore.Identity;
 using Moq;
 using static EnergyOptimizer.Core.DTOs.AuthDto;
 
@@ -13,18 +12,13 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
 {
     public class AuthHandlersTests
     {
-        private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<IIdentityService> _mockIdentityService;
         private readonly Mock<IJwtTokenService> _mockTokenService;
         private readonly Mock<IRefreshTokenService> _mockRefreshTokenService;
 
         public AuthHandlersTests()
         {
-            var store = new Mock<IUserStore<ApplicationUser>>();
-            _mockUserManager = new Mock<UserManager<ApplicationUser>>(
-                store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-
-            _mockMapper = new Mock<IMapper>();
+            _mockIdentityService = new Mock<IIdentityService>();
             _mockTokenService = new Mock<IJwtTokenService>();
             _mockRefreshTokenService = new Mock<IRefreshTokenService>();
         }
@@ -35,12 +29,11 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
             var command = new RegisterCommand(dto);
-            var user = new ApplicationUser { Email = dto.Email };
 
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password)).ReturnsAsync(IdentityResult.Success);
+            _mockIdentityService.Setup(i => i.CreateUserAsync(dto.Email, dto.Password, dto.FullName))
+                .ReturnsAsync((IdentityResultDto.Success(), "user-123"));
 
-            var handler = new RegisterCommandHandler(_mockUserManager.Object, _mockMapper.Object);
+            var handler = new RegisterCommandHandler(_mockIdentityService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -56,17 +49,15 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
             var command = new RegisterCommand(dto);
-            var user = new ApplicationUser { Id = "user-123", FullName = dto.FullName, Email = dto.Email };
 
             var mockBuildingRepo = new Mock<IGenericRepository<Building>>();
             var mockZoneRepo = new Mock<IGenericRepository<Zone>>();
 
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password)).ReturnsAsync(IdentityResult.Success);
+            _mockIdentityService.Setup(i => i.CreateUserAsync(dto.Email, dto.Password, dto.FullName))
+                .ReturnsAsync((IdentityResultDto.Success(), "user-123"));
 
             var handler = new RegisterCommandHandler(
-                _mockUserManager.Object,
-                _mockMapper.Object,
+                _mockIdentityService.Object,
                 emailService: null,
                 config: null,
                 buildingRepo: mockBuildingRepo.Object,
@@ -87,13 +78,11 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
             var command = new RegisterCommand(dto);
-            var user = new ApplicationUser { Email = dto.Email };
 
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password))
-                            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Email taken" }));
+            _mockIdentityService.Setup(i => i.CreateUserAsync(dto.Email, dto.Password, dto.FullName))
+                .ReturnsAsync((IdentityResultDto.Failure("Email taken"), string.Empty));
 
-            var handler = new RegisterCommandHandler(_mockUserManager.Object, _mockMapper.Object);
+            var handler = new RegisterCommandHandler(_mockIdentityService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
@@ -108,17 +97,17 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new RegisterDto("Wafaa Mohamed", "test@example.com", "Password123!");
             var command = new RegisterCommand(dto);
-            var user = new ApplicationUser { Id = "user-1", Email = dto.Email, FullName = dto.FullName };
             var mockEmailService = new Mock<IEmailService>();
 
-            _mockMapper.Setup(m => m.Map<ApplicationUser>(dto)).Returns(user);
-            _mockUserManager.Setup(u => u.CreateAsync(user, dto.Password)).ReturnsAsync(IdentityResult.Success);
-            _mockUserManager.Setup(u => u.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("token");
+            _mockIdentityService.Setup(i => i.CreateUserAsync(dto.Email, dto.Password, dto.FullName))
+                .ReturnsAsync((IdentityResultDto.Success(), "user-1"));
+            _mockIdentityService.Setup(i => i.GenerateEmailConfirmationTokenAsync("user-1"))
+                .ReturnsAsync("token");
 
             mockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                             .ThrowsAsync(new Exception("SMTP server down"));
 
-            var handler = new RegisterCommandHandler(_mockUserManager.Object, _mockMapper.Object, mockEmailService.Object);
+            var handler = new RegisterCommandHandler(_mockIdentityService.Object, mockEmailService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -134,15 +123,16 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new LoginDto("test@example.com", "Password123!");
             var command = new LoginCommand(dto, "127.0.0.1");
-            var user = new ApplicationUser { Id = "1", Email = dto.Email, FullName = "Ali Mohamed" };
+            var userAuthInfo = new UserAuthInfo("1", dto.Email, "Ali Mohamed", true);
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(true);
-            _mockUserManager.Setup(u => u.IsEmailConfirmedAsync(user)).ReturnsAsync(true);
-            _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("fake-jwt-token");
-            _mockRefreshTokenService.Setup(r => r.GenerateRefreshTokenAsync(user.Id, "127.0.0.1")).ReturnsAsync("fake-refresh-token");
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(dto.Email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ValidateUserCredentialsAsync(dto.Email, dto.Password))
+                .ReturnsAsync((true, userAuthInfo));
 
-            var handler = new LoginCommandHandler(_mockUserManager.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
+            _mockTokenService.Setup(t => t.GenerateToken(userAuthInfo)).Returns("fake-jwt-token");
+            _mockRefreshTokenService.Setup(r => r.GenerateRefreshTokenAsync(userAuthInfo.Id, "127.0.0.1")).ReturnsAsync("fake-refresh-token");
+
+            var handler = new LoginCommandHandler(_mockIdentityService.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -160,13 +150,13 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         public async Task RefreshTokenHandler_ValidToken_ReturnsNewTokens()
         {
             // Arrange
-            var user = new ApplicationUser { Id = "1", Email = "test@example.com" };
+            var userAuthInfo = new UserAuthInfo("1", "test@example.com", "Ali Mohamed", true);
             var command = new RefreshTokenCommand("old-refresh-token", "127.0.0.1");
-            var rotationResult = new RefreshTokenRotationResult("new-refresh-token", user);
+            var rotationResult = new RefreshTokenRotationResult("new-refresh-token", userAuthInfo);
 
             _mockRefreshTokenService.Setup(r => r.RotateRefreshTokenAsync("old-refresh-token", "127.0.0.1"))
                                     .ReturnsAsync(rotationResult);
-            _mockTokenService.Setup(t => t.GenerateToken(user)).Returns("new-access-token");
+            _mockTokenService.Setup(t => t.GenerateToken(userAuthInfo)).Returns("new-access-token");
 
             var handler = new RefreshTokenCommandHandler(_mockRefreshTokenService.Object, _mockTokenService.Object);
 
@@ -186,13 +176,13 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Arrange
             var dto = new LoginDto("unconfirmed@example.com", "Password123!");
             var command = new LoginCommand(dto, "127.0.0.1");
-            var user = new ApplicationUser { Id = "1", Email = dto.Email, FullName = "Ali Mohamed", EmailConfirmed = false };
+            var userAuthInfo = new UserAuthInfo("1", dto.Email, "Ali Mohamed", false);
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(true);
-            _mockUserManager.Setup(u => u.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(dto.Email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ValidateUserCredentialsAsync(dto.Email, dto.Password))
+                .ReturnsAsync((true, userAuthInfo));
 
-            var handler = new LoginCommandHandler(_mockUserManager.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
+            var handler = new LoginCommandHandler(_mockIdentityService.Object, _mockTokenService.Object, _mockRefreshTokenService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
@@ -206,15 +196,13 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         public async Task VerifyEmailHandler_ValidToken_ConfirmsEmailSuccessfully()
         {
             // Arrange
-            var user = new ApplicationUser { Id = "user-123", Email = "test@example.com", EmailConfirmed = false };
-            var rawToken = "sample-email-token";
-            var encodedToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(rawToken));
-            var command = new VerifyEmailCommand(user.Id, encodedToken);
+            var userAuthInfo = new UserAuthInfo("user-123", "test@example.com", "Wafaa Mohamed", false);
+            var command = new VerifyEmailCommand(userAuthInfo.Id, "sample-token");
 
-            _mockUserManager.Setup(u => u.FindByIdAsync(user.Id)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.ConfirmEmailAsync(user, rawToken)).ReturnsAsync(IdentityResult.Success);
+            _mockIdentityService.Setup(i => i.FindUserByIdAsync(userAuthInfo.Id)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ConfirmEmailAsync(userAuthInfo.Id, "sample-token")).ReturnsAsync(IdentityResultDto.Success());
 
-            var handler = new VerifyEmailCommandHandler(_mockUserManager.Object);
+            var handler = new VerifyEmailCommandHandler(_mockIdentityService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -229,9 +217,9 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var command = new VerifyEmailCommand("invalid-id", "some-token");
-            _mockUserManager.Setup(u => u.FindByIdAsync("invalid-id")).ReturnsAsync((ApplicationUser?)null);
+            _mockIdentityService.Setup(i => i.FindUserByIdAsync("invalid-id")).ReturnsAsync((UserAuthInfo?)null);
 
-            var handler = new VerifyEmailCommandHandler(_mockUserManager.Object);
+            var handler = new VerifyEmailCommandHandler(_mockIdentityService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
@@ -245,14 +233,14 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var email = "unconfirmed@example.com";
-            var user = new ApplicationUser { Id = "user-1", Email = email, FullName = "Test User", EmailConfirmed = false };
+            var userAuthInfo = new UserAuthInfo("user-1", email, "Test User", false);
             var mockEmailService = new Mock<IEmailService>();
             var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("new-token");
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.GenerateEmailConfirmationTokenAsync("user-1")).ReturnsAsync("new-token");
 
-            var handler = new ResendConfirmationEmailCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+            var handler = new ResendConfirmationEmailCommandHandler(_mockIdentityService.Object, mockEmailService.Object, mockConfig.Object);
 
             // Act
             var result = await handler.Handle(new ResendConfirmationEmailCommand(email), CancellationToken.None);
@@ -268,13 +256,13 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var email = "confirmed@example.com";
-            var user = new ApplicationUser { Id = "user-2", Email = email, FullName = "Test User", EmailConfirmed = true };
+            var userAuthInfo = new UserAuthInfo("user-2", email, "Test User", true);
             var mockEmailService = new Mock<IEmailService>();
             var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync(userAuthInfo);
 
-            var handler = new ResendConfirmationEmailCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+            var handler = new ResendConfirmationEmailCommandHandler(_mockIdentityService.Object, mockEmailService.Object, mockConfig.Object);
 
             // Act
             var result = await handler.Handle(new ResendConfirmationEmailCommand(email), CancellationToken.None);
@@ -290,14 +278,14 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var email = "forgot@example.com";
-            var user = new ApplicationUser { Id = "user-10", Email = email, FullName = "Forgot User" };
+            var userAuthInfo = new UserAuthInfo("user-10", email, "Forgot User", true);
             var mockEmailService = new Mock<IEmailService>();
             var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token-123");
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.GeneratePasswordResetTokenAsync(email)).ReturnsAsync("reset-token-123");
 
-            var handler = new ForgotPasswordCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+            var handler = new ForgotPasswordCommandHandler(_mockIdentityService.Object, mockEmailService.Object, mockConfig.Object);
 
             // Act
             var result = await handler.Handle(new ForgotPasswordCommand(email), CancellationToken.None);
@@ -316,9 +304,9 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             var mockEmailService = new Mock<IEmailService>();
             var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync((ApplicationUser?)null);
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync((UserAuthInfo?)null);
 
-            var handler = new ForgotPasswordCommandHandler(_mockUserManager.Object, mockEmailService.Object, mockConfig.Object);
+            var handler = new ForgotPasswordCommandHandler(_mockIdentityService.Object, mockEmailService.Object, mockConfig.Object);
 
             // Act
             var result = await handler.Handle(new ForgotPasswordCommand(email), CancellationToken.None);
@@ -334,14 +322,14 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var email = "reset@example.com";
-            var user = new ApplicationUser { Id = "user-20", Email = email };
-            var token = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes("valid-token"));
+            var userAuthInfo = new UserAuthInfo("user-20", email, "Reset User", true);
+            var token = "valid-token";
             var newPassword = "NewPassword123!";
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.ResetPasswordAsync(user, "valid-token", newPassword)).ReturnsAsync(IdentityResult.Success);
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ResetPasswordAsync(email, token, newPassword)).ReturnsAsync(IdentityResultDto.Success());
 
-            var handler = new ResetPasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+            var handler = new ResetPasswordCommandHandler(_mockIdentityService.Object, _mockRefreshTokenService.Object);
 
             // Act
             var result = await handler.Handle(new ResetPasswordCommand(email, token, newPassword), CancellationToken.None);
@@ -349,7 +337,7 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
             // Assert
             result.StatusCode.Should().Be(200);
             result.Message.Should().Be("Password reset successfully. You can now login with your new password.");
-            _mockRefreshTokenService.Verify(r => r.RevokeAllUserTokensAsync(user.Id), Times.Once);
+            _mockRefreshTokenService.Verify(r => r.RevokeAllUserTokensAsync(userAuthInfo.Id), Times.Once);
         }
 
         [Fact]
@@ -357,15 +345,15 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var email = "reset@example.com";
-            var user = new ApplicationUser { Id = "user-20", Email = email };
-            var token = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes("invalid-token"));
+            var userAuthInfo = new UserAuthInfo("user-20", email, "Reset User", true);
+            var token = "invalid-token";
             var newPassword = "NewPassword123!";
 
-            _mockUserManager.Setup(u => u.FindByEmailAsync(email)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.ResetPasswordAsync(user, "invalid-token", newPassword))
-                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+            _mockIdentityService.Setup(i => i.FindUserByEmailAsync(email)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ResetPasswordAsync(email, token, newPassword))
+                .ReturnsAsync(IdentityResultDto.Failure("Invalid token"));
 
-            var handler = new ResetPasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+            var handler = new ResetPasswordCommandHandler(_mockIdentityService.Object, _mockRefreshTokenService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(new ResetPasswordCommand(email, token, newPassword), CancellationToken.None);
@@ -379,14 +367,14 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var userId = "user-30";
-            var user = new ApplicationUser { Id = userId };
+            var userAuthInfo = new UserAuthInfo(userId, "test@example.com", "Test User", true);
             var currentPassword = "OldPassword123!";
             var newPassword = "NewPassword123!";
 
-            _mockUserManager.Setup(u => u.FindByIdAsync(userId)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.ChangePasswordAsync(user, currentPassword, newPassword)).ReturnsAsync(IdentityResult.Success);
+            _mockIdentityService.Setup(i => i.FindUserByIdAsync(userId)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ChangePasswordAsync(userId, currentPassword, newPassword)).ReturnsAsync(IdentityResultDto.Success());
 
-            var handler = new ChangePasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+            var handler = new ChangePasswordCommandHandler(_mockIdentityService.Object, _mockRefreshTokenService.Object);
 
             // Act
             var result = await handler.Handle(new ChangePasswordCommand(userId, currentPassword, newPassword), CancellationToken.None);
@@ -402,15 +390,15 @@ namespace EnergyOptimizer.Tests.Handlers.Auth
         {
             // Arrange
             var userId = "user-30";
-            var user = new ApplicationUser { Id = userId };
+            var userAuthInfo = new UserAuthInfo(userId, "test@example.com", "Test User", true);
             var currentPassword = "WrongPassword123!";
             var newPassword = "NewPassword123!";
 
-            _mockUserManager.Setup(u => u.FindByIdAsync(userId)).ReturnsAsync(user);
-            _mockUserManager.Setup(u => u.ChangePasswordAsync(user, currentPassword, newPassword))
-                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Incorrect password" }));
+            _mockIdentityService.Setup(i => i.FindUserByIdAsync(userId)).ReturnsAsync(userAuthInfo);
+            _mockIdentityService.Setup(i => i.ChangePasswordAsync(userId, currentPassword, newPassword))
+                .ReturnsAsync(IdentityResultDto.Failure("Incorrect password"));
 
-            var handler = new ChangePasswordCommandHandler(_mockUserManager.Object, _mockRefreshTokenService.Object);
+            var handler = new ChangePasswordCommandHandler(_mockIdentityService.Object, _mockRefreshTokenService.Object);
 
             // Act
             Func<Task> act = async () => await handler.Handle(new ChangePasswordCommand(userId, currentPassword, newPassword), CancellationToken.None);

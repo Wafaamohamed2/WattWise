@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using EnergyOptimizer.Core.DTOs.AuthDTOs;
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Interfaces;
@@ -45,7 +46,6 @@ namespace EnergyOptimizer.Service.Services
         {
             var tokenHash = HashToken(token);
             var storedToken = await _context.RefreshTokens
-                .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
 
             if (storedToken == null)
@@ -60,7 +60,12 @@ namespace EnergyOptimizer.Service.Services
             if (storedToken.IsExpired)
                 throw new UnauthorizedException("Refresh token has expired");
 
-            return new RefreshTokenValidationResult(storedToken.User, storedToken);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == storedToken.UserId);
+            if (user == null)
+                throw new UnauthorizedException("User associated with refresh token not found");
+
+            var userAuthInfo = new UserAuthInfo(user.Id, user.Email!, user.FullName, user.EmailConfirmed);
+            return new RefreshTokenValidationResult(userAuthInfo, storedToken);
         }
 
         public async Task<RefreshTokenRotationResult> RotateRefreshTokenAsync(string token, string? ipAddress = null)

@@ -1,27 +1,23 @@
-using System.Text;
-using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 
 namespace EnergyOptimizer.Core.Features.Auth.Handlers
 {
     public class ResendConfirmationEmailCommandHandler : IRequestHandler<ResendConfirmationEmailCommand, ApiResponse>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
 
         public ResendConfirmationEmailCommandHandler(
-            UserManager<ApplicationUser> userManager,
+            IIdentityService identityService,
             IEmailService emailService,
             IConfiguration config)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _emailService = emailService;
             _config = config;
         }
@@ -33,14 +29,13 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
             if (string.IsNullOrWhiteSpace(request.Email))
                 return new ApiResponse(200, genericMessage);
 
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _identityService.FindUserByEmailAsync(request.Email);
             if (user == null || user.EmailConfirmed)
             {
                 return new ApiResponse(200, genericMessage);
             }
 
-            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
+            var encodedToken = await _identityService.GenerateEmailConfirmationTokenAsync(user.Id);
 
             var frontendUrl = (_config["FrontendUrl"] ?? "http://127.0.0.1:5500/WattWise-Frontend").TrimEnd('/');
             var verificationLink = $"{frontendUrl}/verify-email.html?userId={user.Id}&token={encodedToken}";
@@ -58,7 +53,7 @@ namespace EnergyOptimizer.Core.Features.Auth.Handlers
                     <p style='font-size: 12px; color: #888; text-align: center;'>WattWise System</p>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email!, "Confirm your Email - WattWise", emailBody);
+            await _emailService.SendEmailAsync(user.Email, "Confirm your Email - WattWise", emailBody);
 
             return new ApiResponse(200, genericMessage);
         }

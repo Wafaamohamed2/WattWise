@@ -1,3 +1,4 @@
+using EnergyOptimizer.Core.DTOs.AuthDTOs;
 using EnergyOptimizer.Core.Entities;
 
 namespace EnergyOptimizer.Core.Interfaces
@@ -11,6 +12,6 @@ namespace EnergyOptimizer.Core.Interfaces
         Task RevokeAllUserTokensAsync(string userId);
     }
 
-    public record RefreshTokenValidationResult(ApplicationUser User, RefreshToken StoredToken);
-    public record RefreshTokenRotationResult(string NewRefreshToken, ApplicationUser User);
+    public record RefreshTokenValidationResult(UserAuthInfo User, RefreshToken StoredToken);
+    public record RefreshTokenRotationResult(string NewRefreshToken, UserAuthInfo User);
 }

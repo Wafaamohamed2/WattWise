@@ -1,4 +1,4 @@
-using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.DTOs.AuthDTOs;
 using EnergyOptimizer.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +17,7 @@ namespace EnergyOptimizer.Service.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(ApplicationUser user)
+        public string GenerateToken(UserAuthInfo user)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var jwtKey = jwtSettings["Key"]
@@ -30,14 +30,14 @@ namespace EnergyOptimizer.Service.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName!),
-            new Claim("FullName", user.FullName)
-        };
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim("FullName", user.FullName)
+            };
             var expireMinutes = double.TryParse(jwtSettings["DurationInMinutes"], out var d) ? d : 60;
 
             var token = new JwtSecurityToken(

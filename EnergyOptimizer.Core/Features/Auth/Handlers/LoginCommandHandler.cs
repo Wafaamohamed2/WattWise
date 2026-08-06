@@ -1,48 +1,46 @@
-using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace EnergyOptimizer.Core.Features.Auth.Handlers
 {
     public class LoginCommandHandler : IRequestHandler<LoginCommand, ApiResponse>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IJwtTokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
 
         public LoginCommandHandler(
-            UserManager<ApplicationUser> userManager,
+            IIdentityService identityService,
             IJwtTokenService tokenService,
             IRefreshTokenService refreshTokenService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
         }
 
         public async Task<ApiResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.Dto.Email);
+            var user = await _identityService.FindUserByEmailAsync(request.Dto.Email);
 
             if (user == null)
                 throw new BadRequestException("Invalid email or password");
 
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Dto.Password);
+            var (isValid, userAuthInfo) = await _identityService.ValidateUserCredentialsAsync(request.Dto.Email, request.Dto.Password);
 
-            if (!isPasswordValid)
+            if (!isValid || userAuthInfo == null)
                 throw new UnauthorizedException("Invalid email or password");
 
-            if (!await _userManager.IsEmailConfirmedAsync(user))
+            if (!userAuthInfo.EmailConfirmed)
                 throw new UnauthorizedException("Please confirm your email address before logging in.");
 
-            var token = _tokenService.GenerateToken(user);
-            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(user.Id, request.IpAddress);
+            var token = _tokenService.GenerateToken(userAuthInfo);
+            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(userAuthInfo.Id, request.IpAddress);
 
-            var details = new LoginResultDetails(token, refreshToken, new LoginUserDto(user.Id, user.FullName, user.Email ?? string.Empty));
+            var details = new LoginResultDetails(token, refreshToken, new LoginUserDto(userAuthInfo.Id, userAuthInfo.FullName, userAuthInfo.Email));
 
             return new ApiResponse(200, "Login successful", details);
         }

@@ -1,9 +1,9 @@
-using EnergyOptimizer.Core.Entities;
+using EnergyOptimizer.Core.DTOs.AuthDTOs;
 
 namespace EnergyOptimizer.Core.Interfaces
 {
     public interface IJwtTokenService
     {
-        string GenerateToken(ApplicationUser user);
+        string GenerateToken(UserAuthInfo user);
     }
 }

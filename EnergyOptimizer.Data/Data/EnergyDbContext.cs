@@ -1,5 +1,6 @@
 using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
+using EnergyOptimizer.Data.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,7 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Address).HasMaxLength(500);
 
-                entity.HasOne(e => e.User)
+                entity.HasOne<ApplicationUser>()
                       .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
@@ -243,7 +244,7 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(256);
                 entity.Property(e => e.ReplacedByToken).HasMaxLength(256);
                 entity.Property(e => e.CreatedByIp).HasMaxLength(50);
-                entity.HasOne(e => e.User)
+                entity.HasOne<ApplicationUser>()
                       .WithMany(u => u.RefreshTokens)
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
@@ -251,9 +252,6 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => new { e.UserId, e.RevokedOn });
             });
-
-
-
         }
     }
 }

@@ -2,6 +2,7 @@ using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure.Consumers;
 using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Infrastructure.Repositories;
+using EnergyOptimizer.Infrastructure.Services;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,7 @@ namespace EnergyOptimizer.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IIdentityService, IdentityService>();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContextFactory<EnergyDbContext>(options =>

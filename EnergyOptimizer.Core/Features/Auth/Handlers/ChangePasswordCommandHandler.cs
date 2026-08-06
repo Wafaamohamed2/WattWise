@@ -1,38 +1,36 @@
-using EnergyOptimizer.Core.Entities;
 using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Interfaces;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace EnergyOptimizer.Core.Features.Auth.Handlers
 {
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, ApiResponse>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IRefreshTokenService _refreshTokenService;
 
         public ChangePasswordCommandHandler(
-            UserManager<ApplicationUser> userManager,
+            IIdentityService identityService,
             IRefreshTokenService refreshTokenService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _refreshTokenService = refreshTokenService;
         }
 
         public async Task<ApiResponse> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await _identityService.FindUserByIdAsync(request.UserId);
             if (user == null)
             {
                 throw new NotFoundException("User not found");
             }
 
-            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            var result = await _identityService.ChangePasswordAsync(request.UserId, request.CurrentPassword, request.NewPassword);
             if (!result.Succeeded)
             {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                var errors = string.Join(", ", result.Errors);
                 throw new BadRequestException($"Failed to change password: {errors}");
             }
 
