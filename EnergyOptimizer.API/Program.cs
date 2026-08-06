@@ -1,29 +1,17 @@
+using EnergyOptimizer.API.Extensions;
+using EnergyOptimizer.API.Hubs;
+using EnergyOptimizer.API.Helpers;
+using EnergyOptimizer.API.Middleware;
+using EnergyOptimizer.API.Services;
+using EnergyOptimizer.API.WebServices;
 using EnergyOptimizer.Core;
+using EnergyOptimizer.Core.Contracts;
+using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure;
 using EnergyOptimizer.Service;
-using FluentValidation;
-using EnergyOptimizer.Infrastructure.Data;
-using Serilog;
-using EnergyOptimizer.API.Hubs;
 using EnergyOptimizer.Service.Services;
-using EnergyOptimizer.API.Services;
-using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using EnergyOptimizer.API.WebServices;
 using Microsoft.AspNetCore.Mvc;
-using EnergyOptimizer.API.Helpers;
-using EnergyOptimizer.Core.Contracts;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
-using static EnergyOptimizer.API.Services.EnergyReadingSimulatorService;
-using EnergyOptimizer.API.Middleware;
-using EnergyOptimizer.API.Swagger;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +20,7 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-// Serilog 
+// Logging (Serilog)
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("logs/energy-.txt", rollingInterval: RollingInterval.Day)
@@ -40,7 +28,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Controllers 
+// Controllers & Custom Model Validation
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -49,7 +37,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition =
             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.PropertyNamingPolicy =
-           System.Text.Json.JsonNamingPolicy.CamelCase;
+            System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -66,35 +54,20 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-builder.Services.AddEndpointsApiExplorer();
-
-// API Versioning
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.ReportApiVersions = true;
-    options.ApiVersionReader = ApiVersionReader.Combine(
-        new UrlSegmentApiVersionReader(),
-        new HeaderApiVersionReader("x-api-version"),
-        new MediaTypeApiVersionReader("x-api-version"));
-})
-.AddApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
-});
-
-// Swagger Registration
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen();
-
-// Register Infrastructure Services (DB, Repositories, MassTransit)
+// Modular Architecture Registrations
+builder.Services.AddApiVersioningAndSwagger();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<EnergyOptimizer.Core.Interfaces.ICurrentUserService, EnergyOptimizer.Infrastructure.Services.CurrentUserService>();
+builder.Services.AddCoreServices();
+builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddIdentityAndJwtAuthentication(builder.Configuration);
+builder.Services.AddApiRateLimiting();
+builder.Services.AddAppCaching(builder.Configuration);
+builder.Services.AddApiCors(builder.Configuration);
 
-// SignalR 
+// Application & Infrastructure Custom Services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, EnergyOptimizer.Infrastructure.Services.CurrentUserService>();
+builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
@@ -102,142 +75,18 @@ builder.Services.AddSignalR(options =>
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
 });
 
-
-
-// Identity 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<EnergyDbContext>()
-    .AddDefaultTokenProviders();
-
-// JWT Authentication 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-                                       Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
-    };
-
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = ctx =>
-        {
-            // 1. Try HttpOnly cookie first (browser pages & WebSockets with credentials)
-            if (ctx.Request.Cookies.TryGetValue("access_token", out var cookieToken)
-                && !string.IsNullOrEmpty(cookieToken))
-            {
-                ctx.Token = cookieToken;
-                return Task.CompletedTask;
-            }
-
-            // 2. Fallback to Authorization header (Swagger / API clients)
-            var authHeader = ctx.Request.Headers["Authorization"].FirstOrDefault();
-            if (authHeader?.StartsWith("Bearer ") == true)
-            {
-                ctx.Token = authHeader["Bearer ".Length..];
-                return Task.CompletedTask;
-            }
-
-            // 3. Fallback to access_token query parameter for SignalR WebSockets
-            var accessToken = ctx.Request.Query["access_token"];
-            var path = ctx.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notifications"))
-            {
-                ctx.Token = accessToken;
-                return Task.CompletedTask;
-            }
-
-            return Task.CompletedTask;
-        }
-    };
-});
-
-// Rate Limiting 
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("auth", limiterOptions =>
-    {
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.PermitLimit = 10;   // 10 requests/min per client
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 0;
-    });
-
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-});
-
-// Strongly-typed options 
+// Options Configuration
+builder.Services.Configure<EnergyReadingSimulatorService.SimulationOptions>(
+    builder.Configuration.GetSection(EnergyReadingSimulatorService.SimulationOptions.SectionName));
 builder.Services.Configure<AIAnalysisOptions>(
     builder.Configuration.GetSection(AIAnalysisOptions.SectionName));
 
-builder.Services.Configure<SimulationOptions>(
-    builder.Configuration.GetSection(SimulationOptions.SectionName));
+// Background Hosted Services
+builder.Services.AddBackgroundServices();
 
-// Register Core Services (MediatR, FluentValidation, Behaviors)
-builder.Services.AddCoreServices();
-
-// Background Services 
-builder.Services.AddHostedService<EnergyReadingSimulatorService>();
-builder.Services.AddHostedService<AlertDetectionService>();
-builder.Services.AddHostedService<AIAnalysisBackgroundService>();
-builder.Services.AddHostedService<RefreshTokenCleanupService>();
-
-// Application Services 
-builder.Services.AddScoped<IEnergyHubService, EnergyHubService>();
-// Register Application Services (Gemini AI, Seeding, EmailService)
-builder.Services.AddApplicationServices(builder.Configuration);
-
-builder.Services.AddMemoryCache();
-
-// Distributed Cache (Redis Cloud with In-Memory fallback)
-var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
-if (!string.IsNullOrWhiteSpace(redisConnectionString))
-{
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = redisConnectionString;
-        options.InstanceName = "WattWise_";
-    });
-}
-else
-{
-    builder.Services.AddDistributedMemoryCache();
-}
-
-builder.Services.AddHttpClient();
-
-//  AutoMapper 
+// AutoMapper & HttpClient
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
-
-//  CORS
-var allowedOrigins = builder.Configuration
-    .GetSection("AllowedOrigins")
-    .Get<string[]>()
-    ?? new[] { "http://localhost:3000", "http://localhost:4200" };
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("EnergyOptimizerCorsPolicy", policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -259,7 +108,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Handle non-versioned API requests by rewriting to /api/v1/...
+// Rewrite non-versioned API requests (/api/xyz -> /api/v1/xyz)
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value;
@@ -279,20 +128,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.UseRateLimiter();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapHub<EnergyHub>("/energyhub");
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+// Database Seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        var seedingService = services.GetRequiredService<EnergyOptimizer.Service.Services.DataSeedingService>();
+        var seedingService = services.GetRequiredService<DataSeedingService>();
         await seedingService.SeedAsync();
     }
     catch (Exception ex)
@@ -301,4 +150,5 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
 app.Run();
