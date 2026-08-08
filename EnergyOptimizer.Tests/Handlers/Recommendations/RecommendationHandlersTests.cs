@@ -1,7 +1,7 @@
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.Recommendations.Commands;
-using EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers;
-using EnergyOptimizer.Core.Features.AI.Queries.Reco;
+using EnergyOptimizer.Core.Features.Recommendations.Handlers;
+using EnergyOptimizer.Core.Features.Recommendations.Queries;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Core.Specifications.RecommendationSpec;
 using FluentAssertions;

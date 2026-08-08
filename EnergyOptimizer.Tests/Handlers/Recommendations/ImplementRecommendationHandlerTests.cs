@@ -1,6 +1,6 @@
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Features.Recommendations.Commands;
-using EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers;
+using EnergyOptimizer.Core.Features.Recommendations.Handlers;
 using EnergyOptimizer.Core.Interfaces;
 using FluentAssertions;
 using Moq;

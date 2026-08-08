@@ -1,11 +1,11 @@
 using MediatR;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Features.AI.Queries.Reco;
+using EnergyOptimizer.Core.Features.Recommendations.Queries;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Specifications.RecommendationSpec;
 
-namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
+namespace EnergyOptimizer.Core.Features.Recommendations.Handlers
 {
     public class GetRecommendationsHandler : IRequestHandler<GetRecommendationsQuery, ApiResponse>
     {

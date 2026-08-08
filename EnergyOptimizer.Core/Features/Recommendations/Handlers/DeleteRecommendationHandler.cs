@@ -5,7 +5,7 @@ using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.Recommendations.Commands;
 using EnergyOptimizer.Core.Contracts;
 
-namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
+namespace EnergyOptimizer.Core.Features.Recommendations.Handlers
 {
     public class DeleteRecommendationHandler : IRequestHandler<DeleteRecommendationCommand, ApiResponse>
     {
