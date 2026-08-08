@@ -3,7 +3,7 @@ using EnergyOptimizer.Core.Features.Recommendations.Commands;
 using EnergyOptimizer.Core.Features.AI.Queries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnalysisQueries;
 using EnergyOptimizer.Core.Features.AI.Queries.AnomaliesQueries;
-using EnergyOptimizer.Core.Features.AI.Queries.Reco;
+using EnergyOptimizer.Core.Features.Recommendations.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,11 +1,11 @@
 using MediatR;
 using EnergyOptimizer.Core.Entities.AI_Analysis;
 using EnergyOptimizer.Core.Interfaces;
-using EnergyOptimizer.Core.Exceptions; 
+using EnergyOptimizer.Core.Exceptions;
 using EnergyOptimizer.Core.Features.Recommendations.Commands;
 using EnergyOptimizer.Core.Contracts;
 
-namespace EnergyOptimizer.Core.Features.AI.Handlers.RecommendationHelpers
+namespace EnergyOptimizer.Core.Features.Recommendations.Handlers
 {
     public class ImplementRecommendationHandler : IRequestHandler<ImplementRecommendationCommand, ApiResponse>
     {
