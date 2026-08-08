@@ -1,8 +1,8 @@
+using MediatR;
+using Microsoft.Extensions.Configuration;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Features.Auth.Commands;
 using EnergyOptimizer.Core.Interfaces;
-using MediatR;
-using Microsoft.Extensions.Configuration;
 
 namespace EnergyOptimizer.Core.Features.Auth.Handlers
 {
