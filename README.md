@@ -1,5 +1,7 @@
 ##### ⚡ WattWise — (formerly Energy Optimizer)
 
+![Build & Test CI](https://github.com/Wafaamohamed2/WattWise/actions/workflows/ci.yml/badge.svg)
+
 ### Overview
   EnergyOptimizer is a **production-grade** smart energy management system. It doesn't just monitor energy; it **understands** it. By leveraging **Google Gemini AI**, the system detects anomalies, predicts future usage, and provides intelligent recommendations to reduce waste—all broadcasted in real-time via **SignalR WebSockets**.
 

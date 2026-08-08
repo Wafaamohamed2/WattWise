@@ -1,0 +1,45 @@
+name: Build & Test CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    name: Build & Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Cache NuGet Packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore Dependencies
+      run: dotnet restore EnergyOptimizer.sln
+
+    - name: Build Solution
+      run: dotnet build EnergyOptimizer.sln --configuration Release --no-restore
+
+    - name: Run Tests
+      run: dotnet test EnergyOptimizer.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test_results.trx"
+
+    - name: Upload Test Results Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: '**/TestResults/*.trx'
