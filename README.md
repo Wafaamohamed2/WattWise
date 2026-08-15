@@ -87,12 +87,10 @@ The backend simulates realistic household energy patterns (based on Egyptian hou
 ### 5. Run the frontend
 
 Serve WattWise-Frontend/ with any static file server (e.g. VS Code Live Server on port 5500) — this matches the default AllowedOrigins / FrontendUrl CORS config. Open index.html after registering a user via login.html / register.html.
-  
-## 5. Run the frontend
-
-Serve WattWise-Frontend/ with any static file server (e.g. VS Code Live Server on port 5500) — this matches the default AllowedOrigins / FrontendUrl CORS config. Open index.html after registering a user via login.html / register.html.
 
 
 ## Tech Stack
-  **Backend:** .NET 8 · ASP.NET Core Web API · Entity Framework Core · MediatR · AutoMapper · FluentValidation · SignalR · Serilog · Swashbuckle · MassTransit (RabbitMQ) Auth: ASP.NET Core Identity · JWT Bearer + Refresh Tokens AI: Google Gemini API Caching: In-Memory / Redis (StackExchangeRedis) Database: SQL Server
-  **Testing:** xUnit · Moq CI/CD: GitHub Actions Frontend: HTML5 · Vanilla JavaScript · SignalR JS Client
+ - Backend: .NET 8 · ASP.NET Core Web API · Entity Framework Core · MediatR · AutoMapper · FluentValidation · SignalR · Serilog · Swashbuckle · MassTransit (RabbitMQ)
+ - Auth: ASP.NET Core Identity · JWT Bearer + Refresh Tokens
+ - AI: Google Gemini API Caching: In-Memory / Redis (StackExchangeRedis) Database: SQL Server
+ - Testing: xUnit · Moq CI/CD: GitHub Actions Frontend: HTML5 · Vanilla JavaScript · SignalR JS Client
