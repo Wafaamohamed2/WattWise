@@ -3,5 +3,5 @@ using EnergyOptimizer.Core.Contracts;
 
 namespace EnergyOptimizer.Core.Features.Buildings.Queries
 {
-    public record GetUserBuildingQuery : IRequest<ApiResponse>;
+    public record GetUserBuildingsQuery : IRequest<ApiResponse>;
 }
