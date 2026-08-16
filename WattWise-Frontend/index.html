@@ -786,6 +786,7 @@
                 <li><a href="analysis-history.html">📜 Analysis History</a></li>
                 <li><a href="charts.html">📈 Analytics & Charts</a></li>
                 <li><a href="setup.html">⚙️ AI Setup</a></li>
+                <li id="buildingSelectorNav" style="display:flex; align-items:center;"></li>
             </ul>
         </nav>
 
@@ -1138,7 +1139,9 @@
 
         async function fetchDashboardStats() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/overview`);
+                const activeBuildingId = AuthHelper.getActiveBuildingId();
+                const bParam = activeBuildingId ? `?buildingId=${activeBuildingId}` : '';
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/overview${bParam}`);
                 if (!response.ok) throw new Error('Failed to fetch stats');
 
                 const result = await response.json();
@@ -1165,7 +1168,9 @@
 
         async function loadTopConsumers() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/top-consumers?count=5`);
+                const activeBuildingId = AuthHelper.getActiveBuildingId();
+                const bParam = activeBuildingId ? `&buildingId=${activeBuildingId}` : '';
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/Dashboard/top-consumers?count=5${bParam}`);
                 if (!response.ok) throw new Error('Failed to fetch top consumers');
 
                 const result = await response.json();
@@ -1209,7 +1214,9 @@
 
         async function loadLatestReadings() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=10`);
+                const activeBuildingId = AuthHelper.getActiveBuildingId();
+                const bParam = activeBuildingId ? `&buildingId=${activeBuildingId}` : '';
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=10${bParam}`);
                 if (!response.ok) throw new Error('Failed to fetch readings');
 
                 const result = await response.json();
@@ -1318,8 +1325,9 @@
 
         async function loadDeviceControls() {
             try {
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/devices`, {
-                });
+                const activeBuildingId = AuthHelper.getActiveBuildingId();
+                const bParam = activeBuildingId ? `?buildingId=${activeBuildingId}` : '';
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/devices${bParam}`);
 
                 const result = await response.json();
 
@@ -1554,6 +1562,7 @@
 
         document.addEventListener("DOMContentLoaded", async () => {
             try {
+                await AuthHelper.renderBuildingSelector('buildingSelectorNav');
                 await connection.start();
                 log("🚀 SignalR connection started");
                 updateStatus("Connected", true);

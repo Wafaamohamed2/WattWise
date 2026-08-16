@@ -21,9 +21,9 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUserBuilding()
+        public async Task<IActionResult> GetUserBuildings()
         {
-            var result = await _mediator.Send(new GetUserBuildingQuery());
+            var result = await _mediator.Send(new GetUserBuildingsQuery());
             return StatusCode(result.StatusCode, result);
         }
 

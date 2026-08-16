@@ -12,19 +12,25 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
     {
         private readonly IGenericRepository<Zone> _zoneRepo;
         private readonly IGenericRepository<EnergyReading> _readingRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public GetConsumptionByZoneHandler(IGenericRepository<Zone> zoneRepo, IGenericRepository<EnergyReading> repository)
+        public GetConsumptionByZoneHandler(
+            IGenericRepository<Zone> zoneRepo, 
+            IGenericRepository<EnergyReading> repository,
+            ICurrentUserService currentUser)
         {
             _zoneRepo = zoneRepo;
             _readingRepo = repository;
+            _currentUser = currentUser;
         }
 
         public async Task<ApiResponse> Handle(GetConsumptionByZoneQuery request, CancellationToken ct)
         {
+            var userId = _currentUser.RequireUserId();
             if (!DateTime.TryParse(request.StartDate, out var start)) start = DateTime.UtcNow.Date;
             if (!DateTime.TryParse(request.EndDate, out var end)) end = DateTime.UtcNow;
 
-            var zones = await _zoneRepo.ListAsync(new ZonesWithConsumptionSpec());
+            var zones = await _zoneRepo.ListAsync(new ZonesWithConsumptionSpec(userId, request.BuildingId));
             var zoneConsumption = new List<ZoneConsumptionItem>();
 
             var readingsQuery = _readingRepo.GetQueryable()

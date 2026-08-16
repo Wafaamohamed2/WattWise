@@ -34,14 +34,14 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
         public async Task<ApiResponse> Handle(GetDashboardOverviewQuery request, CancellationToken ct)
         {
             var userId = _currentUser.RequireUserId();
-            var totalDevices = await _deviceRepo.CountAsync(new CountActiveDevicesSpec());
-            var activeDevices = await _deviceRepo.CountAsync(new CountActiveDevicesSpec(true));
-            var totalZones = await _zoneRepo.CountAsync(new ZoneCountSpec());
+            var totalDevices = await _deviceRepo.CountAsync(new CountActiveDevicesSpec(userId, isActive: null, buildingId: request.BuildingId));
+            var activeDevices = await _deviceRepo.CountAsync(new CountActiveDevicesSpec(userId, isActive: true, buildingId: request.BuildingId));
+            var totalZones = await _zoneRepo.CountAsync(new ZoneCountSpec(userId, buildingId: request.BuildingId));
 
-            var latestReadings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, 10));
+            var latestReadings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, 10, buildingId: request.BuildingId));
             var currentConsumption = (double)latestReadings.Sum(r => r.PowerConsumptionKW);
 
-            var unreadAlerts = await _alertRepo.CountAsync(new AlertCountSpec(userId, isRead: false));
+            var unreadAlerts = await _alertRepo.CountAsync(new AlertCountSpec(userId, isRead: false, buildingId: request.BuildingId));
 
             var overview = new
             {

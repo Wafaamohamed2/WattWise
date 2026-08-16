@@ -3,6 +3,5 @@ using MediatR;
 
 namespace EnergyOptimizer.Core.Features.Alerts.Commands
 {
-    public record ClearReadAlertsCommand : IRequest<ApiResponse>;
-   
+    public record ClearReadAlertsCommand(int? BuildingId = null) : IRequest<ApiResponse>;
 }

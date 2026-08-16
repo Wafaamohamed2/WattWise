@@ -34,13 +34,14 @@ namespace EnergyOptimizer.Core.Features.Alerts.Handlers
                 ? DateTime.UtcNow
                 : DateTime.Parse(request.EndDate).AddDays(1).AddSeconds(-1);
 
-            var countSpec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end, userId);
+            var countSpec = new AlertsWithFiltersSpec(request.IsRead, request.Severity, request.DeviceId, start, end, userId, buildingId: request.BuildingId);
             var total = await _alertRepo.CountAsync(countSpec);
 
             var pagedSpec = new AlertsWithFiltersSpec(
                request.IsRead, request.Severity, request.DeviceId,
                start, end, userId,
-               page: request.Page, pageSize: request.PageSize);
+               page: request.Page, pageSize: request.PageSize,
+               buildingId: request.BuildingId);
 
             var alerts = await _alertRepo.ListAsync(pagedSpec);
             var data = _mapper.Map<List<AlertDto>>(alerts);

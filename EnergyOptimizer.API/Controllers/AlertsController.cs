@@ -23,18 +23,19 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpGet("unread-count")]
-        public async Task<IActionResult> GetUnreadCount()
+        public async Task<IActionResult> GetUnreadCount([FromQuery] int? buildingId = null)
         {
-            var result = await _mediator.Send(new GetUnreadAlertsCountQuery());
+            var result = await _mediator.Send(new GetUnreadAlertsCountQuery(buildingId));
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("statistics")]
         public async Task<IActionResult> GetStatistics(
            [FromQuery] string? startDate = null,
-           [FromQuery] int days = 7)
+           [FromQuery] int days = 7,
+           [FromQuery] int? buildingId = null)
         {
-            var result = await _mediator.Send(new GetAlertStatisticsQuery(startDate, days));
+            var result = await _mediator.Send(new GetAlertStatisticsQuery(startDate, days, buildingId));
             return StatusCode(result.StatusCode, result);
         }
 
@@ -53,9 +54,9 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpPost("all-read")]
-        public async Task<IActionResult> MarkAllAsRead()
+        public async Task<IActionResult> MarkAllAsRead([FromQuery] int? buildingId = null)
         {
-            var result = await _mediator.Send(new MarkAllAlertsAsReadCommand());
+            var result = await _mediator.Send(new MarkAllAlertsAsReadCommand(buildingId));
             return StatusCode(result.StatusCode, result);
         }
 
@@ -67,9 +68,9 @@ namespace EnergyOptimizer.API.Controllers
         }
 
         [HttpDelete("clear-read")]
-        public async Task<IActionResult> ClearReadAlerts()
+        public async Task<IActionResult> ClearReadAlerts([FromQuery] int? buildingId = null)
         {
-            var result = await _mediator.Send(new ClearReadAlertsCommand());
+            var result = await _mediator.Send(new ClearReadAlertsCommand(buildingId));
             return StatusCode(result.StatusCode, result);
         }
     }

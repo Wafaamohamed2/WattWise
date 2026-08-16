@@ -12,6 +12,7 @@ namespace EnergyOptimizer.Service.Services
         private readonly IGenericRepository<Building> _buildingRepo;
         private readonly IGenericRepository<Zone> _zoneRepo;
         private readonly IGenericRepository<Device> _deviceRepo;
+        private readonly IGenericRepository<DeviceTemplate> _templateRepo;
         private readonly IIdentityService _identityService;
         private readonly IConfiguration? _config;
         private readonly ILogger<DataSeedingService> _logger;
@@ -20,6 +21,7 @@ namespace EnergyOptimizer.Service.Services
             IGenericRepository<Building> buildingRepo, 
             IGenericRepository<Zone> zoneRepo, 
             IGenericRepository<Device> deviceRepo, 
+            IGenericRepository<DeviceTemplate> templateRepo,
             IIdentityService identityService,
             ILogger<DataSeedingService> logger,
             IConfiguration? config = null)
@@ -27,6 +29,7 @@ namespace EnergyOptimizer.Service.Services
             _buildingRepo = buildingRepo;
             _zoneRepo = zoneRepo;
             _deviceRepo = deviceRepo;
+            _templateRepo = templateRepo;
             _identityService = identityService;
             _logger = logger;
             _config = config;
@@ -36,10 +39,12 @@ namespace EnergyOptimizer.Service.Services
         {
             try
             {
-                // Check if data already exists
+                await SeedDeviceTemplatesAsync();
+
+                // Check if demo user data already exists
                 if (await _buildingRepo.GetQueryable().AnyAsync())
                 {
-                    _logger.LogInformation("Data already seeded. Skipping...");
+                    _logger.LogInformation("Building data already seeded. Skipping demo admin seeding...");
                     return;
                 }
 
@@ -74,6 +79,8 @@ namespace EnergyOptimizer.Service.Services
                     Name = "My Smart Home",
                     UserId = userId,
                     Address = "123 Main Street, Cairo",
+                    Type = BuildingType.Home,
+                    IsOnboardingComplete = true,
                     TotalArea = 200,
                     NumberOfRooms = 5,
                     CreatedAt = DateTime.UtcNow
@@ -134,6 +141,37 @@ namespace EnergyOptimizer.Service.Services
                 _logger.LogError(ex, "Error occurred while seeding data");
                 throw;
             }
+        }
+
+        private async Task SeedDeviceTemplatesAsync()
+        {
+            if (await _templateRepo.GetQueryable().AnyAsync())
+                return;
+
+            _logger.LogInformation("Seeding default device templates for onboarding...");
+
+            var templates = new List<DeviceTemplate>
+            {
+                // Home Templates
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.AirConditioner, SuggestedName = "Air Conditioner", DefaultQuantity = 2, DefaultRatedPowerKW = 1.8, SuggestedZoneName = "Living Room", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.Refrigerator, SuggestedName = "Refrigerator", DefaultQuantity = 1, DefaultRatedPowerKW = 0.2, SuggestedZoneName = "Kitchen", SuggestedZoneType = ZoneType.Kitchen },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.WashingMachine, SuggestedName = "Washing Machine", DefaultQuantity = 1, DefaultRatedPowerKW = 1.5, SuggestedZoneName = "Laundry Room", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.WaterHeater, SuggestedName = "Water Heater", DefaultQuantity = 1, DefaultRatedPowerKW = 2.0, SuggestedZoneName = "Bathroom", SuggestedZoneType = ZoneType.Bathroom },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.Lights, SuggestedName = "Lighting", DefaultQuantity = 5, DefaultRatedPowerKW = 0.08, SuggestedZoneName = "Main Hall", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.TV, SuggestedName = "Smart TV", DefaultQuantity = 2, DefaultRatedPowerKW = 0.15, SuggestedZoneName = "Living Room", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Home, DeviceType = DeviceType.Microwave, SuggestedName = "Microwave Oven", DefaultQuantity = 1, DefaultRatedPowerKW = 1.2, SuggestedZoneName = "Kitchen", SuggestedZoneType = ZoneType.Kitchen },
+
+                // Company Templates
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.AirConditioner, SuggestedName = "Central HVAC Unit", DefaultQuantity = 4, DefaultRatedPowerKW = 3.5, SuggestedZoneName = "Open Office", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.Lights, SuggestedName = "Office Lighting Bank", DefaultQuantity = 10, DefaultRatedPowerKW = 0.25, SuggestedZoneName = "Workstation Zone", SuggestedZoneType = ZoneType.LivingRoom },
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.Refrigerator, SuggestedName = "Breakroom Refrigerator", DefaultQuantity = 1, DefaultRatedPowerKW = 0.25, SuggestedZoneName = "Breakroom", SuggestedZoneType = ZoneType.Kitchen },
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.Microwave, SuggestedName = "Breakroom Microwave", DefaultQuantity = 2, DefaultRatedPowerKW = 1.2, SuggestedZoneName = "Breakroom", SuggestedZoneType = ZoneType.Kitchen },
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.WaterHeater, SuggestedName = "Restroom Water Heater", DefaultQuantity = 1, DefaultRatedPowerKW = 2.5, SuggestedZoneName = "Restroom", SuggestedZoneType = ZoneType.Bathroom },
+                new DeviceTemplate { BuildingType = BuildingType.Company, DeviceType = DeviceType.Other, SuggestedName = "Workstation PCs & Printers", DefaultQuantity = 5, DefaultRatedPowerKW = 0.5, SuggestedZoneName = "IT Desk", SuggestedZoneType = ZoneType.LivingRoom }
+            };
+
+            _templateRepo.AddRange(templates);
+            await _templateRepo.SaveChangesAsync();
         }
     }
 }

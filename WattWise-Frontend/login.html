@@ -208,8 +208,11 @@
                     return;
                 }
 
-                showMsg('Login successful! Redirecting...', true);
-                setTimeout(() => { window.location.href = 'index.html'; }, 300);
+                showMsg('Login successful! Checking onboarding...', true);
+                const buildings = await AuthHelper.checkOnboardingStatus(true);
+                if (buildings) {
+                    window.location.href = 'index.html';
+                }
 
             } catch (err) {
                 showMsg('Connection error: ' + err.message, false);

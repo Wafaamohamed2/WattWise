@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EnergyOptimizer.Core.Enums;
 
 namespace EnergyOptimizer.Core.Entities
 {
@@ -14,6 +15,10 @@ namespace EnergyOptimizer.Core.Entities
 
         [MaxLength(500)]
         public string? Address { get; set; }
+
+        public BuildingType Type { get; set; } = BuildingType.Home;
+
+        public bool IsOnboardingComplete { get; set; } = false;
 
         public double TotalArea { get; set; }
 

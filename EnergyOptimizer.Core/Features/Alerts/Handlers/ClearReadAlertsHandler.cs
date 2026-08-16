@@ -22,16 +22,20 @@ namespace EnergyOptimizer.Core.Features.Alerts.Handlers
         {
             var userId = _currentUser.RequireUserId();
 
-            var deletedRows = await _alertRepo.GetQueryable()
+            var readAlerts = await _alertRepo.GetQueryable()
                 .Where(a => a.IsRead &&
                             a.Device != null && a.Device.Zone != null && a.Device.Zone.Building != null &&
-                            a.Device.Zone.Building.UserId == userId)
-                .ExecuteDeleteAsync(ct);
+                            a.Device.Zone.Building.UserId == userId &&
+                            (!request.BuildingId.HasValue || a.Device.Zone.BuildingId == request.BuildingId.Value))
+                .ToListAsync(ct);
 
-            if (deletedRows == 0)
+            if (!readAlerts.Any())
                 return new ApiResponse(200, "No read alerts to clear");
 
-            return new ApiResponse(200, $"{deletedRows} read alerts cleared");
+            _alertRepo.DeleteRange(readAlerts);
+            await _alertRepo.SaveChangesAsync();
+
+            return new ApiResponse(200, $"{readAlerts.Count} read alerts cleared");
         }
     }
 }

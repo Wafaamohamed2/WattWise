@@ -21,7 +21,7 @@ namespace EnergyOptimizer.Core.Features.Alerts.Handlers
         public async Task<ApiResponse> Handle(GetUnreadAlertsCountQuery request, CancellationToken ct)
         {
             var userId = _currentUser.RequireUserId();
-            var spec = new AlertCountSpec(userId, isRead: false);
+            var spec = new AlertCountSpec(userId, isRead: false, buildingId: request.BuildingId);
             var count = await _alertRepo.CountAsync(spec);
 
             return new ApiResponse(200, "Unread alerts count retrieved", new { count });

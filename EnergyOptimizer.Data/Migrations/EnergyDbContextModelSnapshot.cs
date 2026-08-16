@@ -457,6 +457,11 @@ namespace EnergyOptimizer.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsOnboardingComplete")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -467,6 +472,9 @@ namespace EnergyOptimizer.Infrastructure.Migrations
 
                     b.Property<double>("TotalArea")
                         .HasColumnType("float");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -512,6 +520,44 @@ namespace EnergyOptimizer.Infrastructure.Migrations
                     b.HasIndex("ZoneId");
 
                     b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("EnergyOptimizer.Core.Entities.DeviceTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuildingType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefaultQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<double>("DefaultRatedPowerKW")
+                        .HasColumnType("float");
+
+                    b.Property<int>("DeviceType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SuggestedName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SuggestedZoneName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SuggestedZoneType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuildingType");
+
+                    b.ToTable("DeviceTemplates");
                 });
 
             modelBuilder.Entity("EnergyOptimizer.Core.Entities.EnergyReading", b =>
