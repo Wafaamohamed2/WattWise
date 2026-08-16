@@ -4,6 +4,7 @@ using EnergyOptimizer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EnergyOptimizer.Infrastructure.Migrations
 {
     [DbContext(typeof(EnergyDbContext))]
-    partial class EnergyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260816141824_AddDeviceTemplatesAndBuildingOnboarding")]
+    partial class AddDeviceTemplatesAndBuildingOnboarding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -549,9 +552,6 @@ namespace EnergyOptimizer.Infrastructure.Migrations
 
                     b.Property<string>("SuggestedZoneName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SuggestedZoneType")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

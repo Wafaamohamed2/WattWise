@@ -14,6 +14,7 @@ namespace EnergyOptimizer.Infrastructure.Data
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Zone> Zones { get; set; }
         public DbSet<Device> Devices { get; set; }
+        public DbSet<DeviceTemplate> DeviceTemplates { get; set; }
         public DbSet<EnergyReading> EnergyReadings { get; set; }
         public DbSet<Alert> Alerts { get; set; }
 
@@ -38,6 +39,8 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Address).HasMaxLength(500);
+                entity.Property(e => e.Type).HasConversion<int>();
+                entity.Property(e => e.IsOnboardingComplete).HasDefaultValue(false);
 
                 entity.HasOne<ApplicationUser>()
                       .WithMany()
@@ -48,6 +51,16 @@ namespace EnergyOptimizer.Infrastructure.Data
                       .WithOne(e => e.Building)
                       .HasForeignKey(e => e.BuildingId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // DeviceTemplate Configuration
+            modelBuilder.Entity<DeviceTemplate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SuggestedName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.BuildingType).HasConversion<int>();
+                entity.Property(e => e.DeviceType).HasConversion<int>();
+                entity.HasIndex(e => e.BuildingType);
             });
 
             // Zone Configuration
@@ -102,7 +115,6 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasIndex(e => e.IsRead);
             });
-
 
             // EnergyAnalysis Configuration
             modelBuilder.Entity<EnergyAnalysis>(entity =>
@@ -223,7 +235,6 @@ namespace EnergyOptimizer.Infrastructure.Data
                 entity.HasIndex(p => new { p.DeviceId, p.IsActive });
                 entity.HasIndex(p => new { p.ZoneId, p.IsActive });
             });
-
 
             // AIMetrics Configuration
             modelBuilder.Entity<AIMetrics>(entity =>
