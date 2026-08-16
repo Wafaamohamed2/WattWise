@@ -8,9 +8,11 @@ using EnergyOptimizer.Core;
 using EnergyOptimizer.Core.Contracts;
 using EnergyOptimizer.Core.Interfaces;
 using EnergyOptimizer.Infrastructure;
+using EnergyOptimizer.Infrastructure.Data;
 using EnergyOptimizer.Service;
 using EnergyOptimizer.Service.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -141,13 +143,16 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var dbContext = services.GetRequiredService<EnergyDbContext>();
+        await dbContext.Database.MigrateAsync();
+
         var seedingService = services.GetRequiredService<DataSeedingService>();
         await seedingService.SeedAsync();
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
 
