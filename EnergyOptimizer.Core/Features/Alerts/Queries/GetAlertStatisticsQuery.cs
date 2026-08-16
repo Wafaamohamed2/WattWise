@@ -3,9 +3,9 @@ using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.Core.Features.Alerts.Queries
 {
-    public record GetAlertStatisticsQuery(string? StartDate, int Days) : ICacheableRequest<ApiResponse>
+    public record GetAlertStatisticsQuery(string? StartDate, int Days, int? BuildingId = null) : ICacheableRequest<ApiResponse>
     {
-        public string CacheKey => $"AlertStats_{Days}_{StartDate ?? "none"}";
+        public string CacheKey => $"AlertStats_{Days}_{StartDate ?? "none"}_{BuildingId}";
         public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(10);
         public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1);
     }

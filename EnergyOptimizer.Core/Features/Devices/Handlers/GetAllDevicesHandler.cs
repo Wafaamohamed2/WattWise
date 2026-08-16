@@ -20,7 +20,7 @@ namespace EnergyOptimizer.Core.Features.Devices.Handlers
 
         public async Task<ApiResponse> Handle(GetAllDevicesQuery request, CancellationToken ct)
         {
-            var spec = new ActiveDevicesWithZoneSpec(request.IsActive, _currentUser.RequireUserId());
+            var spec = new ActiveDevicesWithZoneSpec(request.IsActive, _currentUser.RequireUserId(), request.BuildingId);
             var devices = await _deviceRepo.ListAsync(spec);
 
             var deviceDtos = devices.Select(d => new

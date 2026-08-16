@@ -22,16 +22,24 @@ namespace EnergyOptimizer.Core.Features.Alerts.Handlers
         {
             var userId = _currentUser.RequireUserId();
 
-            var updatedRows = await _alertRepo.GetQueryable()
+            var unreadAlerts = await _alertRepo.GetQueryable()
                 .Where(a => !a.IsRead &&
                             a.Device != null && a.Device.Zone != null && a.Device.Zone.Building != null &&
-                            a.Device.Zone.Building.UserId == userId)
-                .ExecuteUpdateAsync(s => s.SetProperty(a => a.IsRead, true), ct);
+                            a.Device.Zone.Building.UserId == userId &&
+                            (!request.BuildingId.HasValue || a.Device.Zone.BuildingId == request.BuildingId.Value))
+                .ToListAsync(ct);
 
-            if (updatedRows == 0)
+            if (!unreadAlerts.Any())
                 return new ApiResponse(200, "No unread alerts to mark");
 
-            return new ApiResponse(200, $"{updatedRows} alerts marked as read successfully");
+            foreach (var alert in unreadAlerts)
+            {
+                alert.IsRead = true;
+            }
+
+            await _alertRepo.SaveChangesAsync();
+
+            return new ApiResponse(200, $"{unreadAlerts.Count} alerts marked as read successfully");
         }
     }
 }

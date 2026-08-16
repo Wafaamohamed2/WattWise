@@ -26,11 +26,11 @@ namespace EnergyOptimizer.Core.Features.Readings.Handlers
             if (!string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start)
                 && !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end))
             {
-                readings = await _readingRepo.ListAsync(new ReadingsByDateRangeSpec(start, end, userId));
+                readings = await _readingRepo.ListAsync(new ReadingsByDateRangeSpec(start, end, userId, buildingId: request.BuildingId));
             }
             else
             {
-                readings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, request.Limit));
+                readings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, request.Limit, buildingId: request.BuildingId));
             }
 
             var result = readings.Select(r => new

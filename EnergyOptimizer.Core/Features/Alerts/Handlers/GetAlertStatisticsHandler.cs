@@ -28,11 +28,11 @@ namespace EnergyOptimizer.Core.Features.Alerts.Handlers
                 ? DateTime.UtcNow.AddDays(-request.Days).Date
                 : DateTime.Parse(request.StartDate);
 
-            var totalCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, startDate: start));
-            var unreadCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, isRead: false, startDate: start));
-            var criticalCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Critical, startDate: start));
-            var warningCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Warning, startDate: start));
-            var infoCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Info, startDate: start));
+            var totalCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, startDate: start, buildingId: request.BuildingId));
+            var unreadCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, isRead: false, startDate: start, buildingId: request.BuildingId));
+            var criticalCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Critical, startDate: start, buildingId: request.BuildingId));
+            var warningCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Warning, startDate: start, buildingId: request.BuildingId));
+            var infoCount = await _alertRepo.CountAsync(new AlertCountSpec(userId, severity: AlertSeverity.Info, startDate: start, buildingId: request.BuildingId));
 
             var statistics = new AlertStatistics
             {

@@ -3,9 +3,9 @@ using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.Core.Features.Dashboard.Queries
 {
-    public record GetTopConsumersQuery(int Count, string? StartDate = null) : ICacheableRequest<ApiResponse>
+    public record GetTopConsumersQuery(int Count, string? StartDate = null, int? BuildingId = null) : ICacheableRequest<ApiResponse>
     {
-        public string CacheKey => $"TopConsumers_{Count}_{StartDate ?? "all"}";
+        public string CacheKey => $"TopConsumers_{Count}_{StartDate ?? "all"}_{BuildingId}";
         public TimeSpan? SlidingExpiration => TimeSpan.FromMinutes(15);
         public TimeSpan? AbsoluteExpirationRelativeToNow => TimeSpan.FromHours(1);
     }

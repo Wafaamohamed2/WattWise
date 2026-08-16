@@ -9,6 +9,7 @@ namespace EnergyOptimizer.Core.Features.Alerts.Queries
         int? DeviceId,
         string? StartDate,
         string? EndDate,
-        int Page= 1,
-        int PageSize= 20) : IRequest<ApiResponse>;
+        int Page = 1,
+        int PageSize = 20,
+        int? BuildingId = null) : IRequest<ApiResponse>;
 }

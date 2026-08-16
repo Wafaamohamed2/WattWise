@@ -21,7 +21,7 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
         public async Task<ApiResponse> Handle(GetTopConsumersQuery request, CancellationToken ct)
         {
             var userId = _currentUser.RequireUserId();
-            var readings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, 500));
+            var readings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, 500, buildingId: request.BuildingId));
 
             var topConsumers = readings
                 .GroupBy(r => new { r.DeviceId, DeviceName = r.Device?.Name, ZoneName = r.Device?.Zone?.Name })

@@ -3,9 +3,9 @@ using EnergyOptimizer.Core.Interfaces;
 
 namespace EnergyOptimizer.Core.Features.Dashboard.Queries
 {
-    public record GetConsumptionByZoneQuery(string? StartDate, string? EndDate) : ICacheableRequest<ApiResponse>
+    public record GetConsumptionByZoneQuery(string? StartDate, string? EndDate, int? BuildingId = null) : ICacheableRequest<ApiResponse>
     {
-        public string CacheKey => $"ConsumptionByZone_{StartDate ?? "none"}_{EndDate ?? "none"}";
+        public string CacheKey => $"ConsumptionByZone_{StartDate ?? "none"}_{EndDate ?? "none"}_{BuildingId}";
         
         private bool IsHistorical => DateTime.TryParse(EndDate, out var end) && end.Date < DateTime.UtcNow.Date;
         public TimeSpan? SlidingExpiration => IsHistorical ? TimeSpan.FromHours(12) : TimeSpan.FromMinutes(2);

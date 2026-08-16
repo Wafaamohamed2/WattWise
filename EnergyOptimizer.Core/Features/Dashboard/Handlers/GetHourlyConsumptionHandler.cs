@@ -30,7 +30,8 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
             var dbHourlyStats = await _readingRepo.GetQueryable()
                 .Where(r => r.Timestamp >= targetDate.Date && r.Timestamp < nextDay &&
                             r.Device != null && r.Device.Zone != null && r.Device.Zone.Building != null &&
-                            r.Device.Zone.Building.UserId == userId)
+                            r.Device.Zone.Building.UserId == userId &&
+                            (!request.BuildingId.HasValue || r.Device.Zone.BuildingId == request.BuildingId.Value))
                 .GroupBy(r => r.Timestamp.Hour)
                 .Select(g => new
                 {

@@ -13,11 +13,12 @@ namespace EnergyOptimizer.Core.Specifications.ReadSpec
             ApplyOrderByDescending(r => r.Timestamp);
         }
 
-        public ReadingsByDateRangeSpec(DateTime start, DateTime end, string userId)
+        public ReadingsByDateRangeSpec(DateTime start, DateTime end, string userId, int? buildingId = null)
             : base(r => r.Timestamp >= start &&
                         r.Timestamp <= (end.TimeOfDay == TimeSpan.Zero ? end.Date.AddDays(1).AddTicks(-1) : end) &&
                         r.Device != null && r.Device.Zone != null && r.Device.Zone.Building != null &&
-                        r.Device.Zone.Building.UserId == userId)
+                        r.Device.Zone.Building.UserId == userId &&
+                        (!buildingId.HasValue || r.Device.Zone.BuildingId == buildingId.Value))
         {
             AddInclude(r => r.Device);
             AddInclude(r => r.Device.Zone);
