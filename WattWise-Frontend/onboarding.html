@@ -13,56 +13,8 @@
     <!-- Toastr notifications -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d'
-                        },
-                        darkbg: '#0f172a',
-                        cardbg: '#1e293b'
-                    },
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .step-active {
-            border-color: #22c55e;
-            color: #22c55e;
-            background-color: rgba(34, 197, 94, 0.1);
-        }
-        .step-complete {
-            border-color: #22c55e;
-            background-color: #22c55e;
-            color: #ffffff;
-        }
-        .type-card-selected {
-            border-color: #22c55e;
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
-            background: rgba(34, 197, 94, 0.08);
-        }
-    </style>
+    <script src="tailwind-config.js"></script>
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body class="min-h-screen flex flex-col justify-center items-center py-10 px-4 relative overflow-x-hidden">
 

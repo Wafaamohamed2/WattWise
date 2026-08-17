@@ -1,437 +1,122 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recommendations - Energy Optimizer</title>
+    <title>WattWise - AI Energy Recommendations</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="auth-helper.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 2em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .stats-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f9fafb;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-
-        .filters-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-group label {
-            font-size: 0.85em;
-            color: #6b7280;
-            font-weight: 600;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 0.95em;
-            cursor: pointer;
-            min-width: 150px;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .content-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .recommendations-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .recommendation-card {
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s;
-            background: #fafafa;
-        }
-
-        .recommendation-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .rec-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .rec-title-section {
-            flex: 1;
-        }
-
-        .rec-title {
-            font-size: 1.2em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .rec-category {
-            font-size: 0.85em;
-            color: #6b7280;
-            background: #f3f4f6;
-            padding: 4px 10px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-
-        .priority-badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .priority-high {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .priority-medium {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .priority-low {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .priority-critical {
-            background: #7f1d1d;
-            color: #fef2f2;
-        }
-
-        .rec-description {
-            color: #4b5563;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .rec-savings {
-            display: flex;
-            gap: 20px;
-            padding: 15px;
-            background: #f0fdf4;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .savings-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #16a34a;
-        }
-
-        .rec-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .rec-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 0.85em;
-            color: #6b7280;
-        }
-
-        .rec-actions button:hover {
-            background: #059669 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .loading,
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-
-        .spinner {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .empty-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .error-message {
-            background: #fef2f2;
-            border: 2px solid #fecaca;
-            color: #991b1b;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .main-nav {
-            background: white;
-            padding: 18px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .main-nav ul {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-nav li a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1em;
-            padding: 12px 24px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
-
-        .main-nav li a:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .main-nav li a.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-            transform: translateY(-3px);
-        }
-
-        @media (max-width: 900px) {
-            .main-nav ul {
-                gap: 15px;
-            }
-
-            .main-nav li a {
-                padding: 10px 16px;
-                font-size: 1em;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .main-nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .main-nav li a {
-                width: 80%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <script src="tailwind-config.js"></script>
+    <link rel="stylesheet" href="theme.css">
 </head>
 
-<body>
-    <div class="container">
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.html">🏠 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html" class="active">💡 Recommendations</a></li>
-                <li><a href="anomalies.html">🚨 Anomalies</a></li>
-                <li><a href="analysis-history.html">📜 Analysis History</a></li>
-                <li><a href="charts.html">📈 Analytics & Charts</a></li>
-                <li><a href="setup.html">⚙️ AI Setup</a></li>
-            </ul>
-        </nav>
-        <div class="header">
-            <h1>💡 Energy Recommendations</h1>
-            <a href="ai-dashboard.html" class="btn btn-secondary">
-                ← Back to Dashboard
-            </a>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 glass-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-bolt text-xl text-slate-950"></i>
+                    </div>
+                    <div>
+                        <a href="index.html" class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">WattWise</a>
+                        <span class="text-xs text-emerald-400 font-medium hidden sm:inline-block ml-1">Recommendations</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+                    <a href="index.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-house text-xs"></i> Monitor
+                    </a>
+                    <a href="ai-dashboard.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-xs"></i> AI Insights
+                    </a>
+                    <a href="recommendations.html" class="nav-link active px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-xs"></i> Recs
+                    </a>
+                    <a href="anomalies.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-xs"></i> Anomalies
+                    </a>
+                    <a href="analysis-history.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-xs"></i> History
+                    </a>
+                    <a href="charts.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-xs"></i> Analytics
+                    </a>
+                    <a href="setup.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-gear text-xs"></i> Setup
+                    </a>
+                </nav>
+
+                <!-- Logout Button -->
+                <button onclick="AuthHelper.logout()" title="Logout" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Header Banner -->
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800">
+            <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                <i class="fa-solid fa-lightbulb text-emerald-400"></i> Smart AI Recommendations
+            </h1>
+            <p class="text-slate-400 text-xs md:text-sm mt-1">Actionable insights generated by Gemini AI to optimize consumption and cut costs</p>
         </div>
 
-        <div class="stats-bar" id="statsBar">
-            <div class="stat-item">
-                <div class="stat-value" id="totalCount">-</div>
-                <div class="stat-label">Total Recommendations</div>
+        <!-- Top Summary Cards Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-slate-400 mb-1">TOTAL RECS</div>
+                <div id="totalCount" class="text-2xl font-bold text-white">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="activeCount">-</div>
-                <div class="stat-label">Active</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-amber-400 mb-1">ACTIVE</div>
+                <div id="activeCount" class="text-2xl font-bold text-amber-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="implementedCount">-</div>
-                <div class="stat-label">Implemented</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-emerald-400 mb-1">IMPLEMENTED</div>
+                <div id="implementedCount" class="text-2xl font-bold text-emerald-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="highPriorityCount">-</div>
-                <div class="stat-label">High Priority</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-rose-400 mb-1">HIGH PRIORITY</div>
+                <div id="highPriorityCount" class="text-2xl font-bold text-rose-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="savingsTotal">-</div>
-                <div class="stat-label">Potential Savings (kWh)</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center col-span-2 md:col-span-1">
+                <div class="text-xs text-teal-400 mb-1">SAVINGS (kWh)</div>
+                <div id="savingsTotal" class="text-2xl font-bold text-teal-400">-</div>
             </div>
         </div>
 
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label>Status</label>
-                <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+        <!-- Filter Bar -->
+        <div class="glass-panel rounded-2xl p-4 border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
+                <select id="filterStatus" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
                     <option value="">All</option>
                     <option value="false" selected>Active Only</option>
                     <option value="true">Implemented</option>
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label>Priority</label>
-                <select class="filter-select" id="filterPriority" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Priority</label>
+                <select id="filterPriority" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
                     <option value="">All Priorities</option>
                     <option value="Critical">Critical</option>
                     <option value="High">High</option>
@@ -439,25 +124,25 @@
                     <option value="Low">Low</option>
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label>Category</label>
-                <select class="filter-select" id="filterCategory" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Category</label>
+                <select id="filterCategory" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
                     <option value="">All Categories</option>
                 </select>
             </div>
         </div>
 
-        <div class="content-card">
-            <div class="recommendations-list" id="recommendationsList">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>Loading recommendations...</div>
-                </div>
+        <!-- Recommendations Grid Container -->
+        <div id="recommendationsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-full py-12 text-center text-slate-500">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-500 mb-2"></i>
+                <p class="text-sm">Loading optimization recommendations...</p>
             </div>
         </div>
-    </div>
 
+    </main>
+
+    <!-- Scripts -->
     <script>
         const baseUrl = AuthHelper.API_BASE_URL;
         let currentFilters = {
@@ -466,20 +151,25 @@
             category: ''
         };
 
-        function getPriorityText(priority) {
-            if (typeof priority === 'string') return priority;
+        function normalizePriority(p) {
+            if (p === null || p === undefined) return '';
+            const str = String(p).trim().toLowerCase();
+            if (str === '1' || str === 'critical') return 'critical';
+            if (str === '2' || str === 'high') return 'high';
+            if (str === '3' || str === 'medium') return 'medium';
+            if (str === '4' || str === 'low') return 'low';
+            return str;
+        }
 
-            switch (priority) {
-                case 1: return 'High';
-                case 2: return 'Medium';
-                case 3: return 'Low';
-                default: return 'Unknown';
-            }
+        function getPriorityLabel(p) {
+            const norm = normalizePriority(p);
+            if (norm === 'critical') return 'Critical';
+            if (norm === 'high') return 'High';
+            if (norm === 'medium') return 'Medium';
+            if (norm === 'low') return 'Low';
+            return String(p || 'Medium');
         }
-        function getPriorityClass(priority) {
-            const text = getPriorityText(priority);
-            return text.toLowerCase();
-        }
+
         async function loadRecommendations() {
             try {
                 const status = currentFilters.isImplemented;
@@ -494,21 +184,15 @@
 
                 if (!listResponse || !listResponse.ok) throw new Error(`HTTP error! status: ${listResponse?.status}`);
                 const listResult = await listResponse.json();
-                console.log('[Recs] List response:', listResult);
 
-                let list = listResult.details?.data
-                    ?? listResult.details
-                    ?? listResult.data
-                    ?? (Array.isArray(listResult) ? listResult : []);
+                let list = listResult.details?.data ?? listResult.details ?? listResult.data ?? (Array.isArray(listResult) ? listResult : []);
 
                 if (statsResponse && statsResponse.ok) {
                     const statsResult = await statsResponse.json();
-                    console.log('[Recs] Stats response:', statsResult);
                     const fullStats = statsResult.data ?? statsResult.details ?? statsResult;
                     const stats = fullStats.recommendations ?? fullStats;
                     displayStatistics(stats);
                 } else {
-                    console.warn('[Recs] Stats endpoint unavailable, calculating from list');
                     const allResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations?pageSize=1000`);
                     if (allResponse && allResponse.ok) {
                         const allResult = await allResponse.json();
@@ -517,7 +201,10 @@
                             total: allList.length,
                             pending: allList.filter(r => !r.isImplemented).length,
                             implemented: allList.filter(r => r.isImplemented).length,
-                            highPriority: allList.filter(r => String(r.priority) === '1' || String(r.priority).toLowerCase() === 'high' || String(r.priority).toLowerCase() === 'critical').length,
+                            highPriority: allList.filter(r => {
+                                const n = normalizePriority(r.priority);
+                                return n === 'critical' || n === 'high';
+                            }).length,
                             totalEstimatedSavings: allList.reduce((s, r) => s + (r.estimatedSavingsKWh || 0), 0)
                         });
                     }
@@ -525,7 +212,8 @@
 
                 let filtered = list;
                 if (currentFilters.priority) {
-                    filtered = filtered.filter(r => String(r.priority).toLowerCase() === currentFilters.priority.toLowerCase());
+                    const targetPri = normalizePriority(currentFilters.priority);
+                    filtered = filtered.filter(r => normalizePriority(r.priority) === targetPri);
                 }
                 if (currentFilters.category) {
                     filtered = filtered.filter(r => r.category === currentFilters.category);
@@ -535,7 +223,7 @@
 
                 if (filtered.length === 0) {
                     document.getElementById('recommendationsList').innerHTML =
-                        '<div class="empty-state">No recommendations found for the selected filters.</div>';
+                        '<div class="col-span-full py-12 text-center text-slate-500 text-sm">No recommendations match the selected filters.</div>';
                     return;
                 }
 
@@ -544,7 +232,7 @@
             } catch (error) {
                 console.error('[Recs] Fetch Error:', error);
                 document.getElementById('recommendationsList').innerHTML =
-                    `<div class="error-message">⚠️ Failed to load data: ${error.message}</div>`;
+                    `<div class="col-span-full py-12 text-center text-rose-400 text-sm">⚠️ Failed to load recommendations: ${error.message}</div>`;
             }
         }
 
@@ -552,49 +240,52 @@
             const container = document.getElementById('recommendationsList');
 
             container.innerHTML = recommendations.map(rec => {
-                const priorityLabel = rec.priority ? String(rec.priority) : "Medium";
+                const normPri = normalizePriority(rec.priority);
+                const displayLabel = getPriorityLabel(rec.priority);
                 const savings = rec.estimatedSavingsKWh || 0;
+                const isImplemented = rec.isImplemented;
+
+                const priorityBadge = normPri === 'critical' ?
+                    'text-rose-400 bg-rose-500/10 border-rose-500/30' :
+                    normPri === 'high' ?
+                    'text-amber-400 bg-amber-500/10 border-amber-500/30' :
+                    normPri === 'medium' ?
+                    'text-amber-300 bg-amber-500/10 border-amber-500/20' :
+                    'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
 
                 return `
-                        <div class="recommendation-card">
-                            <div class="rec-header">
-                                <div class="rec-title-section">
-                                    <div class="rec-title">${(rec.title || 'Optimization Tip').replace(/\*\*/g, '')}</div>
-                                    <span class="rec-category">📁 ${rec.category || 'Efficiency'}</span>
+                    <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-white text-base">${(rec.title || 'Optimization Tip').replace(/\*\*/g, '')}</h4>
+                                    <span class="text-xs text-slate-400">📁 ${rec.category || 'Efficiency'}</span>
                                 </div>
-                                <span class="priority-badge priority-${priorityLabel.toLowerCase()}">
-                                    ${priorityLabel === "1" ? "Critical" : (priorityLabel === "2" ? "High" : priorityLabel)}
+                                <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${priorityBadge}">
+                                    ${displayLabel}
                                 </span>
                             </div>
-                            <div class="rec-description">${(rec.description || 'Analyze device usage to save energy.').replace(/\*\*/g, '')}</div>
-                            <div class="rec-savings">
-                                <span>⚡ <strong>${Number(savings).toFixed(2)} kWh</strong> potential savings</span>
-                            </div>
-                            <div class="rec-footer">
-                                <button onclick="implementRecommendation(${rec.id})" class="btn-implement"
-                                        style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                                    Mark as Implemented
+                            <p class="text-xs text-slate-300 leading-relaxed">${(rec.description || '').replace(/\*\*/g, '')}</p>
+                        </div>
+                        
+                        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <i class="fa-solid fa-bolt"></i> ${Number(savings).toFixed(2)} kWh savings
+                            </span>
+                            ${!isImplemented ? `
+                                <button onclick="implementRecommendation(${rec.id})" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition shadow-md shadow-emerald-500/10">
+                                    Mark Implemented
                                 </button>
-                            </div>
-                        </div>`;
+                            ` : `
+                                <span class="text-xs text-slate-500 font-semibold flex items-center gap-1"><i class="fa-solid fa-check-circle text-emerald-400"></i> Done</span>
+                            `}
+                        </div>
+                    </div>`;
             }).join('');
         }
 
-        function updateTopStats(list) {
-            document.getElementById('totalCount').textContent = list.length;
-            document.getElementById('activeCount').textContent = list.filter(r => !r.isImplemented).length;
-            document.getElementById('highPriorityCount').textContent = list.filter(r => String(r.priority) === '1' || String(r.priority).toLowerCase() === 'high').length;
-            const totalSavings = list.reduce((sum, r) => sum + (r.estimatedSavingsKWh || 0), 0);
-            document.getElementById('savingsTotal').textContent = totalSavings.toFixed(1);
-        }
-
         function displayStatistics(stats) {
-            if (!stats) {
-                console.warn('[Recs] No statistics data received');
-                return;
-            }
-            console.log('[Recs] Displaying statistics:', stats);
-
+            if (!stats) return;
             const total = stats.Total ?? stats.total ?? stats.totalCount ?? 0;
             const pending = stats.Pending ?? stats.pending ?? stats.active ?? stats.Active ?? 0;
             const implemented = stats.Implemented ?? stats.implemented ?? stats.implementedCount ?? 0;
@@ -607,20 +298,17 @@
             document.getElementById('highPriorityCount').textContent = highPri;
             document.getElementById('savingsTotal').textContent = Number(savings).toFixed(1);
         }
+
         function populateCategories(recommendations) {
             if (!recommendations || recommendations.length === 0) return;
-
             const categories = [...new Set(recommendations.map(r => r.category))];
             const select = document.getElementById('filterCategory');
-
             if (!select) return;
 
-            while (select.options.length > 1) {
-                select.remove(1);
-            }
+            while (select.options.length > 1) select.remove(1);
 
             categories.forEach(cat => {
-                if (!Array.from(select.options).some(opt => opt.value === cat)) {
+                if (cat && !Array.from(select.options).some(opt => opt.value === cat)) {
                     const option = document.createElement('option');
                     option.value = cat;
                     option.textContent = cat;
@@ -635,20 +323,15 @@
                 priority: document.getElementById('filterPriority').value,
                 category: document.getElementById('filterCategory').value
             };
-
-            console.log('Applying filters:', currentFilters);
             loadRecommendations();
         }
 
-        // Implement Recommendation
         async function implementRecommendation(id) {
             if (!confirm('Mark this recommendation as implemented?')) return;
-
             try {
                 const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations/${id}/implement`, {
                     method: 'PATCH'
                 });
-
                 if (response.ok) {
                     alert('✅ Recommendation marked as implemented!');
                     loadRecommendations();
@@ -658,21 +341,11 @@
                 }
             } catch (error) {
                 console.error('Error implementing recommendation:', error);
-                alert('❌ Error updating recommendation');
             }
         }
 
-        //  Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('Recommendations page loaded');
-
-            if (false) {
-                console.log('Not authenticated, redirecting to login');
-                return;
-            }
-
             await AuthHelper.checkAuth();
-            console.log('Loading recommendations...');
             loadRecommendations();
         });
     </script>

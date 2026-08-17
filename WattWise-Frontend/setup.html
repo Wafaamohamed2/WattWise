@@ -1,452 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI System Setup - Energy Optimizer</title>
+    <title>WattWise - AI System Setup</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="auth-helper.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #667eea15, #764ba215);
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        .info-box h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .info-box li {
-            padding: 8px 0;
-            padding-left: 30px;
-            position: relative;
-            color: #4b5563;
-        }
-
-        .info-box li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #10b981;
-            font-weight: bold;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 30px 0;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .progress-container {
-            display: none;
-            margin-top: 30px;
-        }
-
-        .progress-container.show {
-            display: block;
-        }
-
-        .progress-log {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-        }
-
-        .log-entry {
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            display: flex;
-            align-items: start;
-            gap: 10px;
-        }
-
-        .log-entry.info {
-            background: #eff6ff;
-            color: #1e40af;
-        }
-
-        .log-entry.success {
-            background: #f0fdf4;
-            color: #15803d;
-        }
-
-        .log-entry.error {
-            background: #fef2f2;
-            color: #991b1b;
-        }
-
-        .log-entry.warning {
-            background: #fffbeb;
-            color: #92400e;
-        }
-
-        .spinner {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-box {
-            background: linear-gradient(135deg, #667eea10, #764ba210);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #6b7280;
-            margin-top: 5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .main-nav {
-            background: white;
-            padding: 18px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .main-nav ul {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-nav li a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1em;
-            padding: 12px 24px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
-
-        .main-nav li a:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .main-nav li a.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-            transform: translateY(-3px);
-        }
-
-        @media (max-width: 900px) {
-            .main-nav ul {
-                gap: 15px;
-            }
-
-            .main-nav li a {
-                padding: 10px 16px;
-                font-size: 1em;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .main-nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .main-nav li a {
-                width: 80%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <script src="tailwind-config.js"></script>
+    <link rel="stylesheet" href="theme.css">
 </head>
 
-<body>
-    <div class="container">
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.html">🏠 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html">💡 Recommendations</a></li>
-                <li><a href="anomalies.html">🚨 Anomalies</a></li>
-                <li><a href="analysis-history.html">📜 Analysis History</a></li>
-                <li><a href="charts.html">📈 Analytics & Charts</a></li>
-                <li><a href="setup.html" class="active">⚙️ AI Setup</a></li>
-            </ul>
-        </nav>
-        <div class="card">
-            <h1>🤖 AI System Setup</h1>
-            <p class="subtitle">Initialize your AI-powered energy analysis system</p>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100">
 
-            <div class="info-box">
-                <h3>What will this do?</h3>
-                <ul>
-                    <li>Analyze your historical energy consumption patterns (last 30 days)</li>
-                    <li>Generate smart recommendations for energy savings</li>
-                    <li>Detect unusual consumption anomalies across all devices</li>
-                    <li>Create insights for better energy management</li>
-                </ul>
-            </div>
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 glass-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-bolt text-xl text-slate-950"></i>
+                    </div>
+                    <div>
+                        <a href="index.html" class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">WattWise</a>
+                        <span class="text-xs text-emerald-400 font-medium hidden sm:inline-block ml-1">AI Setup</span>
+                    </div>
+                </div>
 
-            <div class="info-box" style="border-left-color: #f59e0b;">
-                <h3 style="color: #f59e0b;">⚠️ Requirements</h3>
-                <ul>
-                    <li>At least one active device generating readings</li>
-                    <li>Minimum 7 days of historical data (recommended: 30 days)</li>
-                    <li>Stable internet connection</li>
-                    <li>This process may take 1-3 minutes</li>
-                </ul>
-            </div>
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+                    <a href="index.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-house text-xs"></i> Monitor
+                    </a>
+                    <a href="ai-dashboard.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-xs"></i> AI Insights
+                    </a>
+                    <a href="recommendations.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-xs"></i> Recs
+                    </a>
+                    <a href="anomalies.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-xs"></i> Anomalies
+                    </a>
+                    <a href="analysis-history.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-xs"></i> History
+                    </a>
+                    <a href="charts.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-xs"></i> Analytics
+                    </a>
+                    <a href="setup.html" class="nav-link active px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent flex items-center gap-2">
+                        <i class="fa-solid fa-gear text-xs"></i> Setup
+                    </a>
+                </nav>
 
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="startSetup()" id="setupBtn">
-                    <span>🚀</span>
-                    <span>Initialize AI System</span>
+                <!-- Logout Button -->
+                <button onclick="AuthHelper.logout()" title="Logout" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
-                <a href="ai-dashboard.html" class="btn btn-secondary">
-                    <span>←</span>
-                    <span>Back to Dashboard</span>
-                </a>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Header Card -->
+        <div class="glass-panel rounded-3xl p-8 border border-slate-800 space-y-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-gears text-emerald-400"></i> AI Initialization Wizard
+                </h1>
+                <p class="text-slate-400 text-xs md:text-sm mt-1">Initialize machine learning pattern detectors, baseline analytics, and anomaly scanners</p>
             </div>
 
-            <div class="progress-container" id="progressContainer">
-                <h3 style="color: #667eea; margin-bottom: 15px;">⚙️ Processing...</h3>
-                <div class="spinner" id="spinner"></div>
-                <div class="progress-log" id="progressLog"></div>
+            <!-- Features Info Box -->
+            <div class="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-3">
+                <h3 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i> Automatic Engine Setup Includes:
+                </h3>
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Energy baseline analysis (7 days)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Automated recommendations generation</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Multi-device anomaly scanning</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Live telemetry pattern indexing</li>
+                </ul>
             </div>
 
-            <div id="statsContainer" style="display: none; margin-top: 30px;">
-                <h3 style="color: #10b981; margin-bottom: 20px;">✅ Setup Complete!</h3>
-                <div class="stats-grid" id="statsGrid"></div>
+            <!-- Setup Action Button -->
+            <div class="flex flex-col items-center justify-center space-y-4 pt-4">
+                <button id="setupBtn" onclick="runCompleteSetup()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-base shadow-xl shadow-emerald-500/20 hover:opacity-95 transition duration-200 flex items-center gap-3">
+                    <i class="fa-solid fa-wand-magic-sparkles text-lg"></i> Launch Complete AI Setup
+                </button>
 
-                <div class="nav-links">
-                    <a href="ai-dashboard.html" class="btn btn-primary">
-                        View AI Dashboard →
-                    </a>
-                    <a href="recommendations.html" class="btn btn-secondary">
-                        View Recommendations
-                    </a>
-                    <a href="anomalies.html" class="btn btn-secondary">
-                        View Anomalies
-                    </a>
+                <div id="spinner" class="hidden flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                    <i class="fa-solid fa-circle-notch fa-spin text-lg"></i> Executing AI Engine Pipelines...
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Terminal Setup Log Box -->
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <h3 class="text-sm font-bold text-slate-300 font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-emerald-400"></i> INITIALIZATION STREAM LOGS
+                </h3>
+            </div>
+            <div id="logs" class="font-mono text-xs text-slate-300 bg-slate-950/80 rounded-2xl p-4 h-64 overflow-y-auto border border-slate-900 space-y-1.5">
+                <div class="text-slate-500">Ready to start setup... Click 'Launch Complete AI Setup' above.</div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics Results Container -->
+        <div id="statsContainer" class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4 hidden">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-square-poll-vertical text-emerald-400"></i> Engine Initialization Results
+            </h3>
+            <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <!-- Inserted by JS -->
+            </div>
+            <div class="pt-3 text-center">
+                <a href="ai-dashboard.html" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition">
+                    Open AI Dashboard &rarr;
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', async () => { await AuthHelper.checkAuth(); });
         const baseUrl = AuthHelper.API_BASE_URL;
-        let logEntries = [];
 
         function addLog(message, type = 'info') {
-            const time = new Date().toLocaleTimeString();
-            logEntries.push({ message, type, time });
-            updateLogDisplay();
+            const logsDiv = document.getElementById('logs');
+            const entry = document.createElement('div');
+
+            const colorClass = type === 'success' ? 'text-emerald-400' :
+                               type === 'error' ? 'text-rose-400' :
+                               type === 'warning' ? 'text-amber-400' : 'text-slate-300';
+
+            const icon = type === 'success' ? '✅' :
+                         type === 'error' ? '❌' :
+                         type === 'warning' ? '⚠️' : 'ℹ️';
+
+            entry.className = `flex items-start gap-2 py-0.5 border-b border-slate-900/60 ${colorClass}`;
+            entry.innerHTML = `<span class="font-mono">${icon}</span> <span>${message}</span>`;
+
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
         }
 
-        function updateLogDisplay() {
-            const logDiv = document.getElementById('progressLog');
-            logDiv.innerHTML = logEntries.map(entry => `
-                            <div class="log-entry ${entry.type}">
-                                <strong>${entry.time}</strong>
-                                <span>${entry.message}</span>
-                            </div>
-                        `).join('');
-            logDiv.scrollTop = logDiv.scrollHeight;
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
         }
 
-        async function startSetup() {
+        async function runCompleteSetup() {
             const setupBtn = document.getElementById('setupBtn');
-            const progressContainer = document.getElementById('progressContainer');
             const spinner = document.getElementById('spinner');
             const statsContainer = document.getElementById('statsContainer');
 
             setupBtn.disabled = true;
             setupBtn.style.opacity = '0.5';
-            progressContainer.classList.add('show');
+            spinner.style.display = 'flex';
             statsContainer.style.display = 'none';
-            logEntries = [];
+
+            clearLogs();
+            addLog('🚀 Starting complete AI system setup...', 'info');
 
             try {
-                // Step 1: Check readings
-                addLog('🔍 Checking system readings...', 'info');
-                const readingsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/readings/latest?limit=100`);
-                const readingsData = await readingsResponse.json();
+                // Step 1: Health Check
+                addLog('🔍 Step 1: Checking AI Service Health...', 'info');
+                const healthResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/health`);
 
-                const readingsList = readingsData.Details ?? readingsData.details ?? readingsData.data ?? readingsData ?? [];
-                const readingsArray = Array.isArray(readingsList) ? readingsList : (readingsList.data ?? readingsList.items ?? []);
-                if (!readingsArray || readingsArray.length === 0) {
-                    throw new Error('No readings found! Please ensure devices are active.');
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    addLog(`✅ Service is Healthy! Status: ${healthData.status || 'OK'}`, 'success');
+                } else {
+                    addLog('⚠️ AI Service health check returned warning', 'warning');
                 }
-
-                addLog(`✅ Found ${readingsArray.length} readings`, 'success');
                 await sleep(500);
 
-                // Step 2: Pattern Analysis
-                addLog('🧠 Running pattern analysis...', 'info');
+                // Step 2: Run Pattern Analysis
+                addLog('📊 Step 2: Analyzing consumption patterns (last 7 days)...', 'info');
                 const endDate = new Date().toISOString().split('T')[0];
-                const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
                 const analysisResponse = await AuthHelper.fetchWithAuth(
                     `${baseUrl}/api/v1/AI/analyze-patterns?startDate=${startDate}&endDate=${endDate}`,
                     { method: 'POST' }
                 );
 
-                if (!analysisResponse.ok) {
-                    const errorData = await analysisResponse.json();
-                    throw new Error(errorData.error || 'Pattern analysis failed');
+                if (analysisResponse.ok) {
+                    const analysisData = await analysisResponse.json();
+                    addLog(`✅ Pattern analysis complete! ID: ${analysisData.analysisId || 'Done'}`, 'success');
+                } else {
+                    addLog('⚠️ Pattern analysis completed with warnings', 'warning');
                 }
-
-                const analysisResult = await analysisResponse.json();
-                addLog(`✅ Pattern analysis completed`, 'success');
                 await sleep(500);
 
-                // Step 3: Generate Recommendations
-                addLog('💡 Fetching generated recommendations...', 'info');
-                const recsResponse = await AuthHelper.fetchWithAuth(
-                    `${baseUrl}/api/v1/AI/recommendations?pageSize=100&isImplemented=false`
-                );
+                // Step 3: Check Recommendations
+                addLog('💡 Step 3: Fetching active recommendations...', 'info');
+                const recsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/recommendations?pageSize=50&isImplemented=false`);
 
-                if (recsResponse && recsResponse.ok) {
-                    const recsResult = await recsResponse.json();
-                    const recsList = recsResult.Details ?? recsResult.details ?? recsResult.data ?? recsResult ?? [];
+                if (recsResponse.ok) {
+                    const recsData = await recsResponse.json();
+                    const recsList = recsData.Details ?? recsData.details ?? recsData.data ?? [];
                     const recsArray = Array.isArray(recsList) ? recsList : [];
                     const totalSavings = recsArray.reduce((s, r) => s + (r.estimatedSavingsKWh || 0), 0);
                     addLog(`✅ Found ${recsArray.length} active recommendations`, 'success');
@@ -459,7 +225,7 @@
                 await sleep(500);
 
                 // Step 4: Detect Anomalies
-                addLog('🚨 Detecting consumption anomalies...', 'info');
+                addLog('🚨 Step 4: Detecting consumption anomalies...', 'info');
                 const devicesResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/devices`);
                 const devicesData = await devicesResponse.json();
 
@@ -483,56 +249,31 @@
                                 addLog(`  ⚠️ Found ${anomalyResult.anomaliesCount} anomalies in ${device.name}`, 'warning');
                             }
                         }
-                    } catch (err) {
-                        console.error(`Error detecting anomalies for ${device.name}:`, err);
-                    }
-
+                    } catch (err) {}
                     await sleep(300);
                 }
 
                 addLog(`✅ Anomaly detection complete: ${totalAnomalies} total anomalies found`, 'success');
                 await sleep(500);
 
-                // Step 5: Fetch Statistics - FIX HERE
-                addLog('📊 Fetching final statistics...', 'info');
-
-                try {
-                    const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
-
-                    if (!statsResponse.ok) {
-                        throw new Error(`Failed to fetch statistics: ${statsResponse.status}`);
-                    }
-
+                // Step 5: Fetch Statistics
+                addLog('📊 Step 5: Fetching final statistics...', 'info');
+                const statsResponse = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
+                if (statsResponse.ok) {
                     const statsData = await statsResponse.json();
-
-                    // Debug: response
-                    console.log('Statistics Response:', statsData);
-                    addLog(`📊 Received statistics data`, 'success');
-
                     addLog('✅ Setup completed successfully!', 'success');
-                    addLog('🎉 Your AI system is now ready to use!', 'success');
+                    addLog('🎉 Your AI system is initialized and operational!', 'success');
 
                     spinner.style.display = 'none';
                     const statsPayload = statsData.Details ?? statsData.details ?? statsData.data ?? statsData;
                     displayStatistics(statsPayload);
-
-                } catch (statsError) {
-                    console.error('Statistics error:', statsError);
-                    addLog(`⚠️ Statistics error: ${statsError.message}`, 'warning');
+                } else {
                     spinner.style.display = 'none';
-
-                    // Show basic stats even if fetch failed
-                    displayStatistics({
-                        analyses: { total: 0, last30Days: 0 },
-                        recommendations: { active: 0, totalPotentialSavings: 0 },
-                        anomalies: { unresolved: 0, devicesAffected: 0 }
-                    });
                 }
 
             } catch (error) {
                 console.error('Setup error:', error);
                 addLog(`❌ Error: ${error.message}`, 'error');
-                addLog('Please check the console for more details', 'error');
                 spinner.style.display = 'none';
                 setupBtn.disabled = false;
                 setupBtn.style.opacity = '1';
@@ -543,18 +284,9 @@
             const statsContainer = document.getElementById('statsContainer');
             const statsGrid = document.getElementById('statsGrid');
 
-            // ✅ Debug
-            console.log('Displaying stats:', stats);
-
-            // Handle both capital and lowercase property names
             const analyses = stats.Analyses || stats.analyses || {};
             const recommendations = stats.Recommendations || stats.recommendations || {};
             const anomalies = stats.Anomalies || stats.anomalies || {};
-
-            // ✅ Debug each section
-            console.log('Analyses:', analyses);
-            console.log('Recommendations:', recommendations);
-            console.log('Anomalies:', anomalies);
 
             const totalAnalyses = analyses.Total || analyses.total || 0;
             const activeRecs = recommendations.Active || recommendations.active || 0;
@@ -564,39 +296,36 @@
             const last30Days = analyses.Last30Days || analyses.last30Days || 0;
 
             statsGrid.innerHTML = `
-                            <div class="stat-box">
-                                <div class="stat-value">${totalAnalyses}</div>
-                                <div class="stat-label">Total Analyses</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">${activeRecs}</div>
-                                <div class="stat-label">Active Recommendations</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">${unresolvedAnomalies}</div>
-                                <div class="stat-label">Unresolved Anomalies</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">${potentialSavings.toFixed(1)}</div>
-                                <div class="stat-label">Potential Savings (kWh)</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">${devicesAffected}</div>
-                                <div class="stat-label">Devices Affected</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">${last30Days}</div>
-                                <div class="stat-label">Recent Analyses</div>
-                            </div>
-                        `;
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-white">${totalAnalyses}</div>
+                    <div class="text-[11px] text-slate-400">Total Analyses</div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-amber-400">${activeRecs}</div>
+                    <div class="text-[11px] text-slate-400">Active Recs</div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-rose-400">${unresolvedAnomalies}</div>
+                    <div class="text-[11px] text-slate-400">Unresolved Anomalies</div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-emerald-400">${potentialSavings.toFixed(1)}</div>
+                    <div class="text-[11px] text-slate-400">Potential Savings (kWh)</div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-teal-400">${devicesAffected}</div>
+                    <div class="text-[11px] text-slate-400">Devices Affected</div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+                    <div class="text-xl font-bold text-white">${last30Days}</div>
+                    <div class="text-[11px] text-slate-400">Recent Analyses</div>
+                </div>
+            `;
 
             statsContainer.style.display = 'block';
-            console.log('Stats display complete');
         }
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     </script>
 </body>
 

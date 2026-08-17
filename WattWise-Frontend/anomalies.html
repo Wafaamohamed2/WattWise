@@ -1,709 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anomalies - Energy Optimizer</title>
+    <title>WattWise - Energy Anomalies</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="auth-helper.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 2em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .stats-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f9fafb;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-value.critical {
-            color: #dc2626;
-        }
-
-        .stat-value.high {
-            color: #f59e0b;
-        }
-
-        .stat-value.medium {
-            color: #3b82f6;
-        }
-
-        .stat-value.resolved {
-            color: #10b981;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-
-        .filters-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-group label {
-            font-size: 0.85em;
-            color: #6b7280;
-            font-weight: 600;
-        }
-
-        .filter-select,
-        .filter-input {
-            padding: 8px 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 0.95em;
-            min-width: 150px;
-        }
-
-        .filter-select:focus,
-        .filter-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .content-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .anomalies-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .anomaly-card {
-            border: 3px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s;
-            background: #fafafa;
-        }
-
-        .anomaly-card.critical {
-            border-left: 6px solid #dc2626;
-            background: #fef2f2;
-        }
-
-        .anomaly-card.high {
-            border-left: 6px solid #f59e0b;
-            background: #fffbeb;
-        }
-
-        .anomaly-card.medium {
-            border-left: 6px solid #3b82f6;
-            background: #eff6ff;
-        }
-
-        .anomaly-card.low {
-            border-left: 6px solid #10b981;
-            background: #f0fdf4;
-        }
-
-        .anomaly-card.resolved {
-            opacity: 0.7;
-            border-color: #d1d5db;
-            background: #f9fafb;
-        }
-
-        .anomaly-card:hover:not(.resolved) {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .anomaly-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .device-info {
-            flex: 1;
-        }
-
-        .device-name {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .device-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 0.85em;
-            color: #6b7280;
-        }
-
-        .severity-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .severity-critical {
-            background: #dc2626;
-            color: white;
-        }
-
-        .severity-high {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .severity-medium {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .severity-low {
-            background: #10b981;
-            color: white;
-        }
-
-        .anomaly-description {
-            color: #4b5563;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 8px;
-        }
-
-        .deviation-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .deviation-item {
-            text-align: center;
-        }
-
-        .deviation-label {
-            font-size: 0.75em;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .deviation-value {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .deviation-percent {
-            color: #dc2626;
-            font-size: 1.2em;
-        }
-
-        .possible-causes {
-            margin-bottom: 15px;
-        }
-
-        .causes-title {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .causes-list {
-            padding-left: 20px;
-        }
-
-        .causes-list li {
-            color: #4b5563;
-            margin-bottom: 5px;
-            line-height: 1.5;
-        }
-
-        .resolution-section {
-            background: #f0fdf4;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .resolution-header {
-            font-weight: 600;
-            color: #16a34a;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .resolution-notes {
-            color: #4b5563;
-            font-style: italic;
-        }
-
-        .anomaly-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 2px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .anomaly-timestamps {
-            display: flex;
-            gap: 20px;
-            font-size: 0.85em;
-            color: #6b7280;
-        }
-
-        .anomaly-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9em;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .action-btn-resolve {
-            background: #10b981;
-            color: white;
-        }
-
-        .action-btn-resolve:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-
-        .action-btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .action-btn-delete:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-        }
-
-        .resolved-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 18px;
-            background: #10b981;
-            color: white;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 20px;
-        }
-
-        .modal-body {
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #4b5563;
-            margin-bottom: 8px;
-        }
-
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-cancel {
-            background: #e5e7eb;
-            color: #4b5563;
-        }
-
-        .btn-cancel:hover {
-            background: #d1d5db;
-        }
-
-        .btn-confirm {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-confirm:hover {
-            background: #059669;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        .page-btn {
-            padding: 8px 16px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .page-btn:hover:not(:disabled) {
-            background: #667eea;
-            color: white;
-        }
-
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .page-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .loading,
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-
-        .spinner {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .empty-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        /* ===== Navigation Menu ===== */
-        .main-nav {
-            background: white;
-            padding: 18px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .main-nav ul {
-            display: flex;
-            justify-content: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-nav li a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1em;
-            padding: 12px 24px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
-
-        .main-nav li a:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .main-nav li a.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-            transform: translateY(-3px);
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .main-nav ul {
-                gap: 15px;
-            }
-
-            .main-nav li a {
-                padding: 10px 16px;
-                font-size: 1em;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .main-nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .main-nav li a {
-                width: 80%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <script src="tailwind-config.js"></script>
+    <link rel="stylesheet" href="theme.css">
 </head>
 
-<body>
-    <div class="container">
-        <!-- Navigation Menu -->
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.html">🏠 Live Monitor</a></li>
-                <li><a href="ai-dashboard.html">🤖 AI Insights</a></li>
-                <li><a href="recommendations.html">💡 Recommendations</a></li>
-                <li><a href="anomalies.html" class="active">🚨 Anomalies</a></li>
-                <li><a href="analysis-history.html">📜 Analysis History</a></li>
-                <li><a href="charts.html">📈 Analytics & Charts</a></li>
-                <li><a href="setup.html">⚙️ AI Setup</a></li>
-            </ul>
-        </nav>
-        <!-- Header -->
-        <div class="header">
-            <h1>🚨 Anomaly Detection</h1>
-            <a href="ai-dashboard.html" class="btn btn-secondary">
-                ← Back to Dashboard
-            </a>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 glass-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-bolt text-xl text-slate-950"></i>
+                    </div>
+                    <div>
+                        <a href="index.html" class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">WattWise</a>
+                        <span class="text-xs text-emerald-400 font-medium hidden sm:inline-block ml-1">Anomalies</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+                    <a href="index.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-house text-xs"></i> Monitor
+                    </a>
+                    <a href="ai-dashboard.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-xs"></i> AI Insights
+                    </a>
+                    <a href="recommendations.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-xs"></i> Recs
+                    </a>
+                    <a href="anomalies.html" class="nav-link active px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-xs"></i> Anomalies
+                    </a>
+                    <a href="analysis-history.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-xs"></i> History
+                    </a>
+                    <a href="charts.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-xs"></i> Analytics
+                    </a>
+                    <a href="setup.html" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-2">
+                        <i class="fa-solid fa-gear text-xs"></i> Setup
+                    </a>
+                </nav>
+
+                <!-- Logout Button -->
+                <button onclick="AuthHelper.logout()" title="Logout" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Header Banner -->
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800">
+            <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Energy Anomalies
+            </h1>
+            <p class="text-slate-400 text-xs md:text-sm mt-1">Detected abnormal power spikes, device malfunctions, and unexpected consumption patterns</p>
         </div>
 
-        <!-- Statistics Bar -->
-        <div class="stats-bar" id="statsBar">
-            <div class="stat-item">
-                <div class="stat-value critical" id="criticalCount">-</div>
-                <div class="stat-label">Critical</div>
+        <!-- Anomalies Stats Bar Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-rose-400 mb-1">CRITICAL</div>
+                <div id="criticalCount" class="text-2xl font-bold text-rose-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value high" id="highCount">-</div>
-                <div class="stat-label">High</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-amber-400 mb-1">HIGH</div>
+                <div id="highCount" class="text-2xl font-bold text-amber-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value medium" id="mediumCount">-</div>
-                <div class="stat-label">Medium</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-yellow-400 mb-1">MEDIUM</div>
+                <div id="mediumCount" class="text-2xl font-bold text-yellow-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="unresolvedCount">-</div>
-                <div class="stat-label">Unresolved</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-rose-400 mb-1">UNRESOLVED</div>
+                <div id="unresolvedCount" class="text-2xl font-bold text-rose-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value resolved" id="resolvedCount">-</div>
-                <div class="stat-label">Resolved</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-emerald-400 mb-1">RESOLVED</div>
+                <div id="resolvedCount" class="text-2xl font-bold text-emerald-400">-</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="devicesAffected">-</div>
-                <div class="stat-label">Devices Affected</div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 text-center">
+                <div class="text-xs text-teal-400 mb-1">AFFECTED</div>
+                <div id="devicesAffected" class="text-2xl font-bold text-teal-400">-</div>
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label>Status</label>
-                <select class="filter-select" id="filterStatus" onchange="applyFilters()">
-                    <option value="">All</option>
+        <!-- Filter Bar Grid -->
+        <div class="glass-panel rounded-2xl p-4 border border-slate-800 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
+                <select id="filterStatus" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
+                    <option value="">All Statuses</option>
                     <option value="false" selected>Unresolved Only</option>
                     <option value="true">Resolved</option>
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label>Severity</label>
-                <select class="filter-select" id="filterSeverity" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Severity</label>
+                <select id="filterSeverity" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
                     <option value="">All Severities</option>
                     <option value="Critical">Critical</option>
                     <option value="High">High</option>
@@ -711,55 +128,62 @@
                     <option value="Low">Low</option>
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label>Device</label>
-                <select class="filter-select" id="filterDevice" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Device</label>
+                <select id="filterDevice" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
                     <option value="">All Devices</option>
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label>Start Date</label>
-                <input type="date" class="filter-input" id="filterStartDate" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Start Date</label>
+                <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
             </div>
-
-            <div class="filter-group">
-                <label>End Date</label>
-                <input type="date" class="filter-input" id="filterEndDate" onchange="applyFilters()">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">End Date</label>
+                <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500">
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="content-card">
-            <div class="anomalies-list" id="anomaliesList">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>Loading anomalies...</div>
+        <!-- Anomalies List Container -->
+        <div class="space-y-4">
+            <div id="anomaliesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-full py-12 text-center text-slate-500">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-500 mb-2"></i>
+                    <p class="text-sm">Loading anomalies...</p>
                 </div>
             </div>
 
-            <!-- Pagination -->
-            <div class="pagination" id="pagination" style="display: none;"></div>
+            <!-- Pagination Bar -->
+            <div id="pagination" class="flex items-center justify-between glass-panel rounded-2xl p-4 border border-slate-800 text-xs hidden">
+                <!-- Pagination buttons inserted by JS -->
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <!-- Resolve Modal -->
-    <div class="modal" id="resolveModal">
-        <div class="modal-content">
-            <div class="modal-header">Resolve Anomaly</div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Resolution Notes</label>
-                    <textarea id="resolutionNotes" placeholder="Describe how this anomaly was resolved..."></textarea>
-                </div>
+    <div id="resolveModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800 w-full max-w-md space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle text-emerald-400"></i> Resolve Anomaly
+                </h3>
+                <button onclick="closeResolveModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="modal-footer">
-                <button class="btn action-btn btn-cancel" onclick="closeResolveModal()">Cancel</button>
-                <button class="btn action-btn btn-confirm" onclick="confirmResolve()">Resolve</button>
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-2">Resolution Notes</label>
+                <textarea id="resolutionNotes" rows="4" placeholder="Describe how this anomaly was resolved..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-emerald-500"></textarea>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="closeResolveModal()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold border border-slate-800 transition">Cancel</button>
+                <button onclick="confirmResolve()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition shadow-lg shadow-emerald-500/20">Resolve Anomaly</button>
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
     <script>
         const baseUrl = AuthHelper.API_BASE_URL;
         let currentPage = 1;
@@ -768,20 +192,8 @@
 
         async function loadAnomalies() {
             try {
-                // Show loading
-                document.getElementById('anomaliesList').innerHTML = `
-                                        <div class="loading">
-                                            <div class="spinner"></div>
-                                            <div>Loading anomalies...</div>
-                                        </div>
-                                    `;
+                const params = new URLSearchParams({ page: currentPage, pageSize: 10 });
 
-                const params = new URLSearchParams({
-                    page: currentPage,
-                    pageSize: 10,
-                });
-
-                // Add filters
                 const status = document.getElementById('filterStatus').value;
                 const severity = document.getElementById('filterSeverity').value;
                 const device = document.getElementById('filterDevice').value;
@@ -794,24 +206,16 @@
                 if (startDate) params.append('startDate', startDate);
                 if (endDate) params.append('endDate', endDate);
 
-                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies?${params}`, {
-                    cache: "no-cache"
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                const response = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/anomalies?${params}`, { cache: "no-cache" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
                 const result = await response.json();
-
-                // Unwrap anomalies response
                 const details = result.data ?? result.details ?? result ?? {};
                 const anomalies = Array.isArray(details) ? details : (details.items ?? details.data ?? []);
 
                 displayAnomalies(anomalies);
                 displayPagination(details.page || 1, details.totalPages || 1);
 
-                // Fetch statistics separately from dedicated endpoint
                 try {
                     const statsResp = await AuthHelper.fetchWithAuth(`${baseUrl}/api/v1/AI/Statistics`);
                     const statsResult = await statsResp.json();
@@ -825,27 +229,20 @@
                         resolved: (anom.total ?? 0) - (anom.unresolved ?? 0),
                         devicesAffected: anom.devicesAffected ?? anom.total ?? 0
                     });
-                } catch (e) {
-                    console.warn('Statistics fetch failed:', e);
-                }
+                } catch (e) {}
 
             } catch (error) {
                 console.error('Error loading anomalies:', error);
                 document.getElementById('anomaliesList').innerHTML = `
-                                        <div class="empty-state">
-                                            <div class="empty-icon">⚠️</div>
-                                            <div>Failed to load anomalies</div>
-                                            <p style="color: #ef4444; margin-top: 10px;">${error.message}</p>
-                                            <button class="btn action-btn" style="margin-top: 15px; background: #667eea; color: white;" onclick="loadAnomalies()">
-                                                🔄 Retry
-                                            </button>
-                                        </div>
-                                    `;
+                    <div class="col-span-full py-12 text-center text-rose-400 text-sm">
+                        ⚠️ Failed to load anomalies: ${error.message}
+                    </div>
+                `;
             }
         }
 
         function applyFilters() {
-            currentPage = 1; // Reset to first page when filtering
+            currentPage = 1;
             loadAnomalies();
         }
 
@@ -858,75 +255,73 @@
             document.getElementById('devicesAffected').textContent = stats.devicesAffected ?? 0;
         }
 
-
         function displayAnomalies(anomalies) {
             const container = document.getElementById('anomaliesList');
-
             if (!anomalies || anomalies.length === 0) {
                 container.innerHTML = `
-                                        <div class="empty-state">
-                                            <div class="empty-icon">✅</div>
-                                            <div>No unresolved anomalies</div>
-                                            <p>All clear! Your system is running efficiently.</p>
-                                        </div>
-                                    `;
+                    <div class="col-span-full py-16 text-center text-slate-500 text-sm">
+                        <i class="fa-solid fa-shield-halved text-4xl text-emerald-500/40 mb-3"></i>
+                        <p class="text-slate-300 font-semibold">No anomalies detected</p>
+                        <p class="text-slate-500 text-xs mt-1">All monitored systems are running efficiently</p>
+                    </div>
+                `;
                 return;
             }
 
             container.innerHTML = anomalies.map(a => {
                 const dev = a.device || { name: 'Unknown Device', zone: 'Unknown' };
-                const severityClass = a.severity?.toLowerCase() || 'low';
+                const severity = a.severity || a.severityLabel || 'Medium';
+
+                const severityBadge = severity.toLowerCase() === 'critical' ?
+                    'text-rose-400 bg-rose-500/10 border-rose-500/30' :
+                    severity.toLowerCase() === 'high' ?
+                    'text-amber-400 bg-amber-500/10 border-amber-500/30' :
+                    'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
 
                 return `
-                                        <div class="anomaly-card ${severityClass}">
-                                            <div class="anomaly-header">
-                                                <div class="device-info">
-                                                    <div class="device-name">⚠️ ${dev.name}</div>
-                                                    <div class="device-meta">
-                                                        <span>📍 ${typeof dev.zone === 'object' && dev.zone ? (dev.zone.name || dev.zone.Name || 'Unknown Zone') : (dev.zone || 'Unknown Zone')}</span>
-                                                        <span>🕐 ${new Date(a.anomalyTimestamp || a.detectedAt).toLocaleString()}</span>
-                                                    </div>
-                                                </div>
-                                                <span class="severity-badge severity-${severityClass}">${a.severity || 'Unknown'}</span>
-                                            </div>
+                    <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">⚠️ ${dev.name || 'Unknown Device'}</h4>
+                                    <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                        <span>📍 ${typeof dev.zone === 'object' && dev.zone ? (dev.zone.name || dev.zone.Name || 'Main') : (dev.zone || 'Main')}</span>
+                                        <span>🕐 ${new Date(a.anomalyTimestamp || a.detectedAt).toLocaleTimeString()}</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${severityBadge}">
+                                    ${severity}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">${a.description || 'Abnormal usage pattern detected'}</p>
+                            
+                            <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-950/60 border border-slate-900 text-center text-xs">
+                                <div>
+                                    <span class="text-[10px] text-slate-500 block">Expected</span>
+                                    <span class="font-bold text-slate-300">${(a.expectedValue || 0).toFixed(2)} kW</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-500 block">Actual</span>
+                                    <span class="font-bold text-rose-400">${(a.actualValue || 0).toFixed(2)} kW</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-500 block">Deviation</span>
+                                    <span class="font-bold text-amber-400">+${a.expectedValue ? Math.round(((a.actualValue / a.expectedValue) - 1) * 100) : 0}%</span>
+                                </div>
+                            </div>
+                        </div>
 
-                                            <div class="anomaly-description">${a.description || 'No description'}</div>
-
-                                            <div class="deviation-section">
-                                                <div class="deviation-item">
-                                                    <div class="deviation-label">Expected</div>
-                                                    <div class="deviation-value">${(a.expectedValue || 0).toFixed(2)} kW</div>
-                                                </div>
-                                                <div class="deviation-item">
-                                                    <div class="deviation-label">Actual</div>
-                                                    <div class="deviation-value">${(a.actualValue || 0).toFixed(2)} kW</div>
-                                                </div>
-                                                <div class="deviation-item">
-                                                    <div class="deviation-label">Deviation</div>
-                                                    <div class="deviation-value deviation-percent">
-                                                        +${Math.round(((a.actualValue / a.expectedValue) - 1) * 100)}%
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            ${a.possibleCauses ? `
-                                            <div class="possible-causes">
-                                                <div class="causes-title">Possible Causes:</div>
-                                                <ul class="causes-list">
-                                                    ${a.possibleCauses.split(',').map(c => `<li>${c.trim()}</li>`).join('')}
-                                                </ul>
-                                            </div>
-                                            ` : ''}
-
-                                            <div class="anomaly-footer">
-                                                <div class="anomaly-actions">
-                                                    <button class="action-btn action-btn-resolve" onclick="openResolveModal(${a.id})">
-                                                        ✅ Resolve
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
+                        <div class="pt-2 flex items-center justify-end">
+                            ${!a.isResolved ? `
+                                <button onclick="openResolveModal(${a.id})" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition shadow-md shadow-emerald-500/10 flex items-center gap-1">
+                                    <i class="fa-solid fa-check"></i> Resolve
+                                </button>
+                            ` : `
+                                <span class="text-xs text-slate-500 font-semibold flex items-center gap-1"><i class="fa-solid fa-check-circle text-emerald-400"></i> Resolved</span>
+                            `}
+                        </div>
+                    </div>
+                `;
             }).join('');
         }
 
@@ -934,20 +329,24 @@
             totalPages = total;
             const pagination = document.getElementById('pagination');
             if (total <= 1) {
-                pagination.style.display = 'none';
+                pagination.classList.add('hidden');
                 return;
             }
-            pagination.style.display = 'flex';
+            pagination.classList.remove('hidden');
             pagination.innerHTML = `
-                                    <button class="page-btn" onclick="currentPage--; loadAnomalies()" ${page === 1 ? 'disabled' : ''}>Previous</button>
-                                    <span class="page-info">Page ${page} of ${total}</span>
-                                    <button class="page-btn" onclick="currentPage++; loadAnomalies()" ${page === total ? 'disabled' : ''}>Next</button>
-                                `;
+                <button onclick="currentPage--; loadAnomalies()" ${page === 1 ? 'disabled class="opacity-50 text-slate-500"' : 'class="text-emerald-400 font-bold hover:underline"'}>&larr; Previous</button>
+                <span class="text-slate-400">Page ${page} of ${total}</span>
+                <button onclick="currentPage++; loadAnomalies()" ${page === total ? 'disabled class="opacity-50 text-slate-500"' : 'class="text-emerald-400 font-bold hover:underline"'}>Next &rarr;</button>
+            `;
         }
 
         function openResolveModal(id) {
             currentAnomalyId = id;
-            document.getElementById('resolveModal').classList.add('show');
+            document.getElementById('resolveModal').classList.remove('hidden');
+        }
+
+        function closeResolveModal() {
+            document.getElementById('resolveModal').classList.add('hidden');
         }
 
         async function confirmResolve() {
@@ -961,7 +360,7 @@
                 });
 
                 if (response.ok) {
-                    document.getElementById('resolveModal').classList.remove('show');
+                    closeResolveModal();
                     loadAnomalies();
                 }
             } catch (error) {
@@ -969,7 +368,10 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', async () => { await AuthHelper.checkAuth(); loadAnomalies(); });
+        window.addEventListener('DOMContentLoaded', async () => {
+            await AuthHelper.checkAuth();
+            loadAnomalies();
+        });
     </script>
 </body>
 
