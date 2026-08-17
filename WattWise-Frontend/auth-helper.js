@@ -1,74 +1,62 @@
 const AuthHelper = {
-    API_BASE_URL: 'http://localhost:5167',
-    _isRefreshing: false,
-    _refreshPromise: null,
-
-    async tryRefreshToken() {
-        if (this._isRefreshing) {
-            return this._refreshPromise;
-        }
-
-        this._isRefreshing = true;
-        this._refreshPromise = (async () => {
-            try {
-                const res = await fetch(this.API_BASE_URL + '/api/v1/account/refresh-token', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                return res.ok;
-            } catch (e) {
-                return false;
-            } finally {
-                this._isRefreshing = false;
-                this._refreshPromise = null;
-            }
-        })();
-
-        return this._refreshPromise;
-    },
+    API_BASE_URL: 'https://localhost:7083',
 
     async checkAuth() {
         try {
-            const res = await fetch(this.API_BASE_URL + '/api/v1/account/me', {
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' }
-            });
+            const response = await this.fetchWithAuth('/api/v1/account/me', { method: 'GET' });
 
-            if (res.status === 401) {
-                const refreshed = await this.tryRefreshToken();
-                if (refreshed) {
-                    const retryRes = await fetch(this.API_BASE_URL + '/api/v1/account/me', {
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    if (retryRes.ok) {
-                        await this.checkOnboardingStatus();
-                        return true;
+            if (response && response.ok) {
+                const user = await response.json();
+
+                const isAuthPage = window.location.pathname.endsWith('login.html') ||
+                    window.location.pathname.endsWith('register.html') ||
+                    window.location.pathname.endsWith('forgot-password.html') ||
+                    window.location.pathname.endsWith('reset-password.html');
+
+                if (isAuthPage) {
+                    const buildings = await this.checkOnboardingStatus(true);
+                    if (buildings) {
+                        window.location.href = 'index.html';
                     }
+                    return true;
                 }
-                window.location.href = 'login.html';
+
+                if (!window.location.pathname.endsWith('onboarding.html')) {
+                    await this.checkOnboardingStatus(true);
+                }
+
+                return true;
+            } else {
+                this.handleUnauthenticated();
                 return false;
             }
-
-            if (!res.ok) {
-                window.location.href = 'login.html';
-                return false;
-            }
-
-            // Verify Onboarding Status
-            await this.checkOnboardingStatus();
-            return true;
-        } catch (e) {
-            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Auth Check Error:', error);
+            this.handleUnauthenticated();
             return false;
+        }
+    },
+
+    handleUnauthenticated() {
+        const isAuthPage = window.location.pathname.endsWith('login.html') ||
+            window.location.pathname.endsWith('register.html') ||
+            window.location.pathname.endsWith('forgot-password.html') ||
+            window.location.pathname.endsWith('reset-password.html');
+
+        if (!isAuthPage) {
+            window.location.href = 'login.html';
         }
     },
 
     async checkOnboardingStatus(redirectIfIncomplete = true) {
         try {
-            const buildings = await this.apiCall('/api/v1/buildings');
-            if (!buildings || !Array.isArray(buildings) || buildings.length === 0) {
+            const response = await this.fetchWithAuth('/api/v1/buildings');
+            if (!response || !response.ok) return false;
+
+            const result = await response.json();
+            const buildings = result.data ?? result.details ?? (Array.isArray(result) ? result : []);
+
+            if (!buildings || buildings.length === 0) {
                 if (redirectIfIncomplete && !window.location.pathname.endsWith('onboarding.html')) {
                     window.location.href = 'onboarding.html';
                 }
@@ -76,7 +64,11 @@ const AuthHelper = {
             }
 
             const currentActiveId = this.getActiveBuildingId();
-            let activeBuilding = buildings.find(b => b.id == currentActiveId) || buildings[0];
+            let activeBuilding = buildings.find(b => b.id == currentActiveId);
+
+            if (!activeBuilding) {
+                activeBuilding = buildings[0];
+            }
 
             if (!activeBuilding.isOnboardingComplete) {
                 if (redirectIfIncomplete && !window.location.pathname.endsWith('onboarding.html')) {
@@ -114,62 +106,60 @@ const AuthHelper = {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'building-selector-wrapper';
-        wrapper.style.cssText = 'display:inline-flex; align-items:center; gap:10px; vertical-align:middle;';
+        wrapper.style.cssText = 'display:inline-flex; align-items:center; gap:8px; vertical-align:middle;';
 
         const select = document.createElement('select');
         select.id = 'globalBuildingSelect';
         select.style.cssText = `
-            padding: 10px 16px;
-            border-radius: 12px;
-            background: rgba(102, 126, 234, 0.08);
-            color: #4c51bf;
-            border: 1.5px solid rgba(102, 126, 234, 0.3);
+            padding: 7px 12px;
+            border-radius: 10px;
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.85em;
             font-weight: 600;
-            font-size: 0.95em;
             font-family: inherit;
             cursor: pointer;
             outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
         `;
-        select.onmouseover = () => { select.style.borderColor = '#667eea'; select.style.background = 'rgba(102, 126, 234, 0.14)'; };
-        select.onmouseout = () => { select.style.borderColor = 'rgba(102, 126, 234, 0.3)'; select.style.background = 'rgba(102, 126, 234, 0.08)'; };
-        select.onchange = (e) => {
-            AuthHelper.setActiveBuildingId(e.target.value);
-            window.location.reload();
-        };
 
         buildings.forEach(b => {
             const opt = document.createElement('option');
             opt.value = b.id;
-            opt.textContent = `🏢 ${b.name} (${b.type === 1 ? 'Home' : 'Company'})`;
-            opt.style.cssText = 'background: white; color: #374151; font-weight: 500; padding: 6px;';
+            opt.textContent = `${b.name || 'Building ' + b.id} ${b.id == activeId ? '✓' : ''}`;
             if (b.id == activeId) opt.selected = true;
             select.appendChild(opt);
         });
 
+        select.onchange = (e) => {
+            const selectedBuildingId = e.target.value;
+            this.setActiveBuildingId(selectedBuildingId);
+            window.location.reload();
+        };
+
         const newBtn = document.createElement('a');
         newBtn.href = 'onboarding.html';
-        newBtn.title = 'Add New Building';
         newBtn.style.cssText = `
-            padding: 10px 16px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            padding: 7px 12px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #22c55e, #14b8a6);
+            color: #0f172a;
             text-decoration: none;
-            font-size: 0.9em;
-            font-weight: 600;
+            font-size: 0.82em;
+            font-weight: 700;
             font-family: inherit;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
-            transition: all 0.3s ease;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            transition: all 0.2s ease;
             white-space: nowrap;
         `;
-        newBtn.onmouseover = () => { newBtn.style.transform = 'translateY(-2px)'; newBtn.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.45)'; };
-        newBtn.onmouseout = () => { newBtn.style.transform = 'none'; newBtn.style.boxShadow = '0 4px 14px rgba(102, 126, 234, 0.35)'; };
-        newBtn.innerHTML = '<span style="font-size: 1.1em; font-weight: bold;">+</span> Add Building';
+        newBtn.onmouseover = () => { newBtn.style.transform = 'translateY(-1px)'; newBtn.style.opacity = '0.9'; };
+        newBtn.onmouseout = () => { newBtn.style.transform = 'none'; newBtn.style.opacity = '1'; };
+        newBtn.innerHTML = '<span style="font-size: 1.1em; font-weight: bold;">+</span> Building';
 
         wrapper.appendChild(select);
         wrapper.appendChild(newBtn);
@@ -178,30 +168,69 @@ const AuthHelper = {
 
     async fetchWithAuth(url, options = {}, isRetry = false) {
         const absoluteUrl = url.startsWith('/') ? (this.API_BASE_URL + url) : url;
-        const response = await fetch(absoluteUrl, {
+
+        const defaultHeaders = {
+            'Content-Type': 'application/json',
+        };
+
+        const config = {
             ...options,
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                ...(options.headers || {})
+                ...defaultHeaders,
+                ...options.headers
             }
-        });
+        };
 
-        if (response.status === 401 && !isRetry) {
-            const refreshed = await this.tryRefreshToken();
-            if (refreshed) {
-                return await this.fetchWithAuth(url, options, true);
+        try {
+            let response;
+            try {
+                response = await fetch(absoluteUrl, config);
+            } catch (err) {
+                // Automatic HTTP fallback if HTTPS fails locally
+                if (this.API_BASE_URL.startsWith('https://localhost:7083')) {
+                    this.API_BASE_URL = 'http://localhost:5167';
+                    const fallbackUrl = url.startsWith('/') ? (this.API_BASE_URL + url) : url;
+                    response = await fetch(fallbackUrl, config);
+                } else {
+                    throw err;
+                }
             }
-            window.location.href = 'login.html';
-            return null;
-        }
 
-        if (response.status === 401) {
-            window.location.href = 'login.html';
-            return null;
-        }
+            const AUTH_ENDPOINTS = [
+                '/account/login',
+                '/account/register',
+                '/account/refresh-token',
+                '/account/forgot-password',
+                '/account/reset-password',
+                '/account/resend-confirmation-email'
+            ];
+            const isAuthEndpoint = AUTH_ENDPOINTS.some(e => url.includes(e));
 
-        return response;
+            if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+                console.warn('401 Unauthorized. Attempting cookie refresh...');
+
+                const refreshResponse = await fetch(this.API_BASE_URL + '/api/v1/account/refresh-token', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (refreshResponse.ok) {
+                    console.log('Token refreshed via Cookie successfully. Retrying request...');
+                    return this.fetchWithAuth(url, options, true);
+                } else {
+                    console.error('Refresh token failed or expired.');
+                    this.logout();
+                    return response;
+                }
+            }
+
+            return response;
+        } catch (error) {
+            console.error('API Fetch Error:', error);
+            throw error;
+        }
     },
 
     async logout() {
@@ -210,22 +239,16 @@ const AuthHelper = {
                 method: 'POST',
                 credentials: 'include'
             });
-        } catch (e) { }
-        localStorage.removeItem('activeBuildingId');
-        window.location.href = 'login.html';
+        } catch (e) {
+            console.error('Logout error:', e);
+        } finally {
+            localStorage.removeItem('activeBuildingId');
+            window.location.href = 'login.html';
+        }
     },
 
-    async apiCall(url, options = {}) {
-        const response = await this.fetchWithAuth(url, options);
-        if (!response) return null;
-        const result = await response.json();
-        if (response.ok) return result.details ?? result.Details ?? result.data ?? result;
-        const errorMsg = result.message ?? result.Message ?? 'An error occurred';
-        if (typeof toastr !== 'undefined') toastr.error(errorMsg);
-        throw new Error(errorMsg);
-    },
-
-    broadcastEvent(name, detail) {
-        window.dispatchEvent(new CustomEvent(name, { detail }));
+    broadcastEvent(eventName, detail) {
+        const event = new CustomEvent(eventName, { detail });
+        window.dispatchEvent(event);
     }
 };

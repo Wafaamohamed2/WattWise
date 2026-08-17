@@ -139,8 +139,8 @@ namespace EnergyOptimizer.API.Controllers
             Response.Cookies.Append("access_token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !_env.IsDevelopment(),
-                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Secure = true,
+                SameSite = _env.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(durationMinutes),
                 Path = "/"
             });
@@ -152,8 +152,8 @@ namespace EnergyOptimizer.API.Controllers
             Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !_env.IsDevelopment(),
-                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Secure = true,
+                SameSite = _env.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddDays(durationDays),
                 Path = "/"
             });
@@ -164,8 +164,8 @@ namespace EnergyOptimizer.API.Controllers
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !_env.IsDevelopment(),
-                SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Secure = true,
+                SameSite = _env.IsDevelopment() ? SameSiteMode.None : SameSiteMode.Strict,
                 Path = "/"
             };
 

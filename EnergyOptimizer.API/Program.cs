@@ -64,7 +64,7 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityAndJwtAuthentication(builder.Configuration);
 builder.Services.AddApiRateLimiting();
 builder.Services.AddAppCaching(builder.Configuration);
-builder.Services.AddApiCors(builder.Configuration);
+builder.Services.AddApiCors(builder.Configuration, builder.Environment);
 
 // Application & Infrastructure Custom Services
 builder.Services.AddHttpContextAccessor();

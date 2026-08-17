@@ -142,21 +142,33 @@ namespace EnergyOptimizer.API.Extensions
             return services;
         }
 
-        public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
             var allowedOrigins = configuration
                 .GetSection("AllowedOrigins")
                 .Get<string[]>()
-                ?? new[] { "http://localhost:3000", "http://localhost:4200" };
+                ?? new[] { "http://localhost:3000", "http://localhost:4200", "http://localhost:5500", "http://127.0.0.1:5500" };
 
             services.AddCors(options =>
             {
                 options.AddPolicy("EnergyOptimizerCorsPolicy", policy =>
                 {
-                    policy.WithOrigins(allowedOrigins)
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
+                    if (environment.IsDevelopment())
+                    {
+                        // Flexible origin matching for dev tools (Live Server dynamic ports)
+                        policy.SetIsOriginAllowed(_ => true)
+                              .AllowAnyMethod()
+                              .AllowAnyHeader()
+                              .AllowCredentials();
+                    }
+                    else
+                    {
+                        // Strict explicit whitelist in Production to prevent CSRF vulnerabilities
+                        policy.WithOrigins(allowedOrigins)
+                              .AllowAnyMethod()
+                              .AllowAnyHeader()
+                              .AllowCredentials();
+                    }
                 });
             });
 
