@@ -62,6 +62,7 @@ namespace EnergyOptimizer.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("{id}/toggle")]
         [HttpPatch("{id}/toggle")]
         public async Task<IActionResult> ToggleDevice(int id)
         {

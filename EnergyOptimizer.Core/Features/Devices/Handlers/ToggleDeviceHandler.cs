@@ -38,7 +38,13 @@ namespace EnergyOptimizer.Core.Features.Devices.Handlers
 
             await _hubService.NotifyDeviceStatusChanged(device.Id, device.IsActive);
 
-            return new ApiResponse(200, $"Device {(device.IsActive ? "activated" : "deactivated")}");
+            return new ApiResponse(200, $"Device {(device.IsActive ? "activated" : "deactivated")}", new
+            {
+                id = device.Id,
+                deviceId = device.Id,
+                deviceName = device.Name,
+                isActive = device.IsActive
+            });
         }
     }
 }

@@ -40,6 +40,7 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
 
             var latestReadings = await _readingRepo.ListAsync(new LatestReadingsSpec(userId, 10, buildingId: request.BuildingId));
             var currentConsumption = (double)latestReadings.Sum(r => r.PowerConsumptionKW);
+            var totalReadings = await _readingRepo.CountAsync(new ReadingsByDateRangeSpec(DateTime.MinValue, DateTime.MaxValue, userId, buildingId: request.BuildingId));
 
             var unreadAlerts = await _alertRepo.CountAsync(new AlertCountSpec(userId, isRead: false, buildingId: request.BuildingId));
 
@@ -48,6 +49,7 @@ namespace EnergyOptimizer.Core.Features.Dashboard.Handlers
                 TotalDevices = totalDevices,
                 ActiveDevices = activeDevices,
                 TotalZones = totalZones,
+                TotalReadings = totalReadings,
                 CurrentPowerUsageKW = Math.Round(currentConsumption, 2),
                 UnreadAlertsCount = unreadAlerts,
                 LastUpdate = DateTime.UtcNow
